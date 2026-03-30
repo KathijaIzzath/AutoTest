@@ -1,0 +1,61 @@
+{
+  "admin": {
+    "username": "scadmin",
+    "password": "Scadmin123!",
+    "url": "https://qnk1scltweb02.pulseinc.com/SecureConnectWeb/login",
+    "dashboardUrl": "https://qnk1scltweb02.pulseinc.com/SecureConnectWeb/dashboard/home"
+  },
+  "qauser": {
+    "username": "qasecureconnect@gmail.com",
+    "password": "$@H0use@$",
+    "qaurl": "https://qnk1scltweb02.pulseinc.com/SecureConnectWeb/login",
+    "qadashboardUrl": "https://qnk1scltweb02.pulseinc.com/SecureConnectWeb/dashboard/home"
+  },
+  "staginguser": {
+    "stagingurl": "https://scdemo.pulseinc.com/SecureConnectWeb/login"
+  },
+  "accountUniqueIncNum": "01",
+  "Useraddress": {
+    "address1": "567 Silver Fang Street",
+    "zip": "75001",
+    "city": "Addison - TX",
+    "State": "TX",
+    "Country": "US"
+  },
+  "accountsdashboardurl": "https://qnk1scltweb02.pulseinc.com/SecureConnectWeb/dashboard/accounts",
+  "editAccount": {
+    "accountName": "EditAccAutoTest001",
+    "editAccAutoNum": "EditAccAutoTest001"
+  },
+  "deactivateAccount": {
+    "accountName": "QAACCOUNTAUTOTEST001",
+    "deactivateAccAutoNum": "QAACCOUNTAUTOTEST001"
+  },
+  "providerGroup": {
+    "accountName": "SCAUTOPROVTEST001",
+    "accountNum": "SCAUTOPROVTEST001",
+    "providerGroupName": "AutoProvGroupTest001"
+  },
+  "editGroup": {
+    "accountName": "SCAutoGroupEdit001",
+    "accountNum": "SCAutoGroupEdit001",
+    "groupeditInAcct": "G31927",
+    "groupeditOutAcct": "G31928"
+  },
+  "groupEnroll": {
+	"groupId": "G00014",
+  "bulkgroupId": "G00016",
+	"groupName": "LAKIN-KULAS",
+	"NPI": "0829876198",
+	"taxID": "082954619",
+	"groupEnrollOutAcct": "G31930",
+	"enrollmentTypeP": "Professional",
+	"enrollmentTypeE": "ERA",
+	"enrollmentTypeC": "Claim Status",	
+	"enrollmentTypeL": "Eligibility", 
+	"payerIDopt": "00014 - SELECTCARE",
+  "payerName": "- SELECTCARE",
+  "payerID": "00014",
+  "processorId": "RELAY"
+  }
+}
