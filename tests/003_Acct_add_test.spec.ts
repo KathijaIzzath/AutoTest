@@ -16,7 +16,7 @@ let currentAccountNumber = parseInt(userData.accountUniqueIncNum); // 1
 let newAccountNum = `SCAutoAcctNum-0${currentAccountNumber}`;
 let acctname = `SCAutoAcct-0${currentAccountNumber}`;
 
-test('Account quick Menu, AccountDashboard Screen control/elements verification test execution', async ({ page }) => {
+test('Account Add functional, screen control/elements verification test execution', async ({ page }) => {
   let loginPage = new LoginPage(page);
   await loginPage.navigate();
   await loginPage.login(userData.admin.username, userData.admin.password);
