@@ -11,7 +11,7 @@ test.beforeEach(async ({ browser }) => {
   // Initialize the page instance before each test
   page = await browser.newPage();
 });
-
+//Jira created filter by TAXID not working. To be automated once the issue is resolved.
 test('AccountDashboard control/elements verification test execution', async ({ page }) => {
   let loginPage = new LoginPage(page);
   await loginPage.navigate();

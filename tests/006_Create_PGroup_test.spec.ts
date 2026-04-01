@@ -1,9 +1,7 @@
  import { test, expect, Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
-import { getTodaysDate, getTodaysDateWithYr } from '../testData/database.utils';
 import LoginPage from '../testData/LoginPage';
 
-import {  isActiveAccount } from '../testData/database.utils';
 // Helper: ensure a textbox (by accessible name) has a value; fill if empty
 async function ensureInputHasValue(page: Page, roleName: string, value: string) {
   const textbox = page.getByRole('textbox', { name: roleName });
