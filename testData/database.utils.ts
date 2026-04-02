@@ -1,3 +1,4 @@
+
 import { Client, QueryResult, Pool } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -211,7 +212,34 @@ export async function existsBulkGroupEnrollment(groupId: string): Promise<boolea
     console.log('Database connection closed.');
   }
 }
+/**
+ * Delete providers and billing ids for a given provider group id
+ * @param providerGroupId - The provider group id to delete from provider and billingids tables
+ */
+export async function deleteProviderAndBillingIdsByGroupId(providerGroupId: string): Promise<void> {
+  const client = new Client(dbConfig);
+  try {
+    await client.connect();
+    console.log('Connected to the database.');
 
+    // Delete from billingids first due to possible FK constraints
+    const deleteBillingIds = 'DELETE FROM billingids WHERE providergroupid = $1';
+    const deleteProvider = 'DELETE FROM provider WHERE providergroupid = $1';
+    const params = [providerGroupId];
+
+    await executeQuery(deleteBillingIds, params);
+    console.log(deleteBillingIds, params, 'Deleted billing ids');
+
+    await executeQuery(deleteProvider, params);
+    console.log(deleteProvider, params, 'Deleted providers');
+  } catch (err) {
+    console.error('Error deleting provider or billing ids:', err);
+    throw err;
+  } finally {
+    await client.end();
+    console.log('Database connection closed.');
+  }
+}
 /**
  * Query and store account information from database
  */

@@ -57,5 +57,13 @@
   "payerName": "- SELECTCARE",
   "payerID": "00014",
   "processorId": "RELAY"
+  },
+   "addProvider": {
+    "accountName": "AUTOMATIONTESTACC01",
+    "accountNum": "AUTOMATIONTESTACC01",
+    "groupeditInAcct": "G31943",
+    "groupeditOutAcct": "G31928",
+    "providerNPI": "1073737888",
+    "providerTaxID": "561943459"
   }
 }

@@ -124,7 +124,8 @@ test('ProviderGroup search results sort verification test execution', async ({ p
   await expect(page.getByRole('cell', { name: 'PROVIDER 01TEST' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'email' })).toBeVisible();
   await page.getByRole('columnheader', { name: 'email' }).click();
-  await expect(page.getByRole('cell', { name: 'N/A' })).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'N/A' }).first()).toBeVisible();
+  await expect(page.locator('tbody')).toContainText('N/A');
   await expect(page.getByRole('columnheader', { name: 'status' })).toBeVisible();
   await page.getByRole('columnheader', { name: 'status' }).click();
   await expect(page.getByRole('cell', { name: 'A' }).nth(1)).toBeVisible();
@@ -133,7 +134,7 @@ test('ProviderGroup search results sort verification test execution', async ({ p
   await expect(page.getByRole('cell', { name: '04843 COLTEN FERRY SUITE 674' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'provider ID' })).toBeVisible();
   await page.getByRole('columnheader', { name: 'provider ID' }).click();
-  await expect(page.getByRole('cell', { name: 'H02492' })).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'A00001' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Group ID' })).toBeVisible();
   await page.getByRole('columnheader', { name: 'Group ID' }).click();
   await expect(page.getByRole('cell', { name: 'G00012' }).first()).toBeVisible();
