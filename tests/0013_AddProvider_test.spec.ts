@@ -25,10 +25,6 @@ test('Add provider via Accounts dashboard functionality & control/elements verif
   await page.getByRole('textbox', { name: 'Enter Account Number' }).click();
     await page.getByRole('textbox', { name: 'Enter Account Number' }).fill(userData.addProvider.accountNum);
     await page.getByRole('button', { name: 'Apply Filter' }).click();
-
-    await page.getByRole('textbox', { name: 'Enter Account Number' }).click();
-    await page.getByRole('textbox', { name: 'Enter Account Number' }).fill(userData.addProvider.accountName);
-    await page.getByRole('button', { name: 'Apply Filter' }).click();
     await page.getByRole('link').filter({ hasText: /^$/ }).nth(1).click();
     await expect(page.getByRole('cell', { name: 'G31943', exact: true })).toBeVisible();
 
