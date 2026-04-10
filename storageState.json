@@ -1,0 +1,27 @@
+{
+  "cookies": [
+    {
+      "name": "cf_clearance",
+      "value": "8NDuPlYRRZPJtZPPhu.6kk_jReiaZiH6E6KpKKG.A0s-1775857142-1.2.1.1-SIzbH.6mxoeOwpP3P7_UXO4rz7ZgGtMHSn06.SaS95D8yIF.BjPjGC78d9JzalRHGyue_EyB1Nxn.c9tfE3Sfv8OBJhK5bzOTS98ZNQos_4lXzvvuqt2eUZJ_I.sxaD1VVvFN0qhYgkMAEB3FQgpDNJaEAXZOvjyrPerqIhdR3hC6XmiiX8e7lbYhndQF0oq3_SLF6IFtaOvWnVD49h7NKdyt_AvVVAN.guvL0EQVugi0wKu6S3tEKsdzSW_4Qg7UQ0UFxULnCK0lzHUp9Jx8fk2XCrSjjnmerVR3ADWhSePLkqYe4KB1bH3sWIlRVK9ofogKdiAWcGeYj0Ftx2xdA",
+      "domain": ".pulseinc.com",
+      "path": "/",
+      "expires": 1807393142.948927,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None",
+      "partitionKey": "https://pulseinc.com",
+      "_crHasCrossSiteAncestor": false
+    },
+    {
+      "name": "__cf_bm",
+      "value": "vmYIbQ4lQiL8m65cU_8zc1O2eU1bdptNuRodHOPV6iU-1775857142.9218507-1.0.1.1-3ceNhuDToOIf_NPi2WQE06DxP0BmmjhSp1VNKyfolu71fIichIMK01DwjP8qiuhiz9xh2hDyjRuA9vfnPWc6fe5S8jLcckoKHj1p99zWLRCOv_CeqCHzGg55XNBg_EMp",
+      "domain": ".pulseinc.com",
+      "path": "/",
+      "expires": 1775858942.949235,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

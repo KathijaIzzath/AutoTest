@@ -3,6 +3,8 @@ import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
 import helperFunction from '../testData/helperFunction';
 import { getTodaysDate } from '../testData/database.utils';
+import { getClaimCountForQueueI, getClaimErrorCountForQueueI } from '../testData/database.utils';
+import { fetchOneGroupEnrollmentByStatus } from '../testData/database.utils';
 
 test.beforeEach(async ({ browser }) => {
   // Initialize the page instance before each test
@@ -71,8 +73,16 @@ test('Dashboard tests execution', async ({ page }) => {
   await expect(page.locator('app-dashboard').getByText('Dashboard')).toHaveText('Dashboard');
   await expect(page.getByText('Today\'s Claims')).toHaveText('Today\'s Claims');
   await expect(page.getByText('Support', { exact: true })).toHaveText('Support');
-  await expect(page.getByText('58911')).toHaveText('58911');
-  await expect(page.getByText('2584')).toHaveText('2584');
+  
+  // Get and log the claim count for queue 'I'
+  const claimCount = await getClaimCountForQueueI();
+  console.log('Claim count for queue I:', claimCount);
+  await expect(page.getByText(claimCount.toString())).toContainText(claimCount.toString());
+  
+  // Get and log the claim error count for queue 'I'
+  const claimErrorCount = await getClaimErrorCountForQueueI();
+  console.log('Claim error count for queue I:', claimErrorCount);
+  await expect(page.getByText(claimErrorCount.toString())).toContainText(claimErrorCount.toString());
 
   // Verify dashboard links and claim items
   await expect(page.getByRole('link', { name: ' Dashboard' })).toBeVisible();
@@ -92,7 +102,8 @@ test('Dashboard tests execution', async ({ page }) => {
   await expect(page.getByRole('columnheader', { name: 'PATIENT NAME ' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'PATIENT ACCOUNT #' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'DATE OF SERVICE' })).toBeVisible();
-  await expect(page.getByRole('columnheader', { name: 'CLAIM ID' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'RECEIVED DATE' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'PAYER ID' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'PROVIDER' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'CHARGES' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'STATUS' })).toBeVisible();
@@ -129,13 +140,13 @@ test('Dashboard tests execution', async ({ page }) => {
   await expect(page.getByText('CLAIMS SENT')).toBeVisible();
   await page.getByText('CLAIMS SENT').click();
   await expect(page.locator('app-claims').getByText('Claims', { exact: true })).toBeVisible();
-  await expect(page.getByRole('columnheader', { name: 'CLAIM ID' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'PATIENT NAME' })).toBeVisible();
 
   const gridcheckCells = page.getByRole('cell');
   const gridDatacheck = await extractData(gridcheckCells);
   console.log('Extracted claims sent grid data:', gridDatacheck);
 
-  await expect(gridData).not.toBeNull();
+  await expect(gridDatacheck).not.toBeNull();
   await expect(typeof gridData).toBe('object');
 
   // Test ERAs Received
@@ -168,7 +179,7 @@ test('Dashboard tests execution', async ({ page }) => {
   await expect(page.getByText('Status', { exact: true })).toBeVisible();
   await expect(page.getByText('Rejected', { exact: true })).toBeVisible();
   await expect(page.locator('.ng-select-multiple > .ng-select-container > .ng-arrow-wrapper')).toBeVisible();
-  await expect(page.getByRole('columnheader', { name: 'CLAIM ID' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'PATIENT NAME' })).toBeVisible();
 
   const rejectedClaimsGridCells = page.getByRole('cell');
   const rejectedClaimsgridData = await extractData(rejectedClaimsGridCells);
@@ -191,7 +202,16 @@ test('Dashboard tests execution', async ({ page }) => {
   await expect(page.locator('.ng-select-multiple > .ng-select-container > .ng-arrow-wrapper').first())
     .toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'GROUP ID' })).toBeVisible();
-  await expect(page.getByRole('cell', { name: 'G00016' }).first()).toBeVisible();
+
+  // Fetch groupid dynamically for OUTSTANDING ENROLLMENTS section
+  const groupEnrollment = await fetchOneGroupEnrollmentByStatus();
+  const groupId = groupEnrollment ? groupEnrollment.id : undefined;
+  console.log('Fetched groupId for OUTSTANDING ENROLLMENTS:', groupId);
+  if (groupId) {
+    await expect(page.getByRole('cell', { name: groupId }).first()).toBeVisible();
+  } else {
+    throw new Error('No group enrollment found for status C, D, or M');
+  }
 
   // Test Group DDL and Profile
   await expect(page.getByRole('link', { name: ' Dashboard' })).toBeVisible();
@@ -237,4 +257,5 @@ test('Dashboard tests execution', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
   await page.getByRole('button', { name: 'Logout' }).click();
   await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible();
+
 });

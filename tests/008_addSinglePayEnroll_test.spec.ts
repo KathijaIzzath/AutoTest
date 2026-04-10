@@ -3,7 +3,7 @@ import { test, expect, Locator, Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
 import helperFunction from '../testData/helperFunction';
-import { existsGroupEnrollment, existsSingleGroupEnrollment, fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear, getTodaysDateWithYr } from '../testData/database.utils';
+import {  existsSingleGroupEnrollment, fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear, getTodaysDateWithYr } from '../testData/database.utils';
 // Adding single payer enrollment for groupid G00014
 let page: Page;
 

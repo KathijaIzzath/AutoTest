@@ -1,3 +1,50 @@
+/**
+ * Fetches one group enrollment with status C, D, or M ordered by datesetup
+ */
+export async function fetchOneGroupEnrollmentByStatus(): Promise<any | null> {
+  const query = `select id from groupenrollment
+ where enrollmentStatus in ('C','D','M')
+  order by datesetup desc limit 1;
+  `;
+  const result = await executeQuery(query);
+  return result && result.length > 0 ? result[0] : null;
+}
+
+/**
+ * Returns the count of claim errors for the specified query
+ */
+export async function getClaimErrorCountForQueueI(): Promise<number> {
+  const query = `
+    SELECT count(c.*)
+    FROM Claims AS c
+    inner join Files as f on c.ReportId = f.id
+    inner join ProviderGroup as g on c.ReportId = g.id
+    inner join Account as a on g.Account = a.AccountNumber
+    left join remitreason as rmt on c.claimstatus = rmt.code
+    WHERE c.InputFilename = f.Filename
+      AND f.queue = 'I'
+      AND rmt.apicategory in ('FINALIZED_DENIED','SC_REJECTED','REJECTED');
+  `;
+  const result = await executeQuery(query);
+  return result && result[0] && result[0].count ? Number(result[0].count) : 0;
+}
+/**
+ * Returns the count of claims for the specified query
+ */
+export async function getClaimCountForQueueI(): Promise<number> {
+  const query = `
+    SELECT count(c.*)
+    FROM Claims AS c
+    inner join Files as f on c.ReportId = f.id
+    inner join ProviderGroup as g on c.ReportId = g.id
+    inner join Account as a on g.Account = a.AccountNumber
+    left join remitreason as rmt on c.claimstatus = rmt.code
+    WHERE c.InputFilename = f.Filename AND f.queue = 'I';
+  `;
+  const result = await executeQuery(query);
+  // result[0].count may be string depending on pg driver
+  return result && result[0] && result[0].count ? Number(result[0].count) : 0;
+}
 
 import { Client, QueryResult, Pool } from 'pg';
 import * as fs from 'fs';
