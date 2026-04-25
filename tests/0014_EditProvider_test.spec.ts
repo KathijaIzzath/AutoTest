@@ -1,21 +1,19 @@
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
+import { Locator, Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
-import { deleteProviderAndBillingIdsByGroupId } from '../testData/database.utils';
+import { deleteProviderAndBillingIdsByGroupId, getTodaysDateWithYr } from '../testData/database.utils';
 
 
 
 
 
-let page: Page;
 let providerId: string | undefined;
 let statementsChecked: boolean | undefined;
 let eligibilityChecked: boolean | undefined;
 let claimStatusChecked: boolean | undefined;
 
 test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
 });
 
 // Common toggle function: if not checked -> check, else -> uncheck
@@ -35,13 +33,9 @@ async function toggleCheckbox(
     await locator.check();
   }
 }
-test('Edit provider via dashboard functionality & control/elements verification test execution', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  //const helper = new helperFunction();
+test('Edit provider via dashboard functionality & control/elements verification test execution', async ({ page, loginAsAdmin }) => {
   await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+  await loginAsAdmin();
 
   await page.getByRole('listitem').filter({ hasText: 'AccountsProviders' }).getByRole('button').click();
   await expect(page.getByRole('link', { name: ' Providers' })).toBeVisible();
@@ -95,14 +89,11 @@ test('Edit provider via dashboard functionality & control/elements verification 
   await page.getByRole('button', { name: 'Save' }).click();
 });
 
-test('Edit provider functionality verification', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  //const helper = new helperFunction();
+test('Edit provider functionality verification', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
   await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
 
+ 
   await page.getByRole('listitem').filter({ hasText: 'AccountsProviders' }).getByRole('button').click();
   await expect(page.getByRole('link', { name: ' Providers' })).toBeVisible();
   await page.getByRole('link', { name: ' Providers' }).click();
@@ -110,7 +101,7 @@ test('Edit provider functionality verification', async ({ page }) => {
   await page.getByRole('button', { name: 'Apply Filter' }).click();
 
 
- 
+  const date = getTodaysDateWithYr();
   // Use the providerId captured from the previous test
   if (!providerId) throw new Error('No providerId captured from previous test');
   await page.getByRole('textbox', { name: 'Enter Provider ID' }).click();
@@ -123,10 +114,10 @@ test('Edit provider functionality verification', async ({ page }) => {
   await expect(page.getByRole('textbox', { name: 'Enter MI' })).toHaveValue('M');
   await expect(page.getByRole('textbox', { name: 'Enter Degree' })).toHaveValue('GRAD');
   await expect(page.getByRole('textbox', { name: 'Enter Title' })).toHaveValue('TEST');
-  await expect(page.getByText('/03/26').first()).toBeVisible();
-  await expect(page.getByText('/03/26').nth(1)).toBeVisible();
-  await expect(page.getByText('/03/26').nth(2)).toBeVisible();
-  await expect(page.getByText('/03/26').nth(3)).toBeVisible();
+  await expect(page.getByText(date).first()).toBeVisible();
+  await expect(page.getByText(date).nth(1)).toBeVisible();
+  await expect(page.getByText(date).nth(2)).toBeVisible();
+  await expect(page.getByText(date).nth(3)).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Statements' })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Eligibility' })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Claim Status' })).toBeVisible();

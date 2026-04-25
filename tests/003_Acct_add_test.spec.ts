@@ -1,26 +1,18 @@
-import { test, expect, Locator, Page } from '@playwright/test';
+
 import * as userData from '../testData/UserInfo.json';
 import { executeQuery } from '../testData/database.utils';
 import LoginPage from '../testData/LoginPage';
 import * as fs from 'fs';
 import * as path from 'path';
-
-let page: Page;
-
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
-});
+import { test, expect } from './myTestData';
+import { Locator, Page } from '@playwright/test';
 
 let currentAccountNumber = parseInt(userData.accountUniqueIncNum); // 1
 let newAccountNum = `SCAutoAcctNum-0${currentAccountNumber}`;
 let acctname = `SCAutoAcct-0${currentAccountNumber}`;
 
-test('Account Add functional, screen control/elements verification test execution', async ({ page }) => {
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+test('Account Add functional, screen control/elements verification test execution', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
 
   await expect(page.getByRole('link', { name: ' Accounts' })).toBeVisible();
   await expect(page.getByRole('link', { name: ' Accounts' })).toContainText('Accounts');

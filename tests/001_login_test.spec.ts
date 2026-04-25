@@ -1,14 +1,9 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
 import DBQueries from '../testData/DBQueries';
 
-let page: Page;
-
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
-});
+// Removed unused Page type and browser.newPage setup
 
 test.use({ timezoneId: 'America/Los_Angeles' });
 
@@ -66,11 +61,8 @@ test('verify Login screen fields', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Log In' })).toHaveText('Log In');
 });
 
-test('test & fill in login credentials', async ({ page }) => {
-  let loginPage = new LoginPage(page);
-  console.log(userData.admin.username, userData.admin.password);
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+test('test & fill in login credentials', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
   await expect(page.locator('app-dashboard').getByText('Dashboard')).toHaveText('Dashboard');
   await expect(page.getByRole('link', { name: ' quick links' })).toContainText('quick links');
   await page.getByRole('link', { name: ' Dashboard' }).click();

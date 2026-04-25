@@ -1,24 +1,14 @@
- import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
 import { getTodaysDate, getTodaysDateWithYr } from '../testData/database.utils';
 import LoginPage from '../testData/LoginPage';
-
 import {  isActiveAccount } from '../testData/database.utils';
 import { ifError } from 'assert';
 // G00016 - Provider Group Dashboard test cases - Filter and Sorting test cases
 
-let page: Page;
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
-  });
 
-
-test('ProviderGroupDashboard control/elements verification test execution', async ({ page }) => {
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+test('ProviderGroupDashboard control/elements verification test execution', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
   await page.getByRole('listitem').filter({ hasText: 'AccountsProviders' }).getByRole('button').click();
   await expect(page.getByRole('link', { name: ' Providers' })).toBeVisible();
   await page.getByRole('link', { name: ' Providers' }).click();
@@ -31,6 +21,7 @@ test('ProviderGroupDashboard control/elements verification test execution', asyn
     await page.getByRole('link').filter({ hasText: /^$/ }).click();
   }
    
+  await expect(page.getByRole('textbox', { name: 'Enter Provider ID' })).toBeVisible();
   await page.getByRole('textbox', { name: 'Enter Provider ID' }).click();
   await page.getByRole('textbox', { name: 'Enter Provider ID' }).fill('T00068');
   await page.getByRole('button', { name: 'Apply Filter' }).click();

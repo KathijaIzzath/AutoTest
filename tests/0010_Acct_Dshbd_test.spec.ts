@@ -1,22 +1,15 @@
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
 import { executeQuery } from '../testData/database.utils';
 import LoginPage from '../testData/LoginPage';
 import * as fs from 'fs';
 import * as path from 'path';
 
-let page: Page;
-
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
-});
+// Removed unused Page type and browser.newPage setup
 //Jira created filter by TAXID not working. To be automated once the issue is resolved.
-test('AccountDashboard control/elements verification test execution', async ({ page }) => {
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+
+test('AccountDashboard control/elements verification test execution', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
 
   await expect(page.getByRole('link', { name: ' Accounts' })).toBeVisible();
   await expect(page.getByRole('link', { name: ' Accounts' })).toContainText('Accounts');

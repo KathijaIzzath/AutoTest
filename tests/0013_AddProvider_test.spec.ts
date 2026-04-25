@@ -1,42 +1,29 @@
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
-import { deleteProviderAndBillingIdsByGroupId } from '../testData/database.utils';
+import { deleteProviderAndBillingIdsByGroupId, fetchProviderIdByGroupId } from '../testData/database.utils';
 
 
-
-
-let page: Page;
-
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
-});
-
-test('Add provider via Accounts dashboard functionality & control/elements verification test execution', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  //const helper = new helperFunction();
+test('Add provider via Accounts dashboard functionality & control/elements verification test execution', async ({ page, loginAsAdmin }) => {
   await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+  await loginAsAdmin();
 
   await page.getByRole('link', { name: ' Accounts' }).click();
   await page.getByRole('textbox', { name: 'Enter Account Number' }).click();
-    await page.getByRole('textbox', { name: 'Enter Account Number' }).fill(userData.addProvider.accountNum);
-    await page.getByRole('button', { name: 'Apply Filter' }).click();
-    await page.getByRole('link').filter({ hasText: /^$/ }).nth(1).click();
-    await expect(page.getByRole('cell', { name: 'G31943', exact: true })).toBeVisible();
+  await page.getByRole('textbox', { name: 'Enter Account Number' }).fill(userData.addProvider.accountNum);
+  await page.getByRole('button', { name: 'Apply Filter' }).click();
+  await page.getByRole('link').filter({ hasText: /^$/ }).nth(1).click();
+  await expect(page.getByRole('cell', { name: userData.addProvider.groupeditInAcct, exact: true })).toBeVisible();
 
-    await page.locator('div').filter({ hasText: /^Edit Provider GroupDeactivate GroupAdd Provider$/ }).first().click();
-      await page.locator('providers-group-grid').getByRole('link').filter({ hasText: /^$/ }).click();
-    await page.getByRole('button', { name: 'Add Provider' }).click();
+  await page.locator('div').filter({ hasText: /^Edit Provider GroupDeactivate GroupAdd Provider$/ }).first().click();
+  await page.locator('providers-group-grid').getByRole('link').filter({ hasText: /^$/ }).click();
+  await page.getByRole('button', { name: 'Add Provider' }).click();
    // await page.getByRole('link').filter({ hasText: /^$/ }).nth(4).click();
     await expect(page.getByRole('heading', { name: 'Add Provider Setup 1/' })).toBeVisible();
     await page.getByRole('textbox', { name: 'Enter First Name' }).click();
-    await page.getByRole('textbox', { name: 'Enter First Name' }).fill('AddProvi01');
+    await page.getByRole('textbox', { name: 'Enter First Name' }).fill('Add');
     await page.getByRole('textbox', { name: 'Enter Last Name' }).click();
-    await page.getByRole('textbox', { name: 'Enter Last Name' }).fill('AddProvi01');
+    await page.getByRole('textbox', { name: 'Enter Last Name' }).fill('Provider01');
     await page.getByRole('textbox', { name: 'Enter Title' }).click();
     await page.getByRole('textbox', { name: 'Enter Title' }).fill('provtitle');
     await page.getByRole('button', { name: 'Next' }).click();
@@ -107,19 +94,28 @@ test('Add provider via Accounts dashboard functionality & control/elements verif
     await expect(page.getByRole('columnheader', { name: 'group id' })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'EI - EIN' })).toBeVisible();
     await expect(page.getByRole('cell', { name: userData.addProvider.providerTaxID })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'G31943' }).first()).toBeVisible();
+    await expect(page.getByRole('cell', { name: userData.addProvider.groupeditInAcct }).first()).toBeVisible();
     await expect(page.getByRole('cell', { name: 'XX - NPI' })).toBeVisible();
     await expect(page.getByRole('cell', { name: userData.addProvider.providerNPI })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'G31943' }).nth(1)).toBeVisible();
+    await expect(page.getByRole('cell', { name: userData.addProvider.groupeditInAcct }).nth(1)).toBeVisible();
     await expect(page.locator('.d-flex.align-items-center.justify-content-end').first()).toBeVisible();
-    await page.getByRole('row', { name: `XX - NPI ${userData.addProvider.providerNPI} G31943 ` }).getByRole('link').click();
-    await expect(page.getByRole('row', { name: `XX - NPI ${userData.addProvider.providerNPI} G31943 ` }).getByRole('link')).toBeVisible();
-    await page.getByRole('row', { name: `XX - NPI ${userData.addProvider.providerNPI} G31943 ` }).getByRole('link').click();
+    await page.getByRole('row', { name: `XX - NPI ${userData.addProvider.providerNPI} ${userData.addProvider.groupeditInAcct} ` }).getByRole('link').click();
+    await expect(page.getByRole('row', { name: `XX - NPI ${userData.addProvider.providerNPI} ${userData.addProvider.groupeditInAcct} ` }).getByRole('link')).toBeVisible();
+    await page.getByRole('row', { name: `XX - NPI ${userData.addProvider.providerNPI} ${userData.addProvider.groupeditInAcct} ` }).getByRole('link').click();
     await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Previous' })).toBeVisible();
     await page.getByRole('button', { name: 'Save' }).click();
-    await page.getByRole('link').filter({ hasText: /^$/ }).nth(3).click();
+    // Fetch the providerId and organizationname from the database for the added provider
+    const providerData = await fetchProviderIdByGroupId(userData.addProvider.groupeditInAcct);
+    if (!providerData) throw new Error('Failed to fetch providerId and organizationname from database after adding provider');
+    const providerId = providerData.id;
+    const organizationname = providerData.organizationname;
+
+    await page.getByRole('cell').filter({ hasText: /^$/ }).nth(1).click();
+    //getByRole('link').filter({ hasText: /^$/ }).nth(3).click();
     await expect(page.getByRole('columnheader', { name: 'name ' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'provider ID' })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'H61199', exact: true })).toBeVisible();
+    await expect(page.getByRole('cell', { name: providerId, exact: true })).toBeVisible();
+     await expect(page.getByRole('cell', { name: organizationname, exact: true })).toBeVisible();  
+    await expect(page.getByRole('cell', { name: providerId, exact: true })).toBeVisible();
 });

@@ -1,25 +1,17 @@
-import { test as base, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
+import { test as base, expect, Page } from '@playwright/test';
+import * as userData from '../testData/UserInfo.json';
+import LoginPage from '../testData/LoginPage';
 
-export interface UserInfo {
-  username: string;
-  password:string;
-  url : string;
-  dashboardUrl : string;
-
-}
-
-// Resolve the path to the JSON file
-//const testDataPath = path.resolve('C:\\', 'AutoTest','testData', 'UserInfo.json');
-
-// Parse the JSON string into a typed TypeScript object
-//const userData: UserInfo = JSON.parse(fs.readFileSync(testDataPath, 'utf-8'));
-
-// Extend the base test with your new fixture
-export const userDatatest = base.extend<{ userData: UserInfo }>({
-  // Define the fixture value
- // userData: [userData, { option: true }],
+export const test = base.extend<{
+  loginAsAdmin: () => Promise<void>;
+}>({
+  loginAsAdmin: async ({ page }, use) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.navigate();
+    await loginPage.login(userData.admin.username, userData.admin.password);
+    await expect(page).toHaveURL(userData.admin.dashboardUrl);
+    await use(async () => {});
+  },
 });
 
 export { expect };

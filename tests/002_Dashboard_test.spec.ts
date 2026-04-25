@@ -1,19 +1,15 @@
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
 import helperFunction from '../testData/helperFunction';
 import { getTodaysDate } from '../testData/database.utils';
 import { getClaimCountForQueueI, getClaimErrorCountForQueueI } from '../testData/database.utils';
 import { fetchOneGroupEnrollmentByStatus } from '../testData/database.utils';
+import { Locator } from '@playwright/test';
 
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  let page: Page;
-  page = await browser.newPage();
-});
 
-test('Dashboard tests execution', async ({ page }) => {
-  let loginPage = new LoginPage(page);
+
+test('Dashboard tests execution', async ({ page, loginAsAdmin }) => {
   let helper = new helperFunction();
 
   // Helper function to extract text content from elements
@@ -23,9 +19,7 @@ test('Dashboard tests execution', async ({ page }) => {
   }
 
   // Navigate and login
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+  await loginAsAdmin();
   await page.reload();
 
   // Verify dashboard header elements

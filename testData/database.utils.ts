@@ -1,4 +1,33 @@
 /**
+ * Fetches providerId and organizationname from provider table for a given providerGroupId
+ * @param providerGroupId - The provider group id to search for
+ * @returns An object with providerId and organizationname if found, otherwise null
+ */
+export async function fetchProviderIdByGroupId(providerGroupId: string): Promise<{ id: string, organizationname: string } | null> {
+  const trimmedGroupId = providerGroupId.trim();
+  console.log(`[fetchProviderIdByGroupId] Raw providerGroupId: '${providerGroupId}', Trimmed: '${trimmedGroupId}', Type: ${typeof trimmedGroupId}`);
+
+  // Debug: Print all provider group IDs in the table
+  const allGroupIdsQuery = 'SELECT providergroupid FROM provider';
+  const allGroupIdsResult = await executeQuery(allGroupIdsQuery);
+  const allGroupIds = allGroupIdsResult.map((row: any) => row.providergroupid);
+  console.log('[fetchProviderIdByGroupId] All provider group IDs in DB:', allGroupIds);
+  if (!allGroupIds.includes(trimmedGroupId)) {
+    console.warn(`[fetchProviderIdByGroupId] WARNING: trimmedGroupId '${trimmedGroupId}' not found in provider table group IDs.`);
+  }
+
+  const query = `SELECT id , organizationname FROM provider WHERE providergroupid = $1;`;
+  console.log(`[fetchProviderIdByGroupId] Executing query: ${query} with providerGroupId: '${trimmedGroupId}'`);
+  const result = await executeQuery(query, [trimmedGroupId]);
+  console.log(result+`result [fetchProviderIdByGroupId] Query result: ${JSON.stringify(result)}`);
+  if (result && result.length > 0) {
+    console.log(`[fetchProviderIdByGroupId] Fetched providerId: '${result[0].id}', organizationname: '${result[0].organizationname}'`);
+    return { id: result[0].id, organizationname: result[0].organizationname };
+  }
+  console.log('[fetchProviderIdByGroupId] No provider found for given providerGroupId.');
+  return null;
+}
+/**
  * Fetches one group enrollment with status C, D, or M ordered by datesetup
  */
 export async function fetchOneGroupEnrollmentByStatus(): Promise<any | null> {

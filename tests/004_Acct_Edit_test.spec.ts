@@ -1,22 +1,12 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
+import { Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
 import { getTodaysDate, getTodaysDateWithYr } from '../testData/database.utils';
 import LoginPage from '../testData/LoginPage';
 
-let page: Page;
-
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
-});
-
-test('Edit Newly created Account, verify Edit Screen elements test execution', async ({ page }) => {
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
-
-  const date = getTodaysDateWithYr();
+test('Edit Newly created Account, verify Edit Screen elements test execution', async ({ page ,loginAsAdmin}) => {
+  await loginAsAdmin();
+   const date = getTodaysDateWithYr();
   console.log('extracted date', date);
 
   await page.getByRole('link', { name: ' Accounts' }).click();
@@ -80,11 +70,8 @@ test('Edit Newly created Account, verify Edit Screen elements test execution', a
   await page.getByRole('columnheader', { name: 'contact Name' }).click();
 });
 
-test('Edit existing Account and test Edit Screen elements', async ({ page }) => {
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+test('Edit existing Account and test Edit Screen elements', async ({ page ,loginAsAdmin}) => {
+  await loginAsAdmin();
 
   await page.getByRole('link', { name: ' Accounts' }).click();
   await page.getByRole('textbox', { name: 'Enter Account Number' }).click();
@@ -92,7 +79,7 @@ test('Edit existing Account and test Edit Screen elements', async ({ page }) => 
   await page.getByRole('button', { name: 'Apply Filter' }).click();
   await page.waitForLoadState('networkidle');
 
-  const date = getTodaysDate();
+  const date = getTodaysDateWithYr();
 
   await page.getByRole('link').filter({ hasText: /^$/ }).nth(2).click();
   await page.getByRole('button', { name: 'Edit Account' }).click();

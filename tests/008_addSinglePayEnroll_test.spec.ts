@@ -1,23 +1,12 @@
-
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
-import LoginPage from '../testData/LoginPage';
+
 import helperFunction from '../testData/helperFunction';
 import {  existsSingleGroupEnrollment, fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear, getTodaysDateWithYr } from '../testData/database.utils';
 // Adding single payer enrollment for groupid G00014
-let page: Page;
 
-// Setup: runs before each test
-test.beforeEach(async ({ browser }) => {
-  page = await browser.newPage();
-});
-test('Add Single Pay Enrollment ', async ({ page }) => {
-
-  // --- Login ---
-  const loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+test('Add Single Pay Enrollment ', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
   const groupId = userData.groupEnroll.groupId;
   // --- Pre-checks and navigation ---
   const verifyEnrollmentExists = await existsSingleGroupEnrollment(groupId);
@@ -124,7 +113,7 @@ await expect(page.getByText('Followup Date')).toBeVisible();
 await page.getByRole('button').filter({ hasText: /^$/ }).click();
 await page.getByLabel('Select year').selectOption('2035');
 await page.getByText('23', { exact: true }).click();
-await expect(page.getByRole('textbox', { name: 'mm/dd/yyyy' })).toHaveValue('03/23/2035');
+await expect(page.getByRole('textbox', { name: 'mm/dd/yyyy' })).toHaveValue('04/23/2035');
 await expect(page.getByRole('dialog').getByText('Case Number')).toBeVisible();
 await page.getByRole('textbox', { name: 'Enter Case Number' }).click();
 await page.getByRole('textbox', { name: 'Enter Case Number' }).fill('case-1234');

@@ -1,5 +1,6 @@
 
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
+import { Locator, Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
 import helperFunction from '../testData/helperFunction';
@@ -9,15 +10,14 @@ let page: Page;
 
 // Setup: runs before each test
 test.beforeEach(async ({ browser }) => {
-  page = await browser.newPage();
+  // [REVIEW] The following page initialization is commented out as it may be redundant or cause issues with Playwright's test runner.
+  // page = await browser.newPage();
+  // Please review if this is needed.
 });
-test('Add Bulk Group Enrollment ', async ({ page }) => {
+test('Add Bulk Group Enrollment ', async ({ page, loginAsAdmin }) => {
 
   // --- Login ---
-  const loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+  await loginAsAdmin();
   const groupId = userData.groupEnroll.bulkgroupId;
   // --- Pre-checks and navigation ---
   const verifyEnrollmentExists = await existsBulkGroupEnrollment(groupId);
@@ -47,7 +47,12 @@ test('Add Bulk Group Enrollment ', async ({ page }) => {
   await expect(page.getByText('1699873976')).toBeVisible();
   await expect(page.getByText('tax id', { exact: true })).toBeVisible();
   await expect(page.getByText('271673289')).toBeVisible();
-  await expect(page.locator('#data-grid-header').getByText('Payer')).toBeVisible();
+  // Debug log and screenshot before assertion
+  const payerHeader = page.locator('#data-grid-header').getByText('Payer');
+  const headerCount = await payerHeader.count();
+  console.log('Payer header count:', headerCount);
+  await page.screenshot({ path: 'payer-header-before-assertion.png', fullPage: true });
+  await expect(payerHeader).toBeVisible();
   await expect(page.getByText('Enrollment Type', { exact: true })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Professional' }).getByRole('button')).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Professional' })).toBeVisible();

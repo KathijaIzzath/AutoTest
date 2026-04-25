@@ -1,0 +1,30 @@
+{
+  "Claim Status": true,
+  "Eligibility": true,
+  "XML": [
+    true,
+    true
+  ],
+  "Generate": true,
+  "Machine Readable": [
+    true,
+    true
+  ],
+  "Human Readable": [
+    true,
+    true
+  ],
+  "Pulse CSV": false,
+  "277u": [
+    true,
+    true
+  ],
+  "CSV": false,
+  "ERA Summary": true,
+  "Daily Pulse CSV": true,
+  "Human Readable 271": true,
+  "Alphall": true,
+  "New Statements": true,
+  "Combine ERA": true,
+  "RCM": true
+}

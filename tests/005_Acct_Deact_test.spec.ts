@@ -1,26 +1,17 @@
- import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
+import { Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
 import { getTodaysDate, getTodaysDateWithYr } from '../testData/database.utils';
 import LoginPage from '../testData/LoginPage';
 
 import {  isActiveAccount } from '../testData/database.utils';
 
-
-let page: Page;
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
-  });
-      
-test('Deactivate Account, verify Deactivate and Reactivate functionality test execution', async ({ page }) => {
+test('Deactivate Account, verify Deactivate and Reactivate functionality test execution', async ({ page, loginAsAdmin }) => {
   const activeAccount = isActiveAccount();
     console.log('1st activeAccount', activeAccount);
  test.skip(await activeAccount === false, 'Skip if account is not active');
      console.log('2nd activeAccount', activeAccount);
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-   await expect(page).toHaveURL(userData.admin.dashboardUrl);
+  await loginAsAdmin();
    
  // const date = getTodaysDateWithYr();
  //console.log('extracted date', date);
@@ -61,15 +52,13 @@ await expect(page.getByRole('button', { name: 'Activate Account' })).toContainTe
 });
       
         
-test('Acct Activate-Verify Account is deactivated and shows correct status', async ({ page }) => {
+test('Acct Activate-Verify Account is deactivated and shows correct status', async ({ page ,loginAsAdmin}) => {
    const activeAccount = isActiveAccount();
     console.log('1st activeAccount', activeAccount);
    
    test.skip(await activeAccount === true, 'Skip if account is  active');
    console.log('2nd activeAccount', activeAccount);
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
+  await loginAsAdmin();
   // await page.getByText('0').first().click();
     await expect(page).toHaveURL(userData.admin.dashboardUrl);
 
@@ -90,16 +79,12 @@ await expect(page.getByRole('button', { name: 'Ok' })).toBeVisible();
 await page.getByRole('button', { name: 'Ok' }).click();
 });
       /*
-test('Reactivate Account, verify Reactivate functionality test execution', async ({ page }) => {
+test('Reactivate Account, verify Reactivate functionality test execution', async ({ page ,loginAsAdmin}) => {
    const activeAccount = isActiveAccount();
   console.log('1st activeAccount', activeAccount);
   test.skip(await activeAccount === false, 'Skip if account is active');
     console.log('2ndactiveAccount', activeAccount);
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  // await page.getByText('0').first().click();
-    await expect(page).toHaveURL(userData.admin.dashboardUrl);
+  await loginAsAdmin();
 
 await page.getByRole('link', { name: ' Accounts' }).click();
 await page.getByRole('textbox', { name: 'Enter Account Number' }).click();

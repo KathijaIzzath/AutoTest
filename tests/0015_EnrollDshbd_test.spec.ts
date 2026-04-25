@@ -1,27 +1,20 @@
+  // Print all checkbox labels for debugging
+  const allCheckboxes = await page.locator('input[type="checkbox"]').all();
+  for (const [i, cb] of allCheckboxes.entries()) {
+    const label = await cb.evaluate(node => node.getAttribute('name') || node.getAttribute('aria-label') || node.outerHTML);
+    console.log(`Checkbox[${i}]:`, label);
+  }
 
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
 import helperFunction from '../testData/helperFunction';
-import {  existsSingleGroupEnrollment, fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear, getTodaysDateWithYr } from '../testData/database.utils';
+import { existsSingleGroupEnrollment, fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear, getTodaysDateWithYr } from '../testData/database.utils';
 // Adding single payer enrollment for groupid G00014
-let page: Page;
+// Removed unused Page type and browser.newPage setup
 
-// Setup: runs before each test
-test.beforeEach(async ({ browser }) => {
-  page = await browser.newPage();
-});
-test.beforeEach(async ({ page }) => {
-  // No need to login, just navigate to the dashboard or required page
-  await page.goto(userData.admin.dashboardUrl);
-});
-test('Group Enrollment Dashboard elements/controls verification test execution', async ({ page }) => {
-
-  // --- Login ---
-  const loginPage = new LoginPage(page);
-  await loginPage.navigate();
- await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+test('Group Enrollment Dashboard elements/controls verification test execution', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
   const groupId = userData.groupEnroll.groupId;
   // --- Pre-checks and navigation ---
   const verifyEnrollmentExists = await existsSingleGroupEnrollment(groupId);
@@ -63,14 +56,11 @@ test('Group Enrollment Dashboard elements/controls verification test execution',
 
 });
 
-test(' Enrollment Dashboard search verification test execution', async ({ page }) => {
+test(' Enrollment Dashboard search verification test execution', async ({ page, loginAsAdmin }) => {
 
   
   // --- Login ---
-  const loginPage = new LoginPage(page);
-  await loginPage.navigate();
- await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+  await loginAsAdmin();
   
 await page.getByRole('link', { name: ' Group Enrollments' }).click();
 await expect(page.getByText('Group ID')).toBeVisible();
@@ -162,7 +152,16 @@ await page.locator('showlast-filter-item').getByRole('combobox').selectOption(''
 await expect(page.getByText('enrollment type', { exact: true })).toBeVisible();
 //await page.getByText('Select Enrollment Type').click();
 //await page.getByText('Select Enrollment Type').click();
-await page.getByRole('checkbox', { name: 'ERA' }).check();
+  const eraCheckbox = page.getByRole('checkbox', { name: 'ERA' });
+  // Debug log and screenshot before assertion
+  const eraCount = await eraCheckbox.count();
+  console.log('ERA checkbox count:', eraCount);
+  const pageContent = await page.content();
+  console.log('PAGE HTML BEFORE ERA CHECKBOX ASSERTION:', pageContent);
+  await page.screenshot({ path: 'era-checkbox-before-assertion.png', fullPage: true });
+  await expect(eraCheckbox).toBeVisible();
+  await expect(eraCheckbox).toBeEnabled();
+  await eraCheckbox.check();
 await page.getByRole('button', { name: 'Apply Filter' }).click();
 
 await expect(page.getByRole('columnheader', { name: 'TYPE' })).toBeVisible();
@@ -209,13 +208,10 @@ await expect(page.locator('tbody')).toContainText('Not applicable');
 });
 
 
-test(' Enrollment Sorting results verification test execution', async ({ page }) => {
+test(' Enrollment Sorting results verification test execution', async ({ page, loginAsAdmin }) => {
 
   // --- Login ---
-  const loginPage = new LoginPage(page);
-  await loginPage.navigate();
- await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+  await loginAsAdmin();
   
 await page.getByRole('link', { name: ' Group Enrollments' }).click();
 await page.getByRole('button', { name: 'Apply Filter' }).click();

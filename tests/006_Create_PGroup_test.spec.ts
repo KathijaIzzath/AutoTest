@@ -1,4 +1,5 @@
- import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './myTestData';
+import { Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
 
@@ -12,18 +13,10 @@ async function ensureInputHasValue(page: Page, roleName: string, value: string) 
 }
 
 
-let page: Page;
-test.beforeEach(async ({ browser }) => {
-  // Initialize the page instance before each test
-  page = await browser.newPage();
-  });
 
 
-test('Create Provider Group Screen verification and functionality test', async ({ page }) => {
-  let loginPage = new LoginPage(page);
-  await loginPage.navigate();
-  await loginPage.login(userData.admin.username, userData.admin.password);
-  await expect(page).toHaveURL(userData.admin.dashboardUrl);
+test('Create Provider Group Screen verification and functionality test', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
   
   
 await page.getByRole('link', { name: ' Accounts' }).click();
@@ -51,8 +44,8 @@ await expect(page.getByLabel('feeSchedule')).toBeVisible();
 await expect(page.getByLabel('feeSchedule')).toContainText('Select Fee Schedule CLAIMSCOMPLETE FLAT 45 NIC ONLY CORPORATE PROVIDER RATE (RIDGEMARK/NORTHE NIC_ONLY NO FEE SCHEDULE SET NOT APPLICABLE TH-CLAIMSCOMPLETE2 TH DUPLICATE PROVIDER (FOR ADMIN - NO SERVICE FEE) TH FLAT FEE TH SPECIAL GROUP (NOT USED) TH UNLIMITED PER PROVIDER TH VOLUME DISCOUNT THERAPIST HELPER 1 PROVIDER V10');
 await page.getByLabel('feeSchedule').selectOption('F0256');
 await expect(page.getByText('* Practice Management')).toBeVisible();
-await expect(page.locator('ddl-practice')).toContainText('Select Practice Management 1 HSS CONTROL COMPANY (H06) 1DOCTORS RESOURCE SPECIALISTS CP (H05) ACE BILLING SERVICES (A1) ACPM (A) ADVANCED (XX1) ADVANCED BILLING LLC CP (H19) AEGIS BUSINESS SERVICES LLC (H01) AFFORDABLE MEDICAL BILLING CP (H08) ALN MEDICAL MANAGEMENT CP (H13) AMAZING CHARTS CP (G03) APG CP (H12) ARGUS MEDICAL CP (H14) BENCHMARK (BMK) BIZMATICS (Z) CARETRACKER (H) CARETRACKER_TEST (TST) CFDS (C) CLINIX MEDICAL INFORMATION SERVICES (CLX) COMTECH CONSULTING GROUP INC CP (H15) CT-RESELLER2 (G) DABBS COMPUTER CONSULTANTS LLC CP (H02) DOCS BILLING SOLUTIONS CP (H17) DOCTOR (I) EASTERN POINT RCM LLC CP (H29) EVOLVE (E) FACULTY PRACTICE SERVICES INC CP (H21) FLATIRONS PRACTICE MANAGEMENT CP (H16) FLORIDA MEDICAL CP (H22) FOCUS MEDICAL SOLUTIONS LLC CP (H61) GOOD SHEPHERD MEDICAL CP (G01) GURU MEDICAL CP (H24) HARRIS RCM PORTAL (G04) HEALTHCARE MANAGEMENT SERVICES CP (H26) HEALTHCARE SUPPORT TECHNOLOGIES CP (H27) JCNR BILLING LLC CP (G02) LAKEFRONT BILLING SERVICE INC CP (H30) LEGACY (L) LPC CONTROL COMPANY CP (H04) MCKESSON CP (H31) MEDENET INC CP (H32) MEDFX (QFX) MEDI SERV INC CP (H33) MEDICAL BILLING PRACTICE MANAGEMENT INC CP (H34) MEDICAL BILLING SOLUTIONS INC CP (H35) MEDICAL BILLING SPECIALISTS CP (H36) MEDICAL DATA CONSULTANTS INC. CP (H57) MEDICAL HELPER (M) MEDICAL OFFICE SYS (F) MEDORIZON CP (H62) MEDORIZON OF TX CP (H40) MEDRIUM (X) MERGE HEALTHCARE CP (H43) MGSI LLC CP (H41) NATH HEALTHCARE BUSINESS SOLUTIONS LLC CP (H42) NHA (N) NOD-US BILLING (U) OBGYN (O) OPTUM 360 (H60) PATIENT ACCOUNT SERVICES CP (H46) PREMIER BILLING NETWORK CP (H48) PROSERVE PRACTICE MANAGEMENT CP (H49) PRS LLC (PHASIS) CP (H6A) PULSE (D) PULSECLOUD (B) QUANTIX CP (H55) RESPONSE (V) REVENUE MANAGEMENT SOLUTIONS LLC CP (H50) REVPRO HEALTHCARE SOLUTIONS CP (H44) RIDGEMARK (R) SECURECONNECT (SC) SECURECONNECT (SC1) SRS CP (H7A) STRIVANT HEALTH LLC CP (H07) SYNAPSE PRACTICE MANAGEMENT CP (H54) SYSINFORMATION CP (H53) TEAMPRAXIS (PRX) TEST_ACCOUNT (T) THERAPIST HELPER (P) THIS IS TO TEST (AGP) ULTIMATE BILLING (H52) UNISLINK CP (H18) WEHRMAN HEALTHCARE MANAGEMENT SOLUTIONS LLC CP (H51)');
-await expect(page.locator('ddl-practice').getByRole('combobox')).toBeVisible();
+await expect(page.locator('ddl-practice')).toContainText('Select Practice Management');
+  await expect(page.locator('ddl-practice').getByRole('combobox')).toBeVisible();
 await expect(page.locator('ddl-practice').getByRole('combobox')).toHaveValue('H');
 await expect(page.getByText('* certification status')).toBeVisible();
 await expect(page.getByLabel('Provider Details').locator('form')).toContainText('Production');
