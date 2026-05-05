@@ -2,7 +2,7 @@ import { test, expect } from './myTestData';
 import { Locator, Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
-import { deleteProviderAndBillingIdsByGroupId, getTodaysDateWithYr } from '../testData/database.utils';
+import { deleteProviderAndBillingIdsByGroupId, fetchProviderDatesByProviderId, getTodaysDateWithYr } from '../testData/database.utils';
 
 
 
@@ -34,7 +34,7 @@ async function toggleCheckbox(
   }
 }
 test('Edit provider via dashboard functionality & control/elements verification test execution', async ({ page, loginAsAdmin }) => {
-  await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
+  //await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
   await loginAsAdmin();
 
   await page.getByRole('listitem').filter({ hasText: 'AccountsProviders' }).getByRole('button').click();
@@ -51,6 +51,12 @@ test('Edit provider via dashboard functionality & control/elements verification 
   const headingText = await page.getByRole('heading', { name: /EditProvider \([A-Za-z0-9]+\)/ }).textContent();
   const match = headingText && headingText.match(/EditProvider \(([A-Za-z0-9]+)\)/);
   providerId = match ? match[1] : undefined;
+  console.log('Captured providerId:', providerId);
+  fetchProviderDatesByProviderId(providerId || '').then(dates => {
+    console.log('Fetched provider dates from database:', dates);
+  }).catch(err => {
+    console.error('Error fetching provider dates from database:', err);
+  });
   await expect(page.getByRole('heading', { name: new RegExp(`EditProvider \\(${providerId}\\)`) })).toBeVisible();
   await expect(page.getByText('Title')).toBeVisible();
   await page.getByRole('textbox', { name: 'Enter Title' }).click();
@@ -84,6 +90,7 @@ test('Edit provider via dashboard functionality & control/elements verification 
   await expect(page.getByLabel('Provider Details').getByText('ERA', { exact: true })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'ERA' })).toBeVisible();
   await toggleCheckbox(page, 'ERA');
+
   await page.getByText('* certification status ProductionTest').click();
   await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
   await page.getByRole('button', { name: 'Save' }).click();
@@ -91,7 +98,7 @@ test('Edit provider via dashboard functionality & control/elements verification 
 
 test('Edit provider functionality verification', async ({ page, loginAsAdmin }) => {
   await loginAsAdmin();
-  await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
+ // await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
 
  
   await page.getByRole('listitem').filter({ hasText: 'AccountsProviders' }).getByRole('button').click();
@@ -100,7 +107,36 @@ test('Edit provider functionality verification', async ({ page, loginAsAdmin }) 
   await expect(page.locator('app-providers').getByText('Providers', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Apply Filter' }).click();
 
-
+  console.log('Captured providerId:', providerId);
+  // Fetch provider dates from database and assign to variables
+  let ecsdate: string | null = null, eradate: string | null = null, claimstatusdate: string | null = null, eligilibitydate: string | null = null, statementdate: string | null = null;
+  try {
+    const dates = await fetchProviderDatesByProviderId(providerId || '');
+    console.log('Fetched provider dates from database:', dates);
+    if (dates && dates.length > 0) {
+      // Helper to format date string as /DD/YY if not null
+      function formatDateString(dateStr: string | null): string | null {
+        if (!dateStr) return null;
+        const d = new Date(dateStr);
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear().toString().slice(-2);
+        return `/${day}/${year}`;
+      }
+      ecsdate = formatDateString(dates[0].ecsdate);
+      eradate = formatDateString(dates[0].eradate);
+      //claimstatusdate = formatDateString(dates[0].claimstatusdate);
+     // eligilibitydate = formatDateString(dates[0].eligilibitydate);
+      //statementdate = formatDateString(dates[0].statementdate);
+     // eradate = dates[0].eradate;
+      claimstatusdate = dates[0].claimstatusdate;
+      eligilibitydate = dates[0].eligilibitydate;
+      statementdate = dates[0].statementdate;
+      console.log('ecsdate:', ecsdate, 'eradate:', eradate, 'claimstatusdate:', claimstatusdate, 'eligilibitydate:', eligilibitydate, 'statementdate:', statementdate);
+    }
+  } catch (err) {
+    console.error('Error fetching provider dates from database:', err);
+  }
+  
   const date = getTodaysDateWithYr();
   // Use the providerId captured from the previous test
   if (!providerId) throw new Error('No providerId captured from previous test');
@@ -114,6 +150,26 @@ test('Edit provider functionality verification', async ({ page, loginAsAdmin }) 
   await expect(page.getByRole('textbox', { name: 'Enter MI' })).toHaveValue('M');
   await expect(page.getByRole('textbox', { name: 'Enter Degree' })).toHaveValue('GRAD');
   await expect(page.getByRole('textbox', { name: 'Enter Title' })).toHaveValue('TEST');
+  if (ecsdate ) {
+    console.log('Checking ecsdate in UI:', ecsdate);
+    await expect(page.getByText(ecsdate)).toBeVisible();
+  }
+  if (eradate) {
+    console.log('Checking eradate in UI:', eradate);
+    await expect(page.getByText(eradate)).toBeVisible();
+  }
+  if (claimstatusdate ) {
+    console.log('Checking claimstatusdate in UI:', claimstatusdate);
+    await expect(page.getByText(claimstatusdate)).toBeVisible();
+  }
+  if (eligilibitydate ) {
+    console.log('Checking eligilibitydate in UI:', eligilibitydate);
+    await expect(page.getByText(eligilibitydate)).toBeVisible();
+  }
+  if (statementdate) {
+    console.log('Checking statementdate in UI:', statementdate);
+    await expect(page.getByText(statementdate)).toBeVisible();
+  }
   await expect(page.getByText(date).first()).toBeVisible();
   await expect(page.getByText(date).nth(1)).toBeVisible();
   await expect(page.getByText(date).nth(2)).toBeVisible();

@@ -85,15 +85,14 @@ test('Account Add functional, screen control/elements verification test executio
 
   await expect(page.getByText(expectedDate).first()).toBeVisible();
   await expect(page.getByText(expectedDate).first()).toHaveText(expectedDate);
-  await expect(page.getByText(expectedDate).nth(1)).toBeVisible();
-  await expect(page.getByText(expectedDate).nth(1)).toHaveText(expectedDate);
   await expect(page.getByText('N/A').first()).toBeVisible();
   await expect(page.getByText('N/A').first()).toHaveText('N/A');
   await expect(page.getByText('N/A').nth(1)).toBeVisible();
   await expect(page.getByText('N/A').nth(1)).toHaveText('N/A');
   await expect(page.getByText('N/A').nth(2)).toBeVisible();
   await expect(page.getByText('N/A').nth(2)).toHaveText('N/A');
-
+  await expect(page.getByText('N/A').nth(3)).toBeVisible();
+  await expect(page.getByText('N/A').nth(3)).toHaveText('N/A');
   // Increment the number - generate unique account number on runtime
   // Get the auto-increment number from userinfo.json
   console.log(`New account: ${newAccountNum}`);

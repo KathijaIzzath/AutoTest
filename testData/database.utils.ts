@@ -1,10 +1,41 @@
 /**
+ * Fetches id, ecsdate, eradate, claimstatusdate, eligilibitydate, statementdate from provider table for a given providerGroupId
+ * @param providerGroupId - The provider group id to search for
+ * @returns An array of objects with the requested columns if found, otherwise an empty array
+ */
+export async function fetchProviderDatesByProviderId(providerId?: string): Promise<Array<{ id: string, ecsdate: string|null, eradate: string|null, claimstatusdate: string|null, eligilibitydate: string|null, statementdate: string|null }>> {
+  const trimmedProviderId = (providerId ?? '').trim();
+  if (!trimmedProviderId) {
+    console.warn('[fetchProviderDatesByProviderId] Empty providerId provided.');
+    return [];
+  }
+  console.log(`[fetchProviderDatesByProviderId] Raw providerId: '${providerId}', Trimmed: '${trimmedProviderId}', Type: ${typeof trimmedProviderId}`);
+
+
+  const query = `SELECT id, ecsdate, eradate, claimstatusdate, eligilibitydate, statementdate FROM provider WHERE id = $1;`;
+  console.log(`[fetchProviderDatesByProviderId] Executing query: ${query} with providerId: '${trimmedProviderId}'`);
+  const result = await executeQuery(query, [trimmedProviderId]);
+  console.log(`[fetchProviderDatesByProviderId] Query result: ${JSON.stringify(result)}`);
+  if (result && result.length > 0) {
+    for (const row of result) {
+      console.log(`[fetchProviderDatesByProviderId] Row:`, row);
+    }
+    return result;
+  }
+  console.log('[fetchProviderDatesByProviderId] No provider found for given providerId.');
+  return [];
+}
+/**
  * Fetches providerId and organizationname from provider table for a given providerGroupId
  * @param providerGroupId - The provider group id to search for
  * @returns An object with providerId and organizationname if found, otherwise null
  */
-export async function fetchProviderIdByGroupId(providerGroupId: string): Promise<{ id: string, organizationname: string } | null> {
-  const trimmedGroupId = providerGroupId.trim();
+export async function fetchProviderIdByGroupId(providerGroupId?: string): Promise<{ id: string, organizationname: string } | null> {
+  const trimmedGroupId = (providerGroupId ?? '').trim();
+  if (!trimmedGroupId) {
+    console.warn('[fetchProviderIdByGroupId] Empty providerGroupId provided.');
+    return null;
+  }
   console.log(`[fetchProviderIdByGroupId] Raw providerGroupId: '${providerGroupId}', Trimmed: '${trimmedGroupId}', Type: ${typeof trimmedGroupId}`);
 
   // Debug: Print all provider group IDs in the table
@@ -25,6 +56,32 @@ export async function fetchProviderIdByGroupId(providerGroupId: string): Promise
     return { id: result[0].id, organizationname: result[0].organizationname };
   }
   console.log('[fetchProviderIdByGroupId] No provider found for given providerGroupId.');
+  return null;
+}
+
+/**
+ * Fetches provider group id and name from providergroup table for a given group id
+ * @param providerGroupId - The provider group id to search for
+ * @returns An object with id and name if found, otherwise null
+ */
+export async function fetchProviderGroupById(providerGroupId?: string): Promise<{ id: string, name: string } | null> {
+  const trimmedGroupId = (providerGroupId ?? '').trim();
+  if (!trimmedGroupId) {
+    console.warn('[fetchProviderGroupById] Empty providerGroupId provided.');
+    return null;
+  }
+  console.log(`[fetchProviderGroupById] Raw providerGroupId: '${providerGroupId}', Trimmed: '${trimmedGroupId}', Type: ${typeof trimmedGroupId}`);
+
+  const query = 'SELECT id, name FROM providergroup WHERE id = $1;';
+  console.log(`[fetchProviderGroupById] Executing query: ${query} with providerGroupId: '${trimmedGroupId}'`);
+  const result = await executeQuery(query, [trimmedGroupId]);
+  console.log(`[fetchProviderGroupById] Query result: ${JSON.stringify(result)}`);
+
+  if (result && result.length > 0) {
+    return { id: result[0].id, name: result[0].name };
+  }
+
+  console.log('[fetchProviderGroupById] No provider group found for given providerGroupId.');
   return null;
 }
 /**
@@ -319,39 +376,30 @@ export async function deleteProviderAndBillingIdsByGroupId(providerGroupId: stri
 /**
  * Query and store account information from database
  */
-export async function fetchNPIAndTaxIDForGroupId(groupId: string){
-  const client = new Client(dbConfig);
+export async function fetchNPIAndTaxIDForGroupId(groupId?: string): Promise<Map<string, string>> {
   try {
-    await client.connect();
-    console.log('Connected to the database.');
-
     const userDataMap = new Map<string, string>();
-
-    // Reading from Json where createdaccountnumber is stored and fetching as below.
-    const dataPath = path.resolve(__dirname, 'tempuserdata.json');
-    const rawData = fs.readFileSync(dataPath, 'utf-8');
-    const data = JSON.parse(rawData);
-    const acctnum = data.sharedNumber;
     const getBillingIds = 'SELECT billingid, billingidtype FROM billingids WHERE providergroupid = $1';
-    const params = [groupId];
-
+    const trimmedGroupId = (groupId ?? '').trim();
+    if (!trimmedGroupId) {
+      console.warn('[fetchNPIAndTaxIDForGroupId] Empty groupId provided.');
+      return userDataMap;
+    }
+    const params = [trimmedGroupId];
 
     const billingRows = await executeQuery(getBillingIds, params);
     console.log(getBillingIds, params);
 
     // Store billingid as key and billingidtype as value in the map
     billingRows.forEach((row: { billingid: string, billingidtype: string }) => {
-      return userDataMap.set(row.billingid, row.billingidtype);
+      userDataMap.set(row.billingid, row.billingidtype);
     });
 
     console.log(`Stored ${userDataMap.size} records in the map.`);
     console.log(userDataMap);
-    console.log(userDataMap.get('1'));
     return userDataMap;
   } catch (err) {
     console.error('Error executing query or connecting to the database:', err);
-  } finally {
-    await client.end();
-    console.log('Database connection closed.');
+    return new Map<string, string>();
   }
 }

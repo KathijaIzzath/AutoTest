@@ -78,8 +78,12 @@ test('ProviderGroupDashboard control/elements verification test execution', asyn
   await expect(page.getByRole('columnheader', { name: 'Group Id' })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'G00016' })).toBeVisible();
   await page.locator('states').getByRole('combobox').selectOption('');
+  
+  await expect(page.locator('dropdown-filter-item').getByRole('combobox')).toContainText('Select Vendor');
   await expect(page.getByText('Vendor', { exact: true })).toBeVisible();
-  await page.locator('dropdown-filter-item').getByRole('combobox').selectOption('77: T');
+await page.locator('dropdown-filter-item').getByRole('combobox').selectOption('78: T');
+
+ // await page.locator('dropdown-filter-item').getByRole('combobox').selectOption('77: T');
   await page.getByRole('button', { name: 'Apply Filter' }).click();
   await expect(page.getByRole('columnheader', { name: 'Name ' })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'WUCKERT LLC' })).toBeVisible();

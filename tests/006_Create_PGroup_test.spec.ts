@@ -291,6 +291,6 @@ await page.getByRole('textbox', { name: 'Enter Last Name' }).fill('test');
 await page.getByRole('button', { name: 'Next' }).click();
 await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
 await page.getByRole('button', { name: 'Save' }).click();
-await page.getByText('Edit provider group Provider').click();
-await page.getByText('Accounts Add Account').click();
+//await page.getByText('Edit provider group Provider').click();
+//await page.getByText('Accounts Add Account').click();
 });

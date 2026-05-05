@@ -113,7 +113,7 @@ await expect(page.getByText('Followup Date')).toBeVisible();
 await page.getByRole('button').filter({ hasText: /^$/ }).click();
 await page.getByLabel('Select year').selectOption('2035');
 await page.getByText('23', { exact: true }).click();
-await expect(page.getByRole('textbox', { name: 'mm/dd/yyyy' })).toHaveValue('04/23/2035');
+await expect(page.getByRole('textbox', { name: 'mm/dd/yyyy' })).toHaveValue('05/23/2035');
 await expect(page.getByRole('dialog').getByText('Case Number')).toBeVisible();
 await page.getByRole('textbox', { name: 'Enter Case Number' }).click();
 await page.getByRole('textbox', { name: 'Enter Case Number' }).fill('case-1234');

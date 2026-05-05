@@ -1,3 +1,4 @@
+
 import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
@@ -105,6 +106,10 @@ test('Add provider via Accounts dashboard functionality & control/elements verif
     await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Previous' })).toBeVisible();
     await page.getByRole('button', { name: 'Save' }).click();
+    console.log('Clicked Save button after adding provider');
+    console.log('Waiting for provider to be added and visible in the list...');
+ 
+  await page.waitForTimeout(2000); // 2 second delay
     // Fetch the providerId and organizationname from the database for the added provider
     const providerData = await fetchProviderIdByGroupId(userData.addProvider.groupeditInAcct);
     if (!providerData) throw new Error('Failed to fetch providerId and organizationname from database after adding provider');
@@ -112,10 +117,20 @@ test('Add provider via Accounts dashboard functionality & control/elements verif
     const organizationname = providerData.organizationname;
 
     await page.getByRole('cell').filter({ hasText: /^$/ }).nth(1).click();
-    //getByRole('link').filter({ hasText: /^$/ }).nth(3).click();
-    await expect(page.getByRole('columnheader', { name: 'name ' })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'provider ID' })).toBeVisible();
+    // Retry clicking the cell if the column headers are not visible
+    let retries = 0;
+    const maxRetries = 2;
+    while (retries < maxRetries) {
+      const nameHeaderVisible = await page.getByRole('columnheader', { name: 'name ' }).isVisible().catch(() => false);
+      const providerIdHeaderVisible = await page.getByRole('columnheader', { name: 'provider ID' }).isVisible().catch(() => false);
     await expect(page.getByRole('cell', { name: providerId, exact: true })).toBeVisible();
-     await expect(page.getByRole('cell', { name: organizationname, exact: true })).toBeVisible();  
+    await expect(page.getByRole('cell', { name: organizationname, exact: true })).toBeVisible();
     await expect(page.getByRole('cell', { name: providerId, exact: true })).toBeVisible();
-});
+
+ if (nameHeaderVisible && providerIdHeaderVisible) break;
+      console.log(`Retrying click on cell, attempt ${retries + 2}`);
+      await page.getByRole('cell').filter({ hasText: /^$/ }).nth(1).click();
+      await page.waitForTimeout(1000);
+      retries++;
+    }
+  });

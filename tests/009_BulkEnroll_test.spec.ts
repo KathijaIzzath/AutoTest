@@ -1,10 +1,9 @@
-
 import { test, expect } from './myTestData';
 import { Locator, Page } from '@playwright/test';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
 import helperFunction from '../testData/helperFunction';
-import { existsBulkGroupEnrollment,  fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear, getTodaysDateWithYr } from '../testData/database.utils';
+import { existsBulkGroupEnrollment,  fetchNPIAndTaxIDForGroupId, fetchProviderGroupById, getTodaysDateWithFullYear, getTodaysDateWithYr } from '../testData/database.utils';
 // Adding Bulk Group enrollment for groupid G00016
 let page: Page;
 
@@ -24,6 +23,16 @@ test('Add Bulk Group Enrollment ', async ({ page, loginAsAdmin }) => {
   await page.getByRole('link', { name: ' Group Enrollments' }).click();
   await page.getByRole('link', { name: ' Add Group Enrollment' }).click();
 
+  const group = await fetchProviderGroupById(groupId);
+  console.log(group); // { id: 'G00017', name: '...' } or null
+  const groupName = group?.name;
+  if (!groupName) throw new Error(`No group name found for groupId: ${groupId}`);
+
+  const billingMap = await fetchNPIAndTaxIDForGroupId(groupId);
+  const NPI = billingMap?.has('1699873976') ? '1699873976' : '';
+  const TAXID = billingMap?.has('271673289') ? '271673289' : '';
+  if (!NPI) throw new Error(`NPI value 1699873976 not found for groupId ${groupId}`);
+  if (!TAXID) throw new Error(`TAXID value 271673289 not found for groupId ${groupId}`);
 
   await expect(page.getByRole('heading', { name: 'Add Group Enrollments' })).toBeVisible();
   await expect(page.getByRole('dialog').getByText('Group ID', { exact: true })).toBeVisible();
@@ -34,19 +43,19 @@ test('Add Bulk Group Enrollment ', async ({ page, loginAsAdmin }) => {
   await expect(page.getByText('tax id', { exact: true })).toBeVisible();
   await expect(page.locator('div').filter({ hasText: /^Select Tax Id$/ })).toBeVisible();
   await page.getByRole('textbox').click();
-  await page.getByText('G00016').click();
+  await page.getByText(userData.groupEnroll.bulkgroupId).click();
   await expect(page.getByRole('textbox')).toBeVisible();
-  await page.getByRole('combobox').nth(1).selectOption('1699873976');
-  await page.getByRole('combobox').nth(2).selectOption('271673289');
+  await page.getByRole('combobox').nth(1).selectOption(NPI);
+  await page.getByRole('combobox').nth(2).selectOption(TAXID);
   await expect(page.getByRole('heading', { name: 'Add Group Enrollments' })).toBeVisible();
   await expect(page.getByText('Group Name')).toBeVisible();
  // await expect(page.getByRole('dialog').getByText('Group ID')).toBeVisible();
-  await expect(page.getByText('WUCKERT LLC')).toBeVisible();
-  await expect(page.getByText('G00016')).toBeVisible();
+  await expect(page.getByText(groupName)).toBeVisible();
+  await expect(page.getByText(userData.groupEnroll.bulkgroupId)).toBeVisible();
  // await expect(page.getByRole('dialog').getByText('NPI')).toBeVisible();
-  await expect(page.getByText('1699873976')).toBeVisible();
+  await expect(page.getByText(NPI)).toBeVisible();
   await expect(page.getByText('tax id', { exact: true })).toBeVisible();
-  await expect(page.getByText('271673289')).toBeVisible();
+  await expect(page.getByText(TAXID)).toBeVisible();
   // Debug log and screenshot before assertion
   const payerHeader = page.locator('#data-grid-header').getByText('Payer');
   const headerCount = await payerHeader.count();
@@ -139,18 +148,18 @@ test('Add Bulk Group Enrollment ', async ({ page, loginAsAdmin }) => {
   await expect(page.getByText('Group Name')).toBeVisible();
   await expect(page.getByRole('dialog').getByText('Group ID')).toBeVisible();
   await expect(page.getByRole('dialog').getByText('NPI')).toBeVisible();
-  await expect(page.getByText('1699873976')).toBeVisible();
-  await expect(page.getByText('271673289')).toBeVisible();
+  await expect(page.getByText(NPI)).toBeVisible();
+  await expect(page.getByText(TAXID)).toBeVisible();
   await expect(page.getByText('Group Enrollment Records Added!')).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Records Failed to Add:' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Payer' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Type' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Close' })).toBeVisible();
   await page.getByRole('button', { name: 'Close' }).click();
-  await expect(page.getByRole('cell', { name: 'G00016' }).first()).toBeVisible();
-  await expect(page.getByRole('cell', { name: 'WUCKERT LLC' }).first()).toBeVisible();
-  await expect(page.getByRole('cell', { name: '1699873976' }).first()).toBeVisible();
-  await expect(page.getByRole('cell', { name: '271673289' }).first()).toBeVisible();
+  await expect(page.getByRole('cell', { name: groupId }).first()).toBeVisible();
+  await expect(page.getByRole('cell', { name: groupName }).first()).toBeVisible();
+  await expect(page.getByRole('cell', { name: NPI }).first()).toBeVisible();
+  await expect(page.getByRole('cell', { name: TAXID }).first()).toBeVisible();
   await expect(page.getByRole('cell', { name: 'SELECTCARE' }).first()).toBeVisible();
   await expect(page.getByRole('cell', { name: 'CLAIMSTATUS' })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'RELAY' }).first()).toBeVisible();
@@ -164,4 +173,5 @@ test('Add Bulk Group Enrollment ', async ({ page, loginAsAdmin }) => {
   await expect(page.getByRole('cell', { name: '95378' })).toBeVisible();
   await expect(page.getByRole('cell', { name: '31441' })).toBeVisible();
   await expect(page.getByRole('cell', { name: '60280' })).toBeVisible();
+
 });

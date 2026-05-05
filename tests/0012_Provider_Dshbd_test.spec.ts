@@ -83,7 +83,7 @@ test('ProviderGroupDashboard control/elements verification test execution', asyn
   await expect(page.getByRole('columnheader', { name: 'provider ID' })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'T00068' })).toBeVisible();
   await expect(page.getByText('Practice Management', { exact: true })).toBeVisible();
-  await page.locator('dropdown-filter-item').getByRole('combobox').selectOption('77: T');
+  await page.locator('dropdown-filter-item').getByRole('combobox').selectOption('78: T');
   await page.getByRole('button', { name: 'Apply Filter' }).click();
   await expect(page.getByRole('columnheader', { name: 'provider ID' })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'T00068' })).toBeVisible();
