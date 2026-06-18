@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "npx playwright test",
+    "test:chromium": "npx playwright test --project=chromium",
+    "test:smoke": "npx playwright test tests/001_login_test.spec.ts tests/002_Dashboard_test.spec.ts --project=chromium",
+    "test:ui": "npx playwright test --ui",
+    "typecheck": "npx tsc -p tsconfig.json --noEmit",
+    "report": "npx playwright show-report"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

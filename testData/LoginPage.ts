@@ -9,13 +9,12 @@ class LoginPage {
   }
 
   async navigate() {
-    console.log('Print userData.admin.url', userData.admin.url);
+    console.log('Navigating to admin login page');
     await this.page.goto(userData.admin.url);
   }
 
   async login(username: string, password: string) {
-    console.log('Print username', username);
-    console.log('Print password', password);
+    console.log('Submitting login form');
 
     await this.page.getByRole('textbox', { name: 'Enter Username' }).click();
     await this.page.getByRole('textbox', { name: 'Enter Username' }).fill(username);

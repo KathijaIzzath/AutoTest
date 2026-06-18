@@ -1,0 +1,48 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "edit": "Edit",
+    "save": "Save",
+    "previous": "Previous",
+    "title": "Title",
+    "degree": "degree",
+    "mi": "mi",
+    "certificationStatus": "* certification status",
+    "certificationStatusValues": "* certification status ProductionTest",
+    "statements": "Statements",
+    "eligibility": "Eligibility",
+    "claimStatus": "Claim Status",
+    "era": "ERA"
+  },
+  "headings": {
+    "editProviderRegex": "EditProvider \\([A-Za-z0-9]+\\)"
+  },
+  "placeholders": {
+    "providerId": "Enter Provider ID",
+    "title": "Enter Title",
+    "degree": "Enter Degree",
+    "mi": "Enter MI"
+  },
+  "headers": {
+    "providerGridNameAsc": "name ",
+    "providerGridProviderId": "provider ID"
+  },
+  "selectors": {
+    "rowActionLinkIndex": 1,
+    "dateCell": "div.input-text"
+  },
+  "values": {
+    "titleEdit": "test",
+    "degreeEdit": "grad",
+    "miEdit": "m",
+    "titleExpected": "TEST",
+    "degreeExpected": "GRAD",
+    "miExpected": "M"
+  },
+  "edgeCases": {
+    "invalidProviderId": "NO_MATCH_EDIT_PROVIDER_999999"
+  },
+  "timeouts": {
+    "dbDatesFetchLogTimeoutMs": 3000
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "labels": {
+    "accounts": "Accounts",
+    "addAccount": "Add Account",
+    "createNewAccount": "Create New Account",
+    "editAccount": "Edit Account",
+    "deactivateAccount": "Deactivate Account",
+    "addProviderGroup": "Add Provider Group",
+    "createProviderGroup": "Create Provider Group",
+    "accountNumberRequired": "* account number",
+    "accountNameRequired": "* account Name",
+    "practiceManagementRequired": "* Practice Management",
+    "taxExemptNumber": "Tax exempt number",
+    "address1": "Address 1",
+    "address2": "address 2",
+    "zip": "Zip",
+    "city": "City",
+    "state": "state",
+    "creditCardNumber": "credit card number",
+    "expiration": "expiration",
+    "accountExport": "Account Export",
+    "notes": "Notes",
+    "contact": "Contact",
+    "phone": "Phone",
+    "fax": "Fax",
+    "email": "email",
+    "ecs": "ECS",
+    "era": "ERA",
+    "claimStatus": "Claim Status",
+    "eligibility": "Eligibility",
+    "statements": "Statements",
+    "na": "N/A",
+    "accountNumberFilter": "Account Number",
+    "applyFilter": "Apply Filter",
+    "noResults": "No results found",
+    "showWorkedOnly": "Show Worked Only"
+  },
+  "roles": {
+    "addAndClose": "Add & Close",
+    "addAndCloseRegex": "^Add & Close$",
+    "accountNumberTextbox": "accountNumber",
+    "accountNameTextbox": "Enter Name",
+    "taxNumberTextbox": "Enter Tax Number",
+    "addressTextbox": "Enter Address",
+    "ccLast4Textbox": "Last 4 Digits",
+    "expiryTextbox": "Enter expiration date",
+    "notesTextbox": "Enter Notes",
+    "accountNumberFilterTextbox": "Enter Account Number"
+  },
+  "columnHeaders": {
+    "accountNumber": "account number ",
+    "name": "Name",
+    "state": "State",
+    "address": "Address",
+    "contactName": "contact Name",
+    "groupId": "GROUP ID"
+  },
+  "selectors": {
+    "accountsSidebarLink": "a[href$=\"/dashboard/accounts\"]",
+    "accountsApp": "app-accounts",
+    "zipInput": ".address-wrapper > div > .ng-select-searchable > .ng-select-container > .ng-value-container > .ng-input > input",
+    "cityInput": "div:nth-child(2) > .ng-select-searchable > .ng-select-container > .ng-value-container > .ng-input > input",
+    "stateInput": "div:nth-child(3) > .ng-select-searchable > .ng-select-container > .ng-value-container > .ng-input > input",
+    "emptyLink": "link:empty",
+    "javascriptLink": "javascript",
+    "dialogSelect": "select",
+    "ngSelectArrow": ".ng-select .ng-arrow-wrapper"
+  },
+  "values": {
+    "practiceManagementOption": "TST",
+    "taxNumber": "1234",
+    "zip": "75001",
+    "zipOption": "(Addison - TX)",
+    "cityOption": "Addison (TX - 75001)",
+    "expiryDate": "12/30",
+    "notes": "by Company",
+    "stateCell": "LA"
+  },
+  "dynamic": {
+    "accountNumberPrefix": "SCAutoAcctNum-",
+    "accountNamePrefix": "SCAutoAcct-",
+    "sequencePad": 2
+  },
+  "db": {
+    "getAccountCount": "SELECT count(*) FROM account WHERE accountnumber = $1",
+    "deleteAccount": "DELETE FROM account WHERE accountnumber = $1"
+  },
+  "edgeCases": {
+    "invalidAccountNumber": "NO_MATCH_AUTO_ACCOUNT_999999"
+  }
+}

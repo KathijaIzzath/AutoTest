@@ -1,0 +1,84 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "addProvider": "Add Provider",
+    "next": "Next",
+    "previous": "Previous",
+    "save": "Save",
+    "contact": "Contact",
+    "practiceManagement": "* Practice Management",
+    "practiceManagementSelect": "* Practice Management Select",
+    "certStatus": "* certification status",
+    "certStatusValues": "* certification status ProductionTest",
+    "feeSchedule": "* fee schedule",
+    "email": "email",
+    "fax": "Fax",
+    "title": "Title",
+    "phone": "Phone",
+    "mi": "mi",
+    "degree": "degree",
+    "address1": "Address 1",
+    "address2": "address 2",
+    "zip": "Zip",
+    "city": "City",
+    "state": "state",
+    "identifier": "Identifier"
+  },
+  "headings": {
+    "addProviderSetup": "Add Provider Setup 1/",
+    "addProviderIdInfo": "Add Provider ID Information 2/"
+  },
+  "placeholders": {
+    "accountNumber": "Enter Account Number",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name",
+    "title": "Enter Title",
+    "id": "Enter Id",
+    "contact": "Enter Contact",
+    "phone": "Enter Phone",
+    "email": "Enter Email",
+    "fax": "Enter Fax",
+    "mi": "Enter MI",
+    "degree": "Enter Degree",
+    "address": "Enter Address"
+  },
+  "headers": {
+    "name": "name",
+    "id": "Id",
+    "groupId": "group id",
+    "providersGridNameAsc": "name ",
+    "providersGridProviderId": "provider ID"
+  },
+  "selectors": {
+    "accountRowActionLinkIndex": 1,
+    "providerGroupActionLinkIndex": 0,
+    "providersGridFirstCellIndex": 1,
+    "providerDetailsActionText": "Edit Provider GroupDeactivate GroupAdd Provider",
+    "providerGroupGrid": "providers-group-grid",
+    "qualifierSelect": "qualifiers",
+    "zipCityStateComposite": "Zip Enter ZIP 76621 ×",
+    "citySelectComposite": "Enter City ABBOTT ×",
+    "stateSelectComposite": "Enter State×TX×",
+    "actionButtonContainer": ".d-flex.align-items-center.justify-content-end"
+  },
+  "values": {
+    "firstName": "Add",
+    "lastName": "Provider01",
+    "title": "provtitle",
+    "taxQualifier": "11: Object",
+    "npiQualifier": "20: Object",
+    "contactExpected": "KATHIJA",
+    "phoneExpected": "(843) 888-2882",
+    "emailExpected": "kmohamed@harriscomputer.com",
+    "address1Expected": "1150 SILVER FANG ST",
+    "taxIdentifierName": "EI - EIN",
+    "npiIdentifierName": "XX - NPI"
+  },
+  "edgeCases": {
+    "invalidAccountNumber": "NO_MATCH_ADD_PROVIDER_ACCOUNT_999999"
+  },
+  "timeouts": {
+    "dbPollTimeoutMs": 30000,
+    "headerRetryVisibleMs": 2000
+  }
+}

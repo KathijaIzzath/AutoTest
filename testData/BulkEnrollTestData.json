@@ -1,0 +1,50 @@
+{
+  "labels": {
+    "groupEnrollmentsNav": " Group Enrollments",
+    "addGroupEnrollmentNav": " Add Group Enrollment",
+    "addGroupEnrollmentsHeading": "Add Group Enrollments",
+    "groupId": "Group ID",
+    "npi": "NPI",
+    "taxId": "tax id",
+    "groupName": "Group Name",
+    "payer": "Payer",
+    "enrollmentType": "Enrollment Type",
+    "professional": "Professional",
+    "institutional": "Institutional",
+    "era": "ERA",
+    "claimStatus": "Claim Status",
+    "eligibility": "Eligibility",
+    "save": "Save",
+    "back": "Back",
+    "close": "Close",
+    "addPayer": " Add Payer",
+    "recordsFailedHeader": "Records Failed to Add:",
+    "groupEnrollmentRecordsAdded": "Group Enrollment Records Added!",
+    "noResults": "No results found"
+  },
+  "roles": {
+    "combobox": "combobox"
+  },
+  "selectors": {
+    "groupDropdownTextInput": "textbox",
+    "groupArrow": ".is-invalid > .ng-select-container > .ng-arrow-wrapper",
+    "npiSelect": "select[formcontrolname=\"npi\"]",
+    "taxIdSelect": "select[formcontrolname=\"taxId\"]",
+    "payerHeader": "#data-grid-header"
+  },
+  "values": {
+    "expectedNpi": "1699873976",
+    "expectedTaxId": "271673289",
+    "payerToAdd": "00046 - HILL PHYSICIANS",
+    "payerCellExpected": "HILL PHYSICIANS MEDICAL GROUP",
+    "payerCellExpected2": "TEST PAYER BY HAMZA",
+    "selectcare": "SELECTCARE",
+    "processorRelay": "RELAY",
+    "professionalUpper": "PROFESSIONAL",
+    "eligibilityUpper": "ELIGIBILITY",
+    "claimStatusUpper": "CLAIMSTATUS"
+  },
+  "edgeCases": {
+    "invalidGroupId": "G99999"
+  }
+}

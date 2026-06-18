@@ -1,0 +1,53 @@
+{
+  "labels": {
+    "groupId": "Group ID",
+    "groupName": "Group Name",
+    "accountNumber": "Account Number",
+    "accountName": "Account Name",
+    "contactName": "Contact Name",
+    "state": "State",
+    "vendor": "Vendor",
+    "city": "City",
+    "applyFilter": "Apply Filter",
+    "providerGroups": "Provider Groups",
+    "selectVendor": "Select Vendor"
+  },
+  "headers": {
+    "nameAsc": "Name ",
+    "name": "Name",
+    "groupId": "Group Id",
+    "groupIdAsc": "Group Id "
+  },
+  "placeholders": {
+    "groupId": "Enter Group ID",
+    "groupName": "Enter Group Name",
+    "accountNumber": "Enter Account Number",
+    "accountName": "Enter Account Name",
+    "contactName": "Enter Contact Name",
+    "city": "Enter City"
+  },
+  "selectors": {
+    "stateContainer": "states",
+    "vendorFilter": "dropdown-filter-item"
+  },
+  "values": {
+    "groupId": "G00016",
+    "groupName": "WUCKERT LLC",
+    "accountNumber": "VMCTEST",
+    "accountName": "HAGENES-WEISSNAT",
+    "contactName": "SHELDON KIHN",
+    "state": "KS",
+    "vendorOption": "78: T",
+    "city": "stark",
+    "sortedName": "ZULAUF, SCHADEN AND MRAZ",
+    "sortedGroupId": "G00012"
+  },
+  "edgeCases": {
+    "invalidGroupId": "NO_MATCH_GROUP_999999",
+    "invalidGroupName": "NO_MATCH_GROUPNAME_999999",
+    "invalidCity": "NO_MATCH_CITY_999999"
+  },
+  "timeouts": {
+    "gridRefreshMs": 5000
+  }
+}

@@ -1,7 +1,8 @@
-import { test, expect } from './myTestData';
+import { test, expect } from '../myTestData';
 import { Page } from '@playwright/test';
-import * as userData from '../testData/UserInfo.json';
-import LoginPage from '../testData/LoginPage';
+import * as userData from '../../testData/UserInfo.json';
+import * as d from '../../testData/CreatePGroupTestData.json';
+import { navigateToAccounts } from '../framework/navigation.helper';
 
 // Helper: ensure a textbox (by accessible name) has a value; fill if empty
 async function ensureInputHasValue(page: Page, roleName: string, value: string) {
@@ -12,6 +13,23 @@ async function ensureInputHasValue(page: Page, roleName: string, value: string) 
   }
 }
 
+async function filterAccountAndOpenRowAction(page: Page, accountNumber: string) {
+  await navigateToAccounts(page);
+  await page.getByRole('textbox', { name: d.roles.accountNumberFilterTextbox }).fill(accountNumber);
+  await page.getByRole('button', { name: d.labels.applyFilter }).click();
+  await page.waitForLoadState('networkidle');
+  const rowAction = page.getByRole('link').filter({ hasText: /^$/ }).nth(d.selectors.rowActionLinkIndex);
+  await expect(rowAction).toBeVisible();
+  await rowAction.click();
+}
+
+async function openCreateProviderGroup(page: Page, accountNumber: string) {
+  await filterAccountAndOpenRowAction(page, accountNumber);
+  await expect(page.getByRole('button', { name: d.labels.addProviderGroup })).toBeVisible();
+  await page.getByRole('button', { name: d.labels.addProviderGroup }).click();
+  await expect(page.getByRole('heading', { name: d.labels.createProviderGroup })).toBeVisible();
+}
+
 
 
 
@@ -19,19 +37,11 @@ test('Create Provider Group Screen verification and functionality test', async (
   await loginAsAdmin();
   
   
-await page.getByRole('link', { name: ' Accounts' }).click();
-await page.getByRole('textbox', { name: 'Enter Account Number' }).click();
-await page.getByRole('textbox', { name: 'Enter Account Number' }).fill(userData.providerGroup.accountNum);
-await page.getByRole('button', { name: 'Apply Filter' }).click();
-await expect(page.getByRole('link').filter({ hasText: /^$/ }).nth(2)).toBeVisible();
-await page.getByRole('link').filter({ hasText: /^$/ }).nth(2).click();
-await expect(page.getByRole('button', { name: 'Add Provider Group' })).toBeVisible();
-await page.getByRole('button', { name: 'Add Provider Group' }).click();
-await expect(page.getByRole('heading', { name: 'Create Provider Group' })).toBeVisible();
-await expect(page.getByRole('tab', { name: 'Provider Details' })).toBeVisible();
-await expect(page.getByRole('tab', { name: 'Identifiers' })).toBeVisible();
-await expect(page.getByRole('tab', { name: 'Processor' })).toBeVisible();
-await expect(page.getByRole('tab', { name: 'Financial Settings' })).toBeVisible();
+await openCreateProviderGroup(page, userData.providerGroup.accountNum);
+await expect(page.getByRole('tab', { name: d.labels.providerDetailsTab })).toBeVisible();
+await expect(page.getByRole('tab', { name: d.labels.identifiersTab })).toBeVisible();
+await expect(page.getByRole('tab', { name: d.labels.processorTab })).toBeVisible();
+await expect(page.getByRole('tab', { name: d.labels.financialSettingsTab })).toBeVisible();
 await expect(page.getByText('* account number')).toBeVisible();
 await expect(page.getByLabel('Provider Details').locator('form')).toContainText('* account number');
 await expect(page.locator('.col-3 > div').first()).toBeVisible();
@@ -42,7 +52,7 @@ await expect(page.getByText('* fee schedule')).toBeVisible();
 await expect(page.getByLabel('feeSchedule')).not.toBeEmpty();
 await expect(page.getByLabel('feeSchedule')).toBeVisible();
 await expect(page.getByLabel('feeSchedule')).toContainText('Select Fee Schedule CLAIMSCOMPLETE FLAT 45 NIC ONLY CORPORATE PROVIDER RATE (RIDGEMARK/NORTHE NIC_ONLY NO FEE SCHEDULE SET NOT APPLICABLE TH-CLAIMSCOMPLETE2 TH DUPLICATE PROVIDER (FOR ADMIN - NO SERVICE FEE) TH FLAT FEE TH SPECIAL GROUP (NOT USED) TH UNLIMITED PER PROVIDER TH VOLUME DISCOUNT THERAPIST HELPER 1 PROVIDER V10');
-await page.getByLabel('feeSchedule').selectOption('F0256');
+await page.getByLabel('feeSchedule').selectOption(d.values.feeScheduleOption);
 await expect(page.getByText('* Practice Management')).toBeVisible();
 await expect(page.locator('ddl-practice')).toContainText('Select Practice Management');
   await expect(page.locator('ddl-practice').getByRole('combobox')).toBeVisible();
@@ -50,7 +60,7 @@ await expect(page.locator('ddl-practice').getByRole('combobox')).toHaveValue('H'
 await expect(page.getByText('* certification status')).toBeVisible();
 await expect(page.getByLabel('Provider Details').locator('form')).toContainText('Production');
 await expect(page.getByLabel('Provider Details').locator('form')).toContainText('Test');
-await page.getByText('Test', { exact: true }).click();
+await page.getByText(d.values.testCertification, { exact: true }).click();
 await expect(page.getByText('Contact', { exact: true })).toBeVisible();
 await expect(page.getByRole('textbox', { name: 'Enter Contact' })).toHaveValue('KATHIJA');
 await expect(page.getByRole('textbox', { name: 'Enter Contact' })).toBeVisible();
@@ -162,9 +172,9 @@ await expect(page.getByText('By Payer')).toBeVisible();
 await page.getByText('Combine ALL').click();
 await page.getByRole('checkbox', { name: 'Combine ERA' }).check();
 await page.getByRole('checkbox', { name: 'Machine Readable' }).first().check();
-await page.getByRole('tab', { name: 'Identifiers' }).click();
-await page.getByRole('tab', { name: 'Identifiers' }).click();
-await expect(page.getByRole('tab', { name: 'Identifiers' })).toBeVisible();
+await page.getByRole('tab', { name: d.labels.identifiersTab }).click();
+await page.getByRole('tab', { name: d.labels.identifiersTab }).click();
+await expect(page.getByRole('tab', { name: d.labels.identifiersTab })).toBeVisible();
 await expect(page.getByText('Identifier', { exact: true })).toBeVisible();
 await expect(page.getByRole('combobox')).toContainText('Select Identifier 0B - State License 1A - Blue Cross 1B - Blue Shield 1C - Medicare 1D - Medicaid 1G - UPIN 1H - Champus 1J - Facility B3 - PPO BQ - HMO EI - EIN FH - Clinic G2 - Commercial G5 - Site LU - Location N5 - Plan Network Id RR - Medicare Rail Road U3 - USIN X5 - State Ind Accident XX - NPI PR - ERA Prefix TX - Taxonomy Code');
 await expect(page.getByLabel('Identifiers').getByText('ID', { exact: true })).toBeVisible();
@@ -172,34 +182,34 @@ await expect(page.getByRole('textbox', { name: 'Enter Id' })).toBeVisible();
 await expect(page.getByRole('columnheader', { name: 'name' })).toBeVisible();
 await expect(page.getByRole('columnheader', { name: 'Id' })).toBeVisible();
 await expect(page.locator('.ng-untouched > .row > div:nth-child(3)').first()).toBeVisible();
-await page.getByRole('combobox').selectOption('11: Object');
-await page.getByRole('textbox', { name: 'Enter Id' }).click();
-await page.getByRole('textbox', { name: 'Enter Id' }).fill('680522753');
-await expect(page.getByRole('button', { name: 'Add Details' })).toBeVisible();
-await page.getByRole('button', { name: 'Add Details' }).click();
-await page.getByRole('combobox').selectOption('20: Object');
-await page.getByRole('textbox', { name: 'Enter Id' }).click();
-await page.getByRole('textbox', { name: 'Enter Id' }).fill('1083743850');
-await page.getByRole('button', { name: 'Add Details' }).click();
-await page.getByRole('tab', { name: 'Financial Settings' }).click();
+await page.getByRole('combobox').selectOption(d.values.groupIdentifierOption1);
+await page.getByRole('textbox', { name: d.roles.idTextbox }).click();
+await page.getByRole('textbox', { name: d.roles.idTextbox }).fill(d.values.groupIdentifierId1);
+await expect(page.getByRole('button', { name: d.labels.addDetails })).toBeVisible();
+await page.getByRole('button', { name: d.labels.addDetails }).click();
+await page.getByRole('combobox').selectOption(d.values.groupIdentifierOption2);
+await page.getByRole('textbox', { name: d.roles.idTextbox }).click();
+await page.getByRole('textbox', { name: d.roles.idTextbox }).fill(d.values.groupIdentifierId2);
+await page.getByRole('button', { name: d.labels.addDetails }).click();
+await page.getByRole('tab', { name: d.labels.financialSettingsTab }).click();
 await expect(page.getByText('Account Credential Key')).toBeVisible();
-await expect(page.getByRole('textbox', { name: 'Enter Account Credential Key' })).toBeVisible();
+await expect(page.getByRole('textbox', { name: d.roles.accountCredentialKeyTextbox })).toBeVisible();
 await expect(page.getByText('Allow ACH')).toBeVisible();
 await expect(page.getByRole('tabpanel', { name: 'Financial Settings' }).locator('radio')).toBeVisible();
 //await expect(page.locator('.ng-untouched.ng-pristine > .input-wrap > .text')).toBeVisible();
 //await page.locator('.ng-untouched.ng-pristine > .input-wrap > .text').click();
 
-await page.getByRole('tabpanel', { name: 'Financial Settings' }).locator('radio').click();
+await page.getByRole('tabpanel', { name: d.labels.financialSettingsTab }).locator(d.selectors.financialRadio).click();
 //await page.locator('.col-4 > .ng-select-searchable > .ng-select-container > .ng-clear-wrapper').click();
 
-await page.getByRole('textbox', { name: 'Enter Account Credential Key' }).click();
-await ensureInputHasValue(page, 'Enter Account Credential Key', '144789693367:66979f6aa2eb4094bba2f74cc8ac2821');
-const value = await page.getByRole('textbox', { name: 'Enter Account Credential Key' }).inputValue();
-if (value === '144789693367:66979f6aa2eb4094bba2f74cc8ac2821') {
+await page.getByRole('textbox', { name: d.roles.accountCredentialKeyTextbox }).click();
+await ensureInputHasValue(page, d.roles.accountCredentialKeyTextbox, d.values.accountCredentialKey);
+const value = await page.getByRole('textbox', { name: d.roles.accountCredentialKeyTextbox }).inputValue();
+if (value === d.values.accountCredentialKey) {
   await page.getByRole('combobox').click();
   await expect(page.getByRole('combobox').getByRole('textbox')).toBeVisible();
   await expect(page.getByRole('combobox').getByRole('textbox')).toBeEnabled();
-  await page.getByText('CareTracker', { exact: true }).click();
+  await page.getByText(d.values.careTracker, { exact: true }).click();
 }
 await expect(page.getByText('ACH Credential Key')).toBeVisible();
 await expect(page.getByText('Account Credential Key Allow')).toBeVisible();
@@ -222,26 +232,26 @@ await expect(page.getByText('Credential Key (optional)')).toBeVisible();
 await expect(page.getByText('Credential Key (optional)')).toBeVisible();
 await expect(page.getByRole('textbox').nth(5)).toBeVisible();
 await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
-await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
+await expect(page.getByRole('button', { name: d.labels.save })).toBeVisible();
 await page.getByRole('textbox').nth(3).click();
-await page.getByRole('textbox').nth(3).fill('Kathija\'s Device');
+await page.getByRole('textbox').nth(3).fill(d.values.deviceName);
 await page.getByRole('textbox').nth(4).click();
 await page.getByRole('textbox').nth(4).click();
-await page.getByRole('textbox').nth(4).fill('a4hos7');
+await page.getByRole('textbox').nth(4).fill(d.values.deviceIdentifier);
 await page.getByRole('textbox').nth(5).click();
-await page.getByRole('textbox').nth(5).fill('144789693367:66979f6aa2eb4094bba2f74cc8ac2821');
+await page.getByRole('textbox').nth(5).fill(d.values.accountCredentialKey);
 await page.getByRole('checkbox', { name: 'Is Default' }).check();
-await page.getByRole('button', { name: 'Save' }).click();
+await page.getByRole('button', { name: d.labels.save }).click();
 await expect(page.getByRole('button', { name: 'Manage Configuration' })).toBeVisible();
 await page.getByRole('button', { name: 'Manage Configuration' }).click();
 await page.getByRole('button', { name: 'Manage Configuration' }).click();
-await expect(page.getByRole('button', { name: 'Add & Close' })).toBeVisible();
-await page.getByRole('button', { name: 'Add & Close' }).click();
-await expect(page.getByRole('heading', { name: 'Confirm action' })).toBeVisible();
-await expect(page.getByText('Do you want to add provider')).toBeVisible();
-await expect(page.getByRole('button', { name: 'No' })).toBeVisible();
-await expect(page.getByRole('button', { name: 'Yes' })).toBeVisible();
-await page.getByRole('button', { name: 'Yes' }).click();
+await expect(page.getByRole('button', { name: d.labels.addAndClose })).toBeVisible();
+await page.getByRole('button', { name: d.labels.addAndClose }).click();
+await expect(page.getByRole('heading', { name: d.labels.confirmAction })).toBeVisible();
+await expect(page.getByText(d.labels.addProviderPrompt)).toBeVisible();
+await expect(page.getByRole('button', { name: d.labels.no })).toBeVisible();
+await expect(page.getByRole('button', { name: d.labels.yes })).toBeVisible();
+await page.getByRole('button', { name: d.labels.yes }).click();
 await page.getByRole('textbox', { name: 'Enter First Name' }).click();
 await expect(page.getByRole('heading', { name: 'Add Provider Setup 1/' })).toBeVisible();
 await expect(page.getByText('* First name')).toBeVisible();
@@ -281,16 +291,40 @@ await expect(page.locator('.ng-touched > .mb-3 > div:nth-child(4) > .input-text'
 await expect(page.locator('.ng-touched > .mb-3 > div:nth-child(5) > .input-text')).toBeVisible();
 await expect(page.getByRole('dialog').getByText('* fee schedule')).toBeVisible();
 await expect(page.getByRole('combobox').nth(1)).toBeVisible();
-await expect(page.getByRole('button', { name: 'Next' })).toBeVisible();
-await page.getByRole('button', { name: 'Next' }).click();
-await page.getByRole('button', { name: 'Previous' }).click();
-await page.getByRole('textbox', { name: 'Enter First Name' }).click();
-await page.getByRole('textbox', { name: 'Enter First Name' }).fill('Provider001');
-await page.getByRole('textbox', { name: 'Enter Last Name' }).click();
-await page.getByRole('textbox', { name: 'Enter Last Name' }).fill('test');
-await page.getByRole('button', { name: 'Next' }).click();
-await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
-await page.getByRole('button', { name: 'Save' }).click();
+await expect(page.getByRole('button', { name: d.labels.next })).toBeVisible();
+await page.getByRole('button', { name: d.labels.next }).click();
+await page.getByRole('button', { name: d.labels.previous }).click();
+await page.getByRole('textbox', { name: d.roles.firstNameTextbox }).click();
+await page.getByRole('textbox', { name: d.roles.firstNameTextbox }).fill(d.values.providerFirstName);
+await page.getByRole('textbox', { name: d.roles.lastNameTextbox }).click();
+await page.getByRole('textbox', { name: d.roles.lastNameTextbox }).fill(d.values.providerLastName);
+await page.getByRole('button', { name: d.labels.next }).click();
+await expect(page.getByRole('button', { name: d.labels.save })).toBeVisible();
+await page.getByRole('button', { name: d.labels.save }).click();
 //await page.getByText('Edit provider group Provider').click();
 //await page.getByText('Accounts Add Account').click();
+});
+
+test('Create Provider Group page field availability and tabs validation', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
+  await openCreateProviderGroup(page, userData.providerGroup.accountNum);
+
+  await expect(page.getByRole('heading', { name: d.labels.createProviderGroup })).toBeVisible();
+  await expect(page.getByRole('tab', { name: d.labels.providerDetailsTab })).toBeVisible();
+  await expect(page.getByRole('tab', { name: d.labels.identifiersTab })).toBeVisible();
+  await expect(page.getByRole('tab', { name: d.labels.processorTab })).toBeVisible();
+  await expect(page.getByRole('tab', { name: d.labels.financialSettingsTab })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: d.roles.groupNameTextbox })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: d.roles.groupNameTextbox })).toBeEditable();
+  await expect(page.getByRole('button', { name: d.labels.addAndClose })).toBeVisible();
+});
+
+test('Accounts filter invalid account should show no results before Provider Group flow', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
+  await navigateToAccounts(page);
+
+  await page.getByRole('textbox', { name: d.roles.accountNumberFilterTextbox }).fill(d.edgeCases.invalidAccountNumber);
+  await page.getByRole('button', { name: d.labels.applyFilter }).click();
+  await expect(page.getByRole('cell', { name: d.edgeCases.invalidAccountNumber })).toHaveCount(0);
+  await expect(page.getByText(d.labels.noResults).first()).toBeVisible();
 });

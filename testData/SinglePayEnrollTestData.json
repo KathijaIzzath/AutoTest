@@ -1,0 +1,49 @@
+{
+  "labels": {
+    "groupEnrollmentsNav": " Group Enrollments",
+    "addGroupEnrollmentNav": " Add Group Enrollment",
+    "addGroupEnrollmentsHeading": "Add Group Enrollments",
+    "groupId": "Group ID",
+    "npi": "NPI",
+    "taxId": "tax id",
+    "payer": "Payer",
+    "save": "Save",
+    "back": "Back",
+    "no": "No",
+    "yes": "Yes",
+    "groupEnrollmentGrid": "Group Enrollment",
+    "groupEnrollmentSaved": "Group Enrollment saved.",
+    "addAnotherPrompt": "Group Enrollment saved. Do you want to add another Enrollment?",
+    "followupDate": "Followup Date",
+    "caseNumber": "Case Number",
+    "notes": "Notes",
+    "message": "Message",
+    "enrollmentType": "enrollment type",
+    "noResults": "No results found"
+  },
+  "roles": {
+    "groupCombobox": "combobox",
+    "saveButton": "Save",
+    "backButton": "Back",
+    "notesTextbox": "Enter Notes",
+    "messageTextbox": "Enter Message",
+    "caseNumberTextbox": "Enter Case Number",
+    "dateTextbox": "mm/dd/yyyy"
+  },
+  "selectors": {
+    "groupArrow": ".is-invalid > .ng-select-container > .ng-arrow-wrapper",
+    "npiSelect": "select[formcontrolname=\"npi\"]",
+    "taxIdSelect": "select[formcontrolname=\"taxId\"]"
+  },
+  "values": {
+    "followupYear": "2035",
+    "followupDay": "23",
+    "followupDateExpected": "05/23/2035",
+    "caseNumber": "case-1234",
+    "notes": "by group",
+    "message": "message"
+  },
+  "edgeCases": {
+    "invalidGroupId": "G99999"
+  }
+}

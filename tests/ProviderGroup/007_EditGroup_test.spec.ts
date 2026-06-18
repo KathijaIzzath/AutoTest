@@ -1,10 +1,9 @@
-import { test, expect } from './myTestData';
-import { Locator, Page } from '@playwright/test';
-import * as userData from '../testData/UserInfo.json';
-import LoginPage from '../testData/LoginPage';
-import helperFunction from '../testData/helperFunction';
-import { getTodaysDate } from '../testData/database.utils';
-import { saveCheckboxState, loadCheckboxState } from '../testData/checkboxState.utils';
+import { test, expect } from '../myTestData';
+import { Page } from '@playwright/test';
+import * as userData from '../../testData/UserInfo.json';
+import * as d from '../../testData/EditGroupTestData.json';
+import { saveCheckboxState, loadCheckboxState } from '../../testData/checkboxState.utils';
+import { navigateToAccounts } from '../framework/navigation.helper';
 
 // Common toggle function: if not checked -> check, else -> uncheck
 async function toggleCheckbox(
@@ -37,125 +36,95 @@ async function ensureInputHasValue(
   }
 }
 
+async function openEditProviderGroup(page: Page, accountNumber: string) {
+  await navigateToAccounts(page);
+  await page.getByRole('textbox', { name: d.roles.accountNumberFilterTextbox }).fill(accountNumber);
+  await page.getByRole('button', { name: d.labels.applyFilter }).click();
+  await page.waitForLoadState('networkidle');
+  await page.getByRole('link').filter({ hasText: /^$/ }).nth(d.selectors.accountRowLinkIndex).click();
+  await page.getByRole('link').filter({ hasText: /^$/ }).nth(d.selectors.providerGroupRowLinkIndex).click();
+  await page.getByRole('button', { name: d.labels.editProviderGroup }).click();
+}
+
+async function ensureCheckboxChecked(page: Page, name: string, nth?: number) {
+  let checkbox = page.getByRole('checkbox', { name });
+  if (typeof nth === 'number') {
+    checkbox = checkbox.nth(nth);
+  }
+  if (!(await checkbox.isChecked())) {
+    await checkbox.check();
+  }
+}
+
+async function ensureCheckboxUnchecked(page: Page, name: string, exact = false) {
+  const checkbox = page.getByRole('checkbox', { name, exact });
+  if (await checkbox.isChecked()) {
+    await checkbox.uncheck();
+  }
+}
+
 test('Edit provider group functionality verification', async ({ page ,loginAsAdmin}) => {
   // ...existing code...
   await loginAsAdmin();
 
-  await page.getByRole('link', { name: ' Accounts' }).click();
-  await page.getByRole('textbox', { name: 'Enter Account Number' }).click();
-  await page.getByRole('textbox', { name: 'Enter Account Number' }).fill(userData.editGroup.accountNum);
-  await page.getByRole('button', { name: 'Apply Filter' }).click();
-  await page.getByRole('link').filter({ hasText: /^$/ }).nth(1).click();
-  await page.getByRole('link').filter({ hasText: /^$/ }).nth(3).click();
-  await page.getByRole('button', { name: 'Edit Provider Group' }).click();
+  await openEditProviderGroup(page, userData.editGroup.accountNum);
   // ...existing code...
     // Ensure 'ERA Summary' is checked just before saving state
     // Declaration moved below, only one declaration will exist
-  await expect(page.getByRole('heading', { name: 'Edit Provider Group: G31927' })).toBeVisible();
-  await expect(page.getByText('* fee schedule')).toBeVisible();
-  await page.getByLabel('feeSchedule').selectOption('F0256');
+  await expect(page.getByRole('heading', { name: `Edit Provider Group: ${userData.editGroup.groupeditInAcct}` })).toBeVisible();
+  await expect(page.getByText(d.labels.feeScheduleRequired)).toBeVisible();
+  await page.getByLabel('feeSchedule').selectOption(d.values.feeScheduleCode);
 
-  await expect(page.getByText('Address 1')).toBeVisible();
-  await expect(page.getByRole('textbox', { name: 'Enter Address' }).first()).toBeVisible();
-  await page.getByRole('textbox', { name: 'Enter Address' }).first().click();
-  await page.getByRole('textbox', { name: 'Enter Address' }).first().fill('123 Silver Fang Lane');
+  await expect(page.getByText(d.labels.address1)).toBeVisible();
+  await expect(page.getByRole('textbox', { name: d.roles.addressTextbox }).first()).toBeVisible();
+  await page.getByRole('textbox', { name: d.roles.addressTextbox }).first().click();
+  await page.getByRole('textbox', { name: d.roles.addressTextbox }).first().fill(d.values.updatedAddress);
 
-  await expect(page.getByRole('checkbox', { name: 'Claim Status' })).toBeVisible();
-  await expect(page.getByText('Claim Status')).toBeVisible();
-  const claimStatusCheckbox = page.getByRole('checkbox', { name: 'Claim Status' });
+  await expect(page.getByRole('checkbox', { name: d.labels.claimStatus })).toBeVisible();
+  await expect(page.getByText(d.labels.claimStatus)).toBeVisible();
+  const claimStatusCheckbox = page.getByRole('checkbox', { name: d.labels.claimStatus });
       // Ensure 'ERA Summary' is checked just before saving state
       const eraSummaryCheckbox = page.getByRole('checkbox', { name: 'ERA Summary' });
       await expect(eraSummaryCheckbox).toBeVisible();
       await expect(eraSummaryCheckbox).toBeEnabled();
       await eraSummaryCheckbox.check(); // Always check, regardless of state
       console.log('ERA Summary checked (first test, before save):', await eraSummaryCheckbox.isChecked());
-  const eligibilityCheckbox = page.getByRole('checkbox', { name: 'Eligibility' });
-  if (!(await eligibilityCheckbox.isChecked())) {
-    await eligibilityCheckbox.check();
-  }
+  await ensureCheckboxChecked(page, d.labels.eligibility);
 
   await expect(page.getByRole('checkbox', { name: 'XML' }).first()).toBeVisible();
-  const xmlCheckbox0 = page.getByRole('checkbox', { name: 'XML' }).first();
-  if (!(await xmlCheckbox0.isChecked())) {
-    await xmlCheckbox0.check();
-  }
+  await ensureCheckboxChecked(page, 'XML', 0);
 
-  await expect(page.getByRole('checkbox', { name: 'Generate' })).toBeVisible();
-  const generateCheckbox = page.getByRole('checkbox', { name: 'Generate' });
-  if (!(await generateCheckbox.isChecked())) {
-    await generateCheckbox.check();
-  }
+  await expect(page.getByRole('checkbox', { name: d.labels.generate })).toBeVisible();
+  await ensureCheckboxChecked(page, d.labels.generate);
 
   await expect(page.getByRole('checkbox', { name: 'Machine Readable' }).first()).toBeVisible();
-  const machineReadableCheckbox0 = page.getByRole('checkbox', { name: 'Machine Readable' }).first();
-  if (!(await machineReadableCheckbox0.isChecked())) {
-    await machineReadableCheckbox0.check();
-  }
-  const humanReadableCheckbox0 = page.getByRole('checkbox', { name: 'Human Readable' }).first();
-  if (!(await humanReadableCheckbox0.isChecked())) {
-    await humanReadableCheckbox0.check();
-  }
-  const pulseCsvCheckbox = page.getByRole('checkbox', { name: 'Pulse CSV', exact: true });
-  if (await pulseCsvCheckbox.isChecked()) {
-    await pulseCsvCheckbox.uncheck();
-  }
-  const n277uCheckbox0 = page.getByRole('checkbox', { name: '277u' }).first();
-  if (!(await n277uCheckbox0.isChecked())) {
-    await n277uCheckbox0.check();
-  }
-  const n277uCheckbox1 = page.getByRole('checkbox', { name: '277u' }).nth(1);
-  if (!(await n277uCheckbox1.isChecked())) {
-    await n277uCheckbox1.check();
-  }
-  const csvCheckbox = page.getByRole('checkbox', { name: 'CSV', exact: true });
-  if (await csvCheckbox.isChecked()) {
-    await csvCheckbox.uncheck();
-  }
+  await ensureCheckboxChecked(page, 'Machine Readable', 0);
+  await ensureCheckboxChecked(page, 'Human Readable', 0);
+  await ensureCheckboxUnchecked(page, d.labels.pulseCsv, true);
+  await ensureCheckboxChecked(page, '277u', 0);
+  await ensureCheckboxChecked(page, '277u', 1);
+  await ensureCheckboxUnchecked(page, 'CSV', true);
   // ...existing code...
-  const humanReadableCheckbox1 = page.getByRole('checkbox', { name: 'Human Readable' }).nth(1);
-  if (!(await humanReadableCheckbox1.isChecked())) {
-    await humanReadableCheckbox1.check();
-  }
-  const machineReadableCheckbox1 = page.getByRole('checkbox', { name: 'Machine Readable' }).nth(1);
-  if (!(await machineReadableCheckbox1.isChecked())) {
-    await machineReadableCheckbox1.check();
-  }
-  const xmlCheckbox1 = page.getByRole('checkbox', { name: 'XML' }).nth(1);
-  if (!(await xmlCheckbox1.isChecked())) {
-    await xmlCheckbox1.check();
-  }
-  const dailyPulseCsvCheckbox = page.getByRole('checkbox', { name: 'Daily Pulse CSV' });
-  if (!(await dailyPulseCsvCheckbox.isChecked())) {
-    await dailyPulseCsvCheckbox.check();
-  }
-  const humanReadable271Checkbox = page.getByRole('checkbox', { name: 'Human Readable 271' });
-  if (!(await humanReadable271Checkbox.isChecked())) {
-    await humanReadable271Checkbox.check();
-  }
-  const alphallCheckbox = page.getByRole('checkbox', { name: 'Alphall' });
-  if (!(await alphallCheckbox.isChecked())) {
-    await alphallCheckbox.check();
-  }
-  const newStatementsCheckbox = page.getByRole('checkbox', { name: 'New Statements' });
-  if (!(await newStatementsCheckbox.isChecked())) {
-    await newStatementsCheckbox.check();
-  }
-  const combineEraCheckbox = page.getByRole('checkbox', { name: 'Combine ERA' });
-  if (!(await combineEraCheckbox.isChecked())) {
-    await combineEraCheckbox.check();
-  }
+  await ensureCheckboxChecked(page, 'Human Readable', 1);
+  await ensureCheckboxChecked(page, 'Machine Readable', 1);
+  await ensureCheckboxChecked(page, 'XML', 1);
+  await ensureCheckboxChecked(page, 'Daily Pulse CSV');
+  await ensureCheckboxChecked(page, 'Human Readable 271');
+  await ensureCheckboxChecked(page, 'Alphall');
+  await ensureCheckboxChecked(page, 'New Statements');
+  await ensureCheckboxChecked(page, 'Combine ERA');
 
-  await page.getByText('Combine ALL').click();
-  await page.getByRole('checkbox', { name: 'RCM' }).check();
+  await page.getByText(d.labels.combineAll).click();
+  await page.getByRole('checkbox', { name: d.labels.rcm }).check();
   
-  await page.getByRole('textbox', { name: 'Enter Phone' }).click();
-  await page.getByRole('textbox', { name: 'Enter Phone' }).fill('(444) 555-6666');
+  await page.getByRole('textbox', { name: d.roles.phoneTextbox }).click();
+  await page.getByRole('textbox', { name: d.roles.phoneTextbox }).fill(d.values.updatedPhone);
 // Store checkbox states after editing
-  await expect(page.getByRole('button', { name: 'Save & Close' })).toBeVisible();
+  await expect(page.getByRole('button', { name: d.labels.saveAndClose })).toBeVisible();
  // await page.getByRole('button', { name: 'Save & Close' }).click();
   // Wait for modal to close before proceeding
   try {
-    await expect(page.locator('.modal-body.loading')).toBeHidden({ timeout: 10000 });
+    await expect(page.locator(d.selectors.modalLoading)).toBeHidden({ timeout: 10000 });
   } catch (e) {
     // If the page is closed, skip further actions
     if (page.isClosed()) return;
@@ -201,8 +170,8 @@ test('Edit provider group functionality verification', async ({ page ,loginAsAdm
   }
   saveCheckboxState(checkboxState);
 
-  await expect(page.getByRole('button', { name: 'Save & Close' })).toBeVisible();
-  await page.getByRole('button', { name: 'Save & Close' }).click();
+  await expect(page.getByRole('button', { name: d.labels.saveAndClose })).toBeVisible();
+  await page.getByRole('button', { name: d.labels.saveAndClose }).click();
   await page.getByLabel('Edit provider group').click();
 
   
@@ -213,15 +182,9 @@ test('Edit provider group details and verify the changes are saved successfully'
   await loginAsAdmin();
   // Test steps to edit provider group details and verify changes
   
-  await page.getByRole('link', { name: ' Accounts' }).click();
-  await page.getByRole('textbox', { name: 'Enter Account Number' }).click();
-  await page.getByRole('textbox', { name: 'Enter Account Number' }).fill(userData.editGroup.accountNum);
-  await page.getByRole('button', { name: 'Apply Filter' }).click();
-  await page.getByRole('link').filter({ hasText: /^$/ }).nth(1).click();
-  await page.getByRole('link').filter({ hasText: /^$/ }).nth(3).click();
-  await page.getByRole('button', { name: 'Edit Provider Group' }).click();
-  await page.getByRole('textbox', { name: 'Enter Address' }).first().click();
-  await expect(page.getByRole('textbox', { name: 'Enter Address' }).first()).toBeVisible();
+  await openEditProviderGroup(page, userData.editGroup.accountNum);
+  await page.getByRole('textbox', { name: d.roles.addressTextbox }).first().click();
+  await expect(page.getByRole('textbox', { name: d.roles.addressTextbox }).first()).toBeVisible();
  // Load and assert checkbox states
   const checkboxState = loadCheckboxState();
   // Debug log for loaded ERA Summary state
@@ -291,11 +254,11 @@ test('Edit provider group details and verify the changes are saved successfully'
       }
     }
   }
-  await expect(page.getByRole('textbox', { name: 'Enter Address' }).first()).toHaveValue(
-    '123 SILVER FANG LANE'
+  await expect(page.getByRole('textbox', { name: d.roles.addressTextbox }).first()).toHaveValue(
+    d.values.updatedAddress.toUpperCase()
   );
-  await expect(page.getByRole('textbox', { name: 'Enter Phone' })).toHaveValue('(444) 555-6666');
-  await expect(page.getByLabel('feeSchedule')).toHaveValue('F0256');
+  await expect(page.getByRole('textbox', { name: d.roles.phoneTextbox })).toHaveValue(d.values.updatedPhone);
+  await expect(page.getByLabel('feeSchedule')).toHaveValue(d.values.feeScheduleCode);
   await expect(page.getByLabel('feeSchedule')).toBeVisible();
 
   await expect(page.getByRole('checkbox', { name: '277u' }).first()).toBeChecked();
@@ -318,21 +281,46 @@ test('Edit provider group details and verify the changes are saved successfully'
   await expect(page.getByRole('checkbox', { name: 'New Statements' })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: 'Combine ERA' })).toBeChecked();
 
-  await page.getByText('Combine ALL').click();
-  await page.getByText('Combine ALL').click();
-  await expect(page.getByText('Combine ALL')).toBeVisible();
+  await page.getByText(d.labels.combineAll).click();
+  await page.getByText(d.labels.combineAll).click();
+  await expect(page.getByText(d.labels.combineAll)).toBeVisible();
 
   await page
     .locator('app-create-provider-group-modal div')
     .filter({ hasText: 'Edit Provider Group: G31927' })
     .click();
-  await page.getByRole('textbox', { name: 'Enter Email' }).click();
-  await expect(page.getByRole('textbox', { name: 'Enter Email' })).toHaveValue(
+  await page.getByRole('textbox', { name: d.roles.emailTextbox }).click();
+  await expect(page.getByRole('textbox', { name: d.roles.emailTextbox })).toHaveValue(
     'kmohamed@harriscomputer.com'
   );
 
-  await page.getByRole('checkbox', { name: 'RCM' }).uncheck();
-  await expect(page.getByRole('checkbox', { name: 'RCM' })).not.toBeChecked();
-  await page.getByRole('checkbox', { name: 'RCM' }).check();
-  await expect(page.getByRole('checkbox', { name: 'RCM' })).toBeChecked();
+  await page.getByRole('checkbox', { name: d.labels.rcm }).uncheck();
+  await expect(page.getByRole('checkbox', { name: d.labels.rcm })).not.toBeChecked();
+  await page.getByRole('checkbox', { name: d.labels.rcm }).check();
+  await expect(page.getByRole('checkbox', { name: d.labels.rcm })).toBeChecked();
+});
+
+test('Edit Provider Group screen field availability and save action visibility', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
+  await openEditProviderGroup(page, userData.editGroup.accountNum);
+
+  await expect(page.getByRole('heading', { name: `Edit Provider Group: ${userData.editGroup.groupeditInAcct}` })).toBeVisible();
+  await expect(page.getByText(d.labels.feeScheduleRequired)).toBeVisible();
+  await expect(page.getByLabel('feeSchedule')).toBeVisible();
+  await expect(page.getByRole('textbox', { name: d.roles.addressTextbox }).first()).toBeVisible();
+  await expect(page.getByRole('textbox', { name: d.roles.phoneTextbox })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: d.labels.claimStatus })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: d.labels.eligibility })).toBeVisible();
+  await expect(page.getByRole('button', { name: d.labels.saveAndClose })).toBeVisible();
+  await expect(page.getByRole('button', { name: d.labels.saveAndClose })).toBeEnabled();
+});
+
+test('Edit Provider Group account filter invalid value should show empty result', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
+  await navigateToAccounts(page);
+
+  await page.getByRole('textbox', { name: d.roles.accountNumberFilterTextbox }).fill(d.edgeCases.invalidAccountNumber);
+  await page.getByRole('button', { name: d.labels.applyFilter }).click();
+  await expect(page.getByRole('cell', { name: d.edgeCases.invalidAccountNumber })).toHaveCount(0);
+  await expect(page.getByText(d.labels.noResults).first()).toBeVisible();
 });

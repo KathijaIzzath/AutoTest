@@ -65,5 +65,17 @@
     "groupeditOutAcct": "G31928",
     "providerNPI": "1073737888",
     "providerTaxID": "561943459"
+  },
+  "financial": {
+    "username": "qasecureconnect@gmail.com",
+    "password": "$@H0use@$",
+    "cardnumber": "5413 3300 8909 9130",
+    "expiryDate": "12 / 2026",
+    "cvv": "201",
+    "clientsearchUrl": "https://qnk1scltweb02.pulseinc.com/SecureConnectWeb/dashboard/client-search",
+    "patientNameforSearch": "Kathija Refund",
+    "patientIdentifier": "12692-87674369",
+    "onlyIdentifier": "-87674369",
+    "partyID": "12692-"
   }
 }

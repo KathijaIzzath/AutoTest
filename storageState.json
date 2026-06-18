@@ -2,10 +2,10 @@
   "cookies": [
     {
       "name": "cf_clearance",
-      "value": "wXo0RPS79Kq43uiV5RMRYkUY4rMsoya6JhF2q81G0TY-1777993050-1.2.1.1-fmIGGpOZntYWYVSV3JCXI9DqaRfRH5n9FsU1EmaE0HgdBVlKqmE8ZXeBQtixLjOgnsUf8vp_nUB5w3mO7Go_Ie6p41CokSNHttKtVmJS49ldunV.hy2D67qvYTxqxJbcmJvcDlmIhIt7z8ON74winOFWq3qDk4alPjKcwMER.wACaDtUwqBoPhjQiQQzY.dqe0l8IM_F09jdf3xbsjbXHz.B4MJE1PyRcd.PijCgaoLoywKs9D1y.cuNYBDN1gY_ESHyX1qaxdaS5wm0srS64I5xmmBoVjnKw5Jt7gB1owsvsoajDSMjdHhJ2.RIIGIcU14nsIEXDtEu_TTRJjIrBQ",
+      "value": "qA3qYU60DjdUcfzseLvRXa2Yimf4H7MG76RZetBQZfY-1781798186-1.2.1.1-HQDvEjj_GPoBKE41ckOcjEHbY.1Dg0AOw5HUf1jtO4rLFeGHwM13GVEUTZ7q_qBM3HZrn7Wp_gOZg5mU.IYldNEV9Dd2LRIR1hcukgNPJDrQv_An2INgIteBOMQaY47MSDbWnCZNNZ1nPIf6RWrWsT5eeH6vrLcUiQvHh.uvJ.WpecLzdQjSd50Eg_MRdjj.9.qqjGi2sgFMtnF9fIf.A83_JglkJNt9IiBo4JSJZCPKSnr8CS3glVr9I2pqXFMpUXneUhS._QFnuwfxDHiHNRiXRAsJBA70Zk1dZlk0gAcVT88WkBskNFUsHv8AZs5M.0vMi4Jp6f5kE0V_93snsg",
       "domain": ".pulseinc.com",
       "path": "/",
-      "expires": 1809529050.701239,
+      "expires": 1813334186.979964,
       "httpOnly": true,
       "secure": true,
       "sameSite": "None",
@@ -14,14 +14,40 @@
     },
     {
       "name": "__cf_bm",
-      "value": "PF3MJp3WxyTafVr2As5reATP4MGD8S.fr7zrcsLbVCs-1777993050.674803-1.0.1.1-Jp7D9XRjWGOs5titWtnRtCpaUIQHxiiwFYaxbUobBVvOFzGtPq5rzUAYxWm2H4a6MiBeddXNokg_XMKwy2eITuKbEgQBpeg4j.JorzKSFbm4NsM2eHonbLqHXWu0FmCI",
+      "value": "WrWSYft81ue0RcI94SYoIogRui6HrRqfsoSmK3EyE1U-1781798186.9494114-1.0.1.1-fTdSP1lC24W0PjDkvbZ_IYp2cU8DlOw_khokzbf24Lbb0BdQyRO.Srw_SWursXl0NhtWyXv3qszm8RmpySy.KmL8Lrb7dbMXWuioolv6Hd9qf8sDLWAdutqCw6ptdrJ5",
       "domain": ".pulseinc.com",
       "path": "/",
-      "expires": 1777994850.701382,
+      "expires": 1781799986.980204,
       "httpOnly": true,
       "secure": true,
-      "sameSite": "Lax"
+      "sameSite": "None"
     }
   ],
-  "origins": []
+  "origins": [
+    {
+      "origin": "https://qnk1scltweb02.pulseinc.com",
+      "localStorage": [
+        {
+          "name": "token",
+          "value": "{\"access_token\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IkEwMzU4RjMwNUFDMDE3QjAxQzYzMzIyODM5MkQzODQ0MTNFREE1NkUiLCJ4NXQiOiJvRFdQTUZyQUY3QWNZeklvT1MwNFJCUHRwVzQiLCJ0eXAiOiJhdCtqd3QifQ.eyJzdWIiOiI5ZTliNjIzNS1kZDZkLTQwNjktYjNlMy0wYjkyMmQzMTI4NTAiLCJuYW1lIjoic2NhZG1pbiIsInJvbGUiOlsiSGFnT2lkY0FkbWluaXN0cmF0b3IiLCJTQ0FETUlOIl0sIm9pX3Byc3QiOiJTZWN1cmVDb25uZWN0V2ViQXBwIiwiY2xpZW50X2lkIjoiU2VjdXJlQ29ubmVjdFdlYkFwcCIsIm9pX3Rrbl9pZCI6IjEwZGRkNDlkLWJkMmItNGVmOC04NzUwLTNlY2E1ZjE1NzM2YiIsImF1ZCI6InJlc291cmNlX3NlcnZlcl9zZWN1cmVjb25uZWN0Iiwic2NvcGUiOiJvcGVuaWQgZW1haWwgcHJvZmlsZSByb2xlcyIsImV4cCI6MTc4MTgwMTc4NywiaXNzIjoiaHR0cHM6Ly9xbmsxcHQ1MDAwcnQwMS5wdWxzZWluYy5jb20vaGFnaWRlbnRpdHlzZXJ2ZXIiLCJpYXQiOjE3ODE3OTgxODd9.m57XIu_dZEBG3PfPAIiqfWQVgXsEZd5lXRt22ViU4FENW01Clo5atAjuhh0bLH5z06UKbNVIcxGUb7ORTtPppaKTtqrgaMOmNJXYsi13lhg7PhweinkJGNK__SIunFd3QMDZ7H3Wca-LAm1OMpGPGBGqdigKldd0tWQMm73-MA7d23oNhNFxBBWCoEnjx4deN0SLBP_d2xKOdoGnwsu2a2I1EokKC-9qwiN23UYbUw3rZj5eyim7CV9dwtOohIaX-AOzNUsLZznCKifdPAPebrQG5lvCw1XGtt2H846X7G7EceU_5o4sI89js9_PlsueUOGC0xCQ4fvKqTVXCqePrg\",\"expires_in\":3600,\"token_type\":\"Bearer\",\"active\":true,\"error\":null,\"error_description\":null}"
+        },
+        {
+          "name": "permissions",
+          "value": "[\"Claims\",\"Users\",\"ERA\",\"Group Enrollments\",\"Payer\",\"Insurance\",\"Eligibility Routing\",\"Claim Status Routing\",\"Read-Only Accounts\",\"Accounts\",\"Client Admin - Accounts\",\"Utilities\",\"Financial Module\",\"Read Only - Financial Module\",\"Financial Module - ACH\",\"Claims Correct Admin\",\"Claims Correct User\"]"
+        },
+        {
+          "name": "user",
+          "value": "{\"id\":1,\"userName\":\"scadmin\",\"firstName\":\"SECURECONNECT\",\"lastName\":\"ADMIN\",\"caseNumber\":null,\"passwordResetAllowed\":true,\"passwordLastUpdated\":\"2021-05-24T14:10:10.112-05:00\",\"active\":true,\"createdBy\":1,\"createdAt\":\"2021-05-24T14:10:10.112-05:00\",\"updatedBy\":20,\"updatedAt\":\"2022-10-25T13:17:23.539-05:00\",\"identityUserId\":\"9e9b6235-dd6d-4069-b3e3-0b922d312850\",\"isUser\":true,\"role\":\"SCADMIN\",\"groupId\":null,\"accessLevel\":\"SECURE_CONNECT\",\"phone\":\"8889999399\",\"ext\":null,\"pin\":\"1234\",\"cellPhone\":null,\"accounts\":[],\"applications\":[],\"groups\":[],\"permissions\":[{\"permissionId\":3,\"name\":\"Claims\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":1,\"name\":\"Users\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":4,\"name\":\"ERA\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":5,\"name\":\"Group Enrollments\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":6,\"name\":\"Payer\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":7,\"name\":\"Insurance\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":8,\"name\":\"Eligibility Routing\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":9,\"name\":\"Claim Status Routing\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":10,\"name\":\"Read-Only Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":2,\"name\":\"Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":11,\"name\":\"Client Admin - Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":28,\"name\":\"Utilities\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":27,\"name\":\"Financial Module\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":30,\"name\":\"Read Only - Financial Module\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":31,\"name\":\"Financial Module - ACH\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":32,\"name\":\"Claims Correct Admin\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":33,\"name\":\"Claims Correct User\",\"__typename\":\"UsersClientsPermissions\"}],\"__typename\":\"UsersClients\"}"
+        },
+        {
+          "name": "initialMessageTime",
+          "value": "1781798188029"
+        },
+        {
+          "name": "credentials",
+          "value": "{\"username\":\"scadmin\",\"password\":\"Scadmin123!\"}"
+        }
+      ]
+    }
+  ]
 }

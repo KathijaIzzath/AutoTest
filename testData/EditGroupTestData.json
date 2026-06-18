@@ -1,0 +1,35 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "editProviderGroup": "Edit Provider Group",
+    "saveAndClose": "Save & Close",
+    "feeScheduleRequired": "* fee schedule",
+    "address1": "Address 1",
+    "claimStatus": "Claim Status",
+    "eligibility": "Eligibility",
+    "generate": "Generate",
+    "pulseCsv": "Pulse CSV",
+    "combineAll": "Combine ALL",
+    "rcm": "RCM",
+    "noResults": "No results found"
+  },
+  "roles": {
+    "accountNumberFilterTextbox": "Enter Account Number",
+    "addressTextbox": "Enter Address",
+    "phoneTextbox": "Enter Phone",
+    "emailTextbox": "Enter Email"
+  },
+  "selectors": {
+    "accountRowLinkIndex": 1,
+    "providerGroupRowLinkIndex": 3,
+    "modalLoading": ".modal-body.loading"
+  },
+  "values": {
+    "feeScheduleCode": "F0256",
+    "updatedAddress": "123 Silver Fang Lane",
+    "updatedPhone": "(444) 555-6666"
+  },
+  "edgeCases": {
+    "invalidAccountNumber": "NO_MATCH_EDITGROUP_ACCOUNT_999999"
+  }
+}

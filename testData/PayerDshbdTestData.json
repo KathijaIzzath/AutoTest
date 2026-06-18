@@ -1,0 +1,46 @@
+{
+  "labels": {
+    "payer": "Payer",
+    "name": "name",
+    "processorId": "Processor Id",
+    "payerId": "Payer ID",
+    "state": "State",
+    "showInactiveOnly": "Show Inactive Only",
+    "applyFilter": "Apply Filter"
+  },
+  "links": {
+    "addPayer": " Add Payer",
+    "javascript": "javascript"
+  },
+  "placeholders": {
+    "name": "Enter Name",
+    "processorId": "Enter Processor ID",
+    "payerId": "Enter Payer Id"
+  },
+  "headers": {
+     "payerName": "Payer name",
+     "state": "state",
+    "professionalProcessorId": "PROFESSIONAL PROCESSOR ID",
+    "institutionalProcessorId": "INSITUTIONAL PROCESSOR ID",
+    "payerId": "payer id",
+    "claimEnrollment": "claim enrollment"
+  },
+  "selectors": {
+    "appPayers": "app-payers"
+  },
+  "filterValues": {
+    "validName": "select",
+    "validProcessorId": "RELAY",
+    "validPayerId": "00014",
+    "invalidName": "ZZZNOMATCH99999",
+    "invalidProcessorId": "ZZZNOMATCH99999",
+    "invalidPayerId": "ZZZNOMATCH99999",
+    "knownPayerName": "SELECTCARE",
+    "knownState": "TX"
+  },
+  "timeouts": {
+    "loginTimeout": 60000,
+    "filterTimeout": 15000,
+    "generalTimeout": 10000
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "labels": {
+    "accountsNav": "Accounts",
+    "applyFilter": "Apply Filter",
+    "accountNumber": "Account Number",
+    "accountName": "Account Name",
+    "city": "City",
+    "state": "State",
+    "vendor": "Vendor",
+    "npi": "NPI",
+    "showInactiveOnly": "Show Inactive Only",
+    "providerGroupId": "Provider Group ID",
+    "providerId": "Provider ID"
+  },
+  "headers": {
+    "accountNumberAsc": "account number ",
+    "accountNumberDesc": "account number ",
+    "name": "Name",
+    "nameAsc": "Name ",
+    "state": "State",
+    "stateAsc": "State ",
+    "city": "City",
+    "address": "Address",
+    "addressAsc": "Address ",
+    "addressDesc": "Address ",
+    "contactName": "contact Name",
+    "contactNameAsc": "contact Name ",
+    "contactNameDesc": "contact Name ",
+    "groupId": "Group ID",
+    "providerId": "provider ID"
+  },
+  "placeholders": {
+    "accountNumber": "Enter Account Number",
+    "accountName": "Enter Account Name",
+    "city": "Enter City",
+    "npi": "Enter NPI",
+    "providerGroupId": "Enter Provider Group ID",
+    "providerId": "Enter Provider ID"
+  },
+  "selectors": {
+    "accountsContainer": "app-accounts",
+    "accountsDashboardLink": "a[href$=\"/dashboard/accounts\"]",
+    "stateContainer": "states",
+    "vendorFilter": "dropdown-filter-item"
+  },
+  "values": {
+    "accountNumber": "000VMTEST",
+    "accountNameExact": "WISOKY, MANTE AND ORTIZ",
+    "accountNameContains": "Mante",
+    "city": "SOUTH",
+    "cityExpected": "SOUTH ISADORE",
+    "state": "LA",
+    "vendorOption": "15: H",
+    "vendorExpectedAccount": "CARE0052P10313G19415",
+    "vendorExpectedName": "DANIEL-KERLUKE",
+    "npi": "0829876198",
+    "npiExpectedAccount": "VMCTEST",
+    "npiExpectedName": "HAGENES-WEISSNAT",
+    "providerGroupId": "G00014",
+    "providerId": "T00063",
+    "inactiveOnlyExpectedAccount": "E2ETESTACCOUNT01",
+    "sortExpectedFirstName": "ABBOTT-GERLACH",
+    "sortExpectedState": "AB",
+    "sortExpectedCity": "AARONSBURG",
+    "sortExpectedAddress": "SILVER FANG STREET",
+    "sortExpectedContact": "Not provided"
+  },
+  "edgeCases": {
+    "invalidAccountNumber": "INVALID-ACCT-99999",
+    "invalidAccountName": "ZZZ-NO-ACCOUNT-NAME-FOUND",
+    "invalidCity": "ZZZ_NO_CITY_MATCH"
+  }
+}

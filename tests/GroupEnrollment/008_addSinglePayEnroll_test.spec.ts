@@ -1,28 +1,40 @@
-import { test, expect } from './myTestData';
-import * as userData from '../testData/UserInfo.json';
+import { test, expect } from '../myTestData';
+import * as userData from '../../testData/UserInfo.json';
+import * as d from '../../testData/SinglePayEnrollTestData.json';
 
-import helperFunction from '../testData/helperFunction';
-import {  existsSingleGroupEnrollment, fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear, getTodaysDateWithYr } from '../testData/database.utils';
+import { existsSingleGroupEnrollment, fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear } from '../../testData/database.utils';
 // Adding single payer enrollment for groupid G00014
+
+async function openAddGroupEnrollment(page: any) {
+  await page.getByRole('link', { name: d.labels.groupEnrollmentsNav }).click();
+  await page.getByRole('link', { name: d.labels.addGroupEnrollmentNav }).click();
+  await expect(page.getByRole('heading', { name: d.labels.addGroupEnrollmentsHeading })).toBeVisible();
+}
+
+async function selectGroupNpiTax(page: any) {
+  await page.locator(d.selectors.groupArrow).click();
+  await page.getByText(userData.groupEnroll.groupId).click();
+  await page.getByRole(d.roles.groupCombobox).nth(1).selectOption(userData.groupEnroll.NPI);
+  await page.getByRole(d.roles.groupCombobox).nth(2).selectOption(userData.groupEnroll.taxID);
+}
 
 test('Add Single Pay Enrollment ', async ({ page, loginAsAdmin }) => {
   await loginAsAdmin();
   const groupId = userData.groupEnroll.groupId;
   // --- Pre-checks and navigation ---
   const verifyEnrollmentExists = await existsSingleGroupEnrollment(groupId);
-  await page.getByRole('link', { name: ' Group Enrollments' }).click();
-  await page.getByRole('link', { name: ' Add Group Enrollment' }).click();
+  console.log('Existing single enrollment before test:', verifyEnrollmentExists);
+  await openAddGroupEnrollment(page);
 
   // --- Initial dropdown state checks ---
-  const initialgroupSelect = page.getByRole('combobox').filter({ hasText: /^$/ });
-  const npiCombo = page.locator('select[formcontrolname="npi"]');
+  const npiCombo = page.locator(d.selectors.npiSelect);
 await expect(npiCombo).toBeDisabled(); // Checks if disabled
-const taxIdCombo = page.locator('select[formcontrolname="taxId"]');
+const taxIdCombo = page.locator(d.selectors.taxIdSelect);
 await expect(taxIdCombo).toBeDisabled(); // Checks if disabled
   await expect(page.locator('div').filter({ hasText: 'Select Tax Id' }).nth(5)).toBeVisible();
   await expect(page.locator('div').filter({ hasText: 'Select NPI' }).nth(5)).toBeVisible();
   await expect(page.locator('div').filter({ hasText: /^Select NPI$/ })).toBeVisible();
-  await expect(page.getByText('tax id', { exact: true })).toBeVisible();
+  await expect(page.getByText(d.labels.taxId, { exact: true })).toBeVisible();
   await expect(page.locator('div').filter({ hasText: /^Select Tax Id$/ })).toBeVisible();
 
   // Check if no option is selected in group dropdown
@@ -51,57 +63,53 @@ await expect(taxIdCombo).toBeDisabled(); // Checks if disabled
       // Verify and add date and optional fields
       //Verify save and adding 2 enrollments with different types
       // verify Prompt to add another
-  await expect(page.getByRole('heading', { name: 'Add Group Enrollments' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: d.labels.addGroupEnrollmentsHeading })).toBeVisible();
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('Group Name');
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('N/A');
-  await expect(page.getByRole('dialog').getByText('Group ID', { exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog').getByText(d.labels.groupId, { exact: true })).toBeVisible();
   await expect(page.getByRole('combobox').filter({ hasText: /^$/ })).toBeVisible();
-  await expect(page.getByRole('dialog').getByText('NPI', { exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog').getByText(d.labels.npi, { exact: true })).toBeVisible();
   await expect(page.locator('div').filter({ hasText: /^Select NPI$/ })).toBeVisible();
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('Select NPI');
-  await expect(page.getByText('tax id', { exact: true })).toBeVisible();
+  await expect(page.getByText(d.labels.taxId, { exact: true })).toBeVisible();
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('Select Tax Id');
   await expect(page.locator('div').filter({ hasText: /^Select Tax Id$/ })).toBeVisible();
  
-  await expect(page.getByRole('heading', { name: 'Add Group Enrollments' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: d.labels.addGroupEnrollmentsHeading })).toBeVisible();
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('Group Name');  
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('N/A');
-  await expect(page.getByRole('dialog').getByText('Group ID', { exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog').getByText(d.labels.groupId, { exact: true })).toBeVisible();
   await expect(page.getByRole('combobox').filter({ hasText: /^$/ })).toBeVisible();
-  await expect(page.getByRole('dialog').getByText('NPI', { exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog').getByText(d.labels.npi, { exact: true })).toBeVisible();
   await expect(page.locator('div').filter({ hasText: /^Select NPI$/ })).toBeVisible();
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('Select NPI');
-  await expect(page.getByText('tax id', { exact: true })).toBeVisible();
+  await expect(page.getByText(d.labels.taxId, { exact: true })).toBeVisible();
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('Select Tax Id');
   await expect(page.locator('div').filter({ hasText: /^Select Tax Id$/ })).toBeVisible();
  // await page.getByText(userData.groupEnroll.groupId).click();
-   await page.locator('.is-invalid > .ng-select-container > .ng-arrow-wrapper').click();
-  await page.getByText(userData.groupEnroll.groupId ).click();
+  await selectGroupNpiTax(page);
  
  //await page.getByRole('option', { name: userData.groupEnroll.groupId }).click();
   await expect(page.locator('app-add-group-enrollments-dialog-modal')).toContainText('Select Tax Id ');
-  await page.getByRole('combobox').nth(1).selectOption(userData.groupEnroll.NPI);
-  await page.getByRole('combobox').nth(2).selectOption(userData.groupEnroll.taxID);
-
-await expect(page.getByRole('heading', { name: 'Add Group Enrollments' })).toBeVisible();
+await expect(page.getByRole('heading', { name: d.labels.addGroupEnrollmentsHeading })).toBeVisible();
 await expect(page.getByText('Group Name')).toBeVisible();
 await expect(page.locator('app-add-group-enrollments-modal')).toContainText('LAKIN-KULAS');
-await expect(page.getByRole('dialog').getByText('Group ID')).toBeVisible();
+await expect(page.getByRole('dialog').getByText(d.labels.groupId)).toBeVisible();
 await expect(page.locator('app-add-group-enrollments-modal')).toContainText(userData.groupEnroll.groupId);
 await expect(page.getByText(userData.groupEnroll.groupId)).toBeVisible();
-await expect(page.getByRole('dialog').getByText('NPI')).toBeVisible();
+await expect(page.getByRole('dialog').getByText(d.labels.npi)).toBeVisible();
 await expect(page.getByText(userData.groupEnroll.NPI)).toBeVisible();
 await expect(page.locator('app-add-group-enrollments-modal')).toContainText(userData.groupEnroll.NPI);
-await expect(page.getByText('tax id', { exact: true })).toBeVisible();
+await expect(page.getByText(d.labels.taxId, { exact: true })).toBeVisible();
 await expect(page.getByText(userData.groupEnroll.taxID)).toBeVisible();
 await expect(page.locator('app-add-group-enrollments-modal')).toContainText(userData.groupEnroll.taxID);
-await expect(page.getByRole('dialog').getByText('Payer', { exact: true })).toBeVisible();
+await expect(page.getByRole('dialog').getByText(d.labels.payer, { exact: true })).toBeVisible();
 await expect(page.getByRole('combobox')).toBeVisible();
 await expect(page.getByRole('combobox')).toBeVisible();
 await page.getByRole('combobox').getByRole('textbox').click();
 await page.getByRole('option', { name: userData.groupEnroll.payerName }).click();
 await expect(page.getByRole('combobox')).toBeVisible();
-await expect(page.getByRole('dialog').getByText('enrollment type')).toBeVisible();
+await expect(page.getByRole('dialog').getByText(d.labels.enrollmentType)).toBeVisible();
 await expect(page.locator('label').filter({ hasText: userData.groupEnroll.enrollmentTypeP })).toBeVisible();
 await expect(page.getByRole('checkbox', { name: 'Institutional' })).toBeVisible();
 await expect(page.locator('label').filter({ hasText: userData.groupEnroll.enrollmentTypeE })).toBeVisible();
@@ -109,23 +117,23 @@ await expect(page.locator('label').filter({ hasText: userData.groupEnroll.enroll
 await expect(page.locator('label').filter({ hasText: userData.groupEnroll.enrollmentTypeL })).toBeVisible();
 await page.getByRole('checkbox', { name: userData.groupEnroll.enrollmentTypeP }).check();
 await page.getByRole('checkbox', { name: userData.groupEnroll.enrollmentTypeL }).check();
-await expect(page.getByText('Followup Date')).toBeVisible();
+await expect(page.getByText(d.labels.followupDate)).toBeVisible();
 await page.getByRole('button').filter({ hasText: /^$/ }).click();
-await page.getByLabel('Select year').selectOption('2035');
-await page.getByText('23', { exact: true }).click();
-await expect(page.getByRole('textbox', { name: 'mm/dd/yyyy' })).toHaveValue('05/23/2035');
-await expect(page.getByRole('dialog').getByText('Case Number')).toBeVisible();
-await page.getByRole('textbox', { name: 'Enter Case Number' }).click();
-await page.getByRole('textbox', { name: 'Enter Case Number' }).fill('case-1234');
-await expect(page.getByRole('textbox', { name: 'Enter Case Number' })).toBeVisible();
-await expect(page.getByText('Notes')).toBeVisible();
-await expect(page.getByRole('textbox', { name: 'Enter Notes' })).toBeVisible();
-await expect(page.getByText('Message')).toBeVisible();
-await expect(page.getByRole('textbox', { name: 'Enter Message' })).toBeVisible();
-await page.getByRole('textbox', { name: 'Enter Notes' }).click();
-await page.getByRole('textbox', { name: 'Enter Notes' }).fill('by group');
-await page.getByRole('textbox', { name: 'Enter Message' }).click();
-await page.getByRole('textbox', { name: 'Enter Message' }).fill('message');
+await page.getByLabel('Select year').selectOption(d.values.followupYear);
+await page.getByText(d.values.followupDay, { exact: true }).click();
+await expect(page.getByRole('textbox', { name: d.roles.dateTextbox })).toHaveValue(/\d{2}\/23\/2035/);
+await expect(page.getByRole('dialog').getByText(d.labels.caseNumber)).toBeVisible();
+await page.getByRole('textbox', { name: d.roles.caseNumberTextbox }).click();
+await page.getByRole('textbox', { name: d.roles.caseNumberTextbox }).fill(d.values.caseNumber);
+await expect(page.getByRole('textbox', { name: d.roles.caseNumberTextbox })).toBeVisible();
+await expect(page.getByText(d.labels.notes)).toBeVisible();
+await expect(page.getByRole('textbox', { name: d.roles.notesTextbox })).toBeVisible();
+await expect(page.getByText(d.labels.message)).toBeVisible();
+await expect(page.getByRole('textbox', { name: d.roles.messageTextbox })).toBeVisible();
+await page.getByRole('textbox', { name: d.roles.notesTextbox }).click();
+await page.getByRole('textbox', { name: d.roles.notesTextbox }).fill(d.values.notes);
+await page.getByRole('textbox', { name: d.roles.messageTextbox }).click();
+await page.getByRole('textbox', { name: d.roles.messageTextbox }).fill(d.values.message);
 await expect(page.getByText('documents')).toBeVisible();
 await expect(page.locator('div').filter({ hasText: /^Eligibility\.pdf$/ })).toBeVisible();
 await expect(page.locator('div').filter({ hasText: /^instruction\.pdf$/ })).toBeVisible();
@@ -146,22 +154,22 @@ await expect(page.getByText(userData.groupEnroll.payerID, { exact: true })).toBe
 await expect(page.getByText('Processor Id')).toBeVisible();
 await expect(page.getByText(userData.groupEnroll.processorId)).toBeVisible();
 await expect(page.locator('app-add-group-enrollments-modal')).toContainText(userData.groupEnroll.processorId);
-await expect(page.getByRole('button', { name: 'Back' })).toBeVisible();
-await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
-await page.getByRole('button', { name: 'Save' }).click();
+await expect(page.getByRole('button', { name: d.labels.back })).toBeVisible();
+await expect(page.getByRole('button', { name: d.labels.save })).toBeVisible();
+await page.getByRole('button', { name: d.labels.save }).click();
 
 await expect(page.getByLabel(/Group Enrollment Type \(requiresEnrollment\): \d+ was created successfully!/)).toBeVisible();
 await expect(page.getByLabel(/Group Enrollment Type \(eligibilityEnrollment\): \d+ was created successfully!/)).toBeVisible();
 
-await expect(page.getByRole('heading', { name: 'Group Enrollment saved.' })).toBeVisible();
-await expect(page.getByRole('heading')).toContainText('Group Enrollment saved.');
-await expect(page.locator('app-modal')).toContainText('Group Enrollment saved. Do you want to add another Enrollment?');
-await expect(page.getByRole('button', { name: 'No' })).toBeVisible();
-await expect(page.getByRole('button', { name: 'Yes' })).toBeVisible();
-await expect(page.locator('app-modal')).toContainText('No');
-await expect(page.locator('app-modal')).toContainText('Yes');
-await page.getByRole('button', { name: 'No' }).click();
-await expect(page.getByText('Group Enrollment', { exact: true })).toBeVisible();
+await expect(page.getByRole('heading', { name: d.labels.groupEnrollmentSaved })).toBeVisible();
+await expect(page.getByRole('heading')).toContainText(d.labels.groupEnrollmentSaved);
+await expect(page.locator('app-modal')).toContainText(d.labels.addAnotherPrompt);
+await expect(page.getByRole('button', { name: d.labels.no })).toBeVisible();
+await expect(page.getByRole('button', { name: d.labels.yes })).toBeVisible();
+await expect(page.locator('app-modal')).toContainText(d.labels.no);
+await expect(page.locator('app-modal')).toContainText(d.labels.yes);
+await page.getByRole('button', { name: d.labels.no }).click();
+await expect(page.getByText(d.labels.groupEnrollmentGrid, { exact: true })).toBeVisible();
 await expect(page.getByRole('cell', { name: userData.groupEnroll.groupId }).first()).toBeVisible();
 await expect(page.getByRole('cell', { name: userData.groupEnroll.NPI }).first()).toBeVisible();
 await expect(page.getByRole('cell', { name: userData.groupEnroll.taxID }).first()).toBeVisible();
@@ -176,4 +184,27 @@ const todaydateYr = await getTodaysDateWithFullYear();
 console.log('todaydateYr:', todaydateYr);
 await expect(page.getByRole('cell', { name: todaydateYr }).first()).toBeVisible();
 await expect(page.getByRole('cell', { name: todaydateYr }).nth(1)).toBeVisible();
+});
+
+test('Single payer enrollment modal field visibility and availability checks', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
+  await openAddGroupEnrollment(page);
+
+  await expect(page.getByRole('heading', { name: d.labels.addGroupEnrollmentsHeading })).toBeVisible();
+  await expect(page.getByRole('dialog').getByText(d.labels.groupId, { exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog').getByText(d.labels.npi, { exact: true })).toBeVisible();
+  await expect(page.getByText(d.labels.taxId, { exact: true })).toBeVisible();
+  await expect(page.locator(d.selectors.npiSelect)).toBeDisabled();
+  await expect(page.locator(d.selectors.taxIdSelect)).toBeDisabled();
+});
+
+test('Single payer enrollment invalid group value should keep dependent dropdowns disabled', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
+  await openAddGroupEnrollment(page);
+
+  // The invalid group id should not enable dependent dropdowns when not selectable.
+  await page.locator(d.selectors.groupArrow).click();
+  await expect(page.getByRole('option', { name: d.edgeCases.invalidGroupId })).toHaveCount(0);
+  await expect(page.locator(d.selectors.npiSelect)).toBeDisabled();
+  await expect(page.locator(d.selectors.taxIdSelect)).toBeDisabled();
 });

@@ -1,0 +1,28 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "showInactiveOnly": "Show Inactive Only",
+    "deactivateAccount": "Deactivate Account",
+    "activateAccount": "Activate Account",
+    "confirmAction": "Confirm action",
+    "confirmDeactivateMessage": "Are you sure you want to deactivate this account?",
+    "confirmActivateMessage": "Are you sure you want to activate this account?",
+    "cancel": "Cancel",
+    "ok": "Ok",
+    "qaContact": "QA_CONTACT",
+    "noResults": "No results found"
+  },
+  "roles": {
+    "accountNumberFilterTextbox": "Enter Account Number"
+  },
+  "selectors": {
+    "modalRoot": "app-modal",
+    "rowActionLinkIndex": 2
+  },
+  "values": {
+    "newlyCreatedAccountNumber": "SCAUTOACCTNUM-01"
+  },
+  "edgeCases": {
+    "invalidAccountNumber": "NO_MATCH_DEACT_ACCOUNT_999999"
+  }
+}

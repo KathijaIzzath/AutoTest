@@ -1,0 +1,39 @@
+{
+  "page": {
+    "title": "Secure Connect",
+    "titleRegex": "Secure Connect"
+  },
+  "labels": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "username": "Username",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "logInButton": "Log In"
+  },
+  "inputs": {
+    "usernameField": "Enter Username",
+    "passwordField": "Enter Password"
+  },
+  "links": {
+    "logo": "Logo",
+    "dashboard": " Dashboard",
+    "quickLinks": " quick links"
+  },
+  "postLogin": {
+    "dashboardText": "Dashboard",
+    "appLocator": "app-dashboard"
+  },
+  "errorMessages": {
+    "invalidCredentials": "Invalid username or password",
+    "requiredField": "required"
+  },
+  "edgeCases": {
+    "invalidUsername": "invalid_user_xyz",
+    "invalidPassword": "WrongPassword999!",
+    "emptyString": "",
+    "whitespaceUsername": "   ",
+    "sqlInjection": "' OR '1'='1",
+    "longString": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+}

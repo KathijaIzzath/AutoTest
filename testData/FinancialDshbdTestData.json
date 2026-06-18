@@ -1,0 +1,85 @@
+{
+  "navigation": {
+    "financialLink": " Financial",
+    "processPaymentsLink": " Process Payments",
+    "paymentAnalyticsLink": " Payment Analytics",
+    "viewPaymentsLink": " View Payments",
+    "managePaymentMethods": "Manage Payment Methods",
+    "financialListItem": "FinancialProcess"
+  },
+  "labels": {
+    "dashboard": "Dashboard",
+    "activeSite": "* Active Site",
+    "transactionType": "Transaction Type",
+    "transactionTypeText": "Transaction TypeselectManual ACH Refund ACH Virtual Card",
+    "byPatientName": "By Patient Name",
+    "byResponsibleParty": "By Responsible Party",
+    "addPaymentMethod": "Add Payment Method",
+    "savePaymentInfo": "Save Payment Information",
+    "results": "Results",
+    "select": "SELECT",
+    "responsiblePartyName": "Responsible Party Name :",
+    "chargeSummaryForPrefix": "Charge Summary for",
+    "chargeSummaryColonPrefix": "Charge Summary:"
+  },
+  "headers": {
+    "id": "ID",
+    "name": "Name",
+    "accountNumber": "Account Number"
+  },
+  "inputs": {
+    "firstName": "firstName",
+    "lastName": "lastName",
+    "patientFirstName": "patientFirstName",
+    "patientLastName": "patientLastName"
+  },
+  "iframes": {
+    "cardNumber": "card-number",
+    "cardExpiration": "card-expiration",
+    "cardCvv": "card-cvv",
+    "submit": "submit"
+  },
+  "placeholders": {
+    "cardNumber": "•••• •••• •••• ••••",
+    "expiry": "MM / YYYY",
+    "cvv": "•••",
+    "identifier": "Identifier",
+    "responsiblePartyId": "Responsible Party ID"
+  },
+  "buttons": {
+    "logIn": "Log In",
+    "search": "Search",
+    "save": "Save",
+    "close": "✖",
+    "enterUsername": "Enter Username",
+    "enterPassword": "Enter Password"
+  },
+  "searchValues": {
+    "clientDropdownOption": "[GATE0097P12692G15778] G15778",
+    "firstNameSearch": "kathija",
+    "lastNameSearch": "estatementyes",
+    "lastNameRefund": "refund",
+    "firstSearchResultId": "-87677428",
+    "firstSearchResultName": "Kathija Estatementyes"
+  },
+  "selectors": {
+    "appDashboard": "app-dashboard",
+    "appClientSearch": "app-client-search",
+    "addToWallet": "Add to wallet",
+    "viewAccountBalance": "View Account Balance"
+  },
+  "edgeCases": {
+    "invalidLastName": "ZZZNOMATCH99999",
+    "invalidIdentifier": "00000-00000000",
+    "emptyString": ""
+  },
+  "alerts": {
+    "paymentSavedPartial": "Your payment method has been "
+  },
+  "timeouts": {
+    "loginTimeout": 60000,
+    "searchTimeout": 120000,
+    "generalTimeout": 10000,
+    "paymentTimeout": 30000
+  }
+}

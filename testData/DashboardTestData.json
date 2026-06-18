@@ -1,0 +1,88 @@
+{
+  "labels": {
+    "userInitials": "SA",
+    "dashboardTitle": "Dashboard",
+    "dashboardSidebarLink": " Dashboard",
+    "last10Days": "Last 10 Days",
+    "claimHealthMeter": "Claim Health Meter",
+    "support": "Support",
+    "todaysClaims": "Today's Claims",
+    "scReceived": "Secure Connect Received",
+    "scErrors": "Secure Connect errors",
+    "quickQueries": "Quick Queries",
+    "claimsSent": "CLAIMS SENT",
+    "erasReceived": "ERAs RECEIVED",
+    "rejectedClaims": "REJECTED CLAIMS",
+    "outstandingEnrollments": "OUTSTANDING ENROLLMENTS",
+    "groupFilterLabel": "Group:",
+    "groupDropdownText": "Choose a Group×All×"
+  },
+  "support": {
+    "contactUsCell": "Contact Us",
+    "phoneLink": "-855-734-4668",
+    "phoneText": "855-734-4668",
+    "emailSupportCell": "Email Support",
+    "emailLink": "Secureconnect@harriscomputer.",
+    "emailFull": "Secureconnect@harriscomputer.com",
+    "documentationCell": "Documentation"
+  },
+  "claims": {
+    "errorStatus": "Error",
+    "finalizedDeniedStatus": "FINALIZED_DENIED",
+    "rejectedStatus": "REJECTED",
+    "appLocator": "app-claims"
+  },
+  "era": {
+    "appLocator": "app-era",
+    "sampleGroupId": "G30034"
+  },
+  "enrollments": {
+    "pageTitle": "Group Enrollment",
+    "agreementStatusLabel": "Agreement Status",
+    "statusSentToCustomer": "Sent to Customer",
+    "statusDenied": "Denied",
+    "statusManualAction": "Manual action required"
+  },
+  "profile": {
+    "profileInfoButton": "Profile Info",
+    "changePasswordButton": "Change password",
+    "logoutButton": "Logout",
+    "changePasswordHeading": "Change User Password",
+    "welcomeHeading": "Welcome",
+    "firstNameLabel": "* First Name",
+    "appUserLocator": "app-user"
+  },
+  "columnHeaders": {
+    "claims": {
+      "patientName": "PATIENT NAME",
+      "patientNameWithSpace": "PATIENT NAME ",
+      "patientAccount": "PATIENT ACCOUNT #",
+      "dateOfService": "DATE OF SERVICE",
+      "receivedDate": "RECEIVED DATE",
+      "payerId": "PAYER ID",
+      "provider": "PROVIDER",
+      "charges": "CHARGES",
+      "status": "STATUS"
+    },
+    "era": {
+      "group": "group",
+      "checkDate": "check date",
+      "checkNumber": "Check Number",
+      "npi": "npi",
+      "taxId": "tax id",
+      "payerId": "payer id",
+      "payerName": "Payer Name",
+      "payerAmount": "Payer amount",
+      "status": "status"
+    },
+    "enrollment": {
+      "groupId": "GROUP ID"
+    }
+  },
+  "selectors": {
+    "dashboardClaimsItemValue": ".dashboard-claims-item-value",
+    "claimsErrorItemValue": ".dashboard-claims-item.errors > .dashboard-claims-item-value",
+    "ngSelectArrow": ".ng-select-multiple > .ng-select-container > .ng-arrow-wrapper",
+    "appDashboard": "app-dashboard"
+  }
+}

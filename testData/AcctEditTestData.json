@@ -1,0 +1,62 @@
+{
+  "labels": {
+    "editAccount": "Edit Account",
+    "applyFilter": "Apply Filter",
+    "saveAndClose": "Save & Close",
+    "phone": "Phone",
+    "zip": "Zip",
+    "contact": "Contact",
+    "practiceManagementSelect": "* Practice Management Select",
+    "ecs": "ECS",
+    "era": "ERA",
+    "claimStatus": "Claim Status",
+    "eligibility": "Eligibility",
+    "statements": "Statements",
+    "dateTerminated": "Date terminated",
+    "dateSetup": "date setup",
+    "lastUpdatedBy": "last updated by",
+    "lastUpdate": "Last update",
+    "na": "N/A",
+    "noResults": "No results found"
+  },
+  "roles": {
+    "accountNumberFilter": "Enter Account Number",
+    "emailTextbox": "Enter Email",
+    "phoneTextbox": "Enter Phone",
+    "contactTextbox": "Enter Contact",
+    "nameTextbox": "Enter Name",
+    "last4DigitsTextbox": "Last 4 Digits",
+    "expirationTextbox": "Enter expiration date"
+  },
+  "columnHeaders": {
+    "state": "State",
+    "city": "City",
+    "contactName": "contact Name"
+  },
+  "selectors": {
+    "rowActionLinkIndex": 2,
+    "modalLoadingOverlay": ".modal-body.loading",
+    "zipInput": ".address-wrapper > div > .ng-select-searchable > .ng-select-container > .ng-value-container > .ng-input > input",
+    "ecsCheckbox": "checkbox",
+    "emptyLinkRegex": "^$"
+  },
+  "values": {
+    "firstAccountNumber": "SCAUTOACCTNUM-01",
+    "zipCityOption": "70510 (Abbeville - LA)",
+    "email": "kmohamed@harriscomputer.com",
+    "phone": "(444) 555-2322",
+    "contact": "SCQA_AUTO",
+    "last4Digits": "1234",
+    "expiry": "12/35",
+    "stateCell": "LA",
+    "cityCell": "ABBEVILLE",
+    "datePatternSuffix": "/09/26",
+    "updatedBy": "1"
+  },
+  "timeouts": {
+    "modalHiddenMs": 5000
+  },
+  "edgeCases": {
+    "invalidAccountNumber": "NO_MATCH_EDIT_ACCOUNT_999999"
+  }
+}

@@ -256,11 +256,7 @@ export function getTodaysDate(): string {
  * @returns Boolean indicating if account is active
  */
 export async function isActiveAccount(): Promise<boolean> {
-  const client = new Client(dbConfig);
   try {
-    await client.connect();
-    console.log('Connected to the database.');
-
     // Reading from Json where createdaccountnumber is stored and fetching as below.
     const getAccount = 'SELECT isactive FROM account WHERE accountnumber = $1';
     const params = [userData.deactivateAccount.deactivateAccAutoNum];
@@ -271,9 +267,6 @@ export async function isActiveAccount(): Promise<boolean> {
   } catch (err) {
     console.error('Error executing query or connecting to the database:', err);
     return false;
-  } finally {
-    await client.end();
-    console.log('Database connection closed.');
   }
 }
 
@@ -282,14 +275,16 @@ export async function isActiveAccount(): Promise<boolean> {
  * @returns Boolean indicating if account is active
  */
 export async function existsSingleGroupEnrollment(groupId: string): Promise<boolean> {
-  const client = new Client(dbConfig);
-  try {
-    await client.connect();
-    console.log('Connected to the database.');
+  const trimmedGroupId = (groupId ?? '').trim();
+  if (!trimmedGroupId) {
+    console.warn('[existsSingleGroupEnrollment] Empty groupId provided.');
+    return false;
+  }
 
+  try {
     // Reading from Json where createdaccountnumber is stored and fetching as below.
     const getGroupenrollment = 'SELECT count(*) from groupenrollment where id = $1';
-    const params = [groupId];
+    const params = [trimmedGroupId];
     const param2 = 'ERA';
     const existsEnrollment = await executeQuery(getGroupenrollment, params);
 
@@ -305,9 +300,6 @@ export async function existsSingleGroupEnrollment(groupId: string): Promise<bool
   } catch (err) {
     console.error('Error executing query or connecting to the database:', err);
     return false;
-  } finally {
-    await client.end();
-    console.log('Database connection closed.');
   }
 }
 
@@ -317,14 +309,16 @@ export async function existsSingleGroupEnrollment(groupId: string): Promise<bool
  * @returns Boolean indicating if account is active
  */
 export async function existsBulkGroupEnrollment(groupId: string): Promise<boolean> {
-  const client = new Client(dbConfig);
-  try {
-    await client.connect();
-    console.log('Connected to the database.');
+  const trimmedGroupId = (groupId ?? '').trim();
+  if (!trimmedGroupId) {
+    console.warn('[existsBulkGroupEnrollment] Empty groupId provided.');
+    return false;
+  }
 
+  try {
     // Reading from Json where createdaccountnumber is stored and fetching as below.
     const getGroupenrollment = 'SELECT count(*) from groupenrollment where id = $1';
-    const params = [groupId];
+    const params = [trimmedGroupId];
    
     const existsEnrollment = await executeQuery(getGroupenrollment, params);
 
@@ -340,9 +334,6 @@ export async function existsBulkGroupEnrollment(groupId: string): Promise<boolea
   } catch (err) {
     console.error('Error executing query or connecting to the database:', err);
     return false;
-  } finally {
-    await client.end();
-    console.log('Database connection closed.');
   }
 }
 /**
@@ -350,15 +341,17 @@ export async function existsBulkGroupEnrollment(groupId: string): Promise<boolea
  * @param providerGroupId - The provider group id to delete from provider and billingids tables
  */
 export async function deleteProviderAndBillingIdsByGroupId(providerGroupId: string): Promise<void> {
-  const client = new Client(dbConfig);
-  try {
-    await client.connect();
-    console.log('Connected to the database.');
+  const trimmedGroupId = (providerGroupId ?? '').trim();
+  if (!trimmedGroupId) {
+    console.warn('[deleteProviderAndBillingIdsByGroupId] Empty providerGroupId provided.');
+    return;
+  }
 
+  try {
     // Delete from billingids first due to possible FK constraints
     const deleteBillingIds = 'DELETE FROM billingids WHERE providergroupid = $1';
     const deleteProvider = 'DELETE FROM provider WHERE providergroupid = $1';
-    const params = [providerGroupId];
+    const params = [trimmedGroupId];
 
     await executeQuery(deleteBillingIds, params);
     console.log(deleteBillingIds, params, 'Deleted billing ids');
@@ -368,9 +361,6 @@ export async function deleteProviderAndBillingIdsByGroupId(providerGroupId: stri
   } catch (err) {
     console.error('Error deleting provider or billing ids:', err);
     throw err;
-  } finally {
-    await client.end();
-    console.log('Database connection closed.');
   }
 }
 /**

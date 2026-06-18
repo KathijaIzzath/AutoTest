@@ -1,0 +1,55 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "addProviderGroup": "Add Provider Group",
+    "createProviderGroup": "Create Provider Group",
+    "providerDetailsTab": "Provider Details",
+    "identifiersTab": "Identifiers",
+    "processorTab": "Processor",
+    "financialSettingsTab": "Financial Settings",
+    "confirmAction": "Confirm action",
+    "yes": "Yes",
+    "no": "No",
+    "addProviderPrompt": "Do you want to add provider",
+    "addAndClose": "Add & Close",
+    "save": "Save",
+    "next": "Next",
+    "previous": "Previous",
+    "addDetails": "Add Details",
+    "noResults": "No results found"
+  },
+  "roles": {
+    "accountNumberFilterTextbox": "Enter Account Number",
+    "groupNameTextbox": "Enter Group Name",
+    "emailTextbox": "Enter Email",
+    "phoneTextbox": "Enter Phone",
+    "contactTextbox": "Enter Contact",
+    "accountCredentialKeyTextbox": "Enter Account Credential Key",
+    "firstNameTextbox": "Enter First Name",
+    "lastNameTextbox": "Enter Last Name",
+    "idTextbox": "Enter Id"
+  },
+  "selectors": {
+    "rowActionLinkIndex": 2,
+    "financialRadio": "radio",
+    "batchSection": "section-batch-remittance",
+    "noResultsLocatorText": "No results found"
+  },
+  "values": {
+    "feeScheduleOption": "F0256",
+    "testCertification": "Test",
+    "groupIdentifierOption1": "11: Object",
+    "groupIdentifierOption2": "20: Object",
+    "groupIdentifierId1": "680522753",
+    "groupIdentifierId2": "1083743850",
+    "accountCredentialKey": "144789693367:66979f6aa2eb4094bba2f74cc8ac2821",
+    "careTracker": "CareTracker",
+    "deviceName": "Kathija's Device",
+    "deviceIdentifier": "a4hos7",
+    "providerFirstName": "Provider001",
+    "providerLastName": "test"
+  },
+  "edgeCases": {
+    "invalidAccountNumber": "NO_MATCH_PGROUP_ACCOUNT_999999"
+  }
+}
