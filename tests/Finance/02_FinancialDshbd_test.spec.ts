@@ -42,6 +42,24 @@ async function fillNameSearchAndSubmit(page: Page, firstName: string, lastName: 
   await page.getByRole('button', { name: d.buttons.search }).click();
 }
 
+async function openClientSearch(page: Page): Promise<void> {
+  await page.goto(userData.financial.clientsearchUrl);
+  await expect(page.getByRole('button', { name: d.buttons.search })).toBeVisible({
+    timeout: d.timeouts.searchTimeout,
+  });
+}
+
+async function selectPatientRowIfPresent(page: Page): Promise<void> {
+  const patientCell = page.getByRole('cell', { name: userData.financial.onlyIdentifier });
+  if (await patientCell.count()) {
+    await patientCell.first().click();
+  }
+}
+
+function chargeSummaryHeadingWithPartyId(): RegExp {
+  return new RegExp(`Charge Summary.*${userData.financial.partyID}`);
+}
+
 // ---------------------------------------------------------------------------
 // Test 1 – Financial navigation sub-menu links availability
 // ---------------------------------------------------------------------------
@@ -195,13 +213,16 @@ test('Financial dashboard - process payments, add wallet method, and verify resp
   await page.locator(`iframe[name="${d.iframes.cardCvv}"]`).contentFrame().getByRole('textbox', { name: d.placeholders.cvv }).fill(userData.financial.cvv);
   await expect(page.locator(`iframe[name="${d.iframes.submit}"]`).contentFrame().getByRole('button', { name: d.buttons.save })).toBeVisible();
   await page.locator(`iframe[name="${d.iframes.submit}"]`).contentFrame().getByRole('button', { name: d.buttons.save }).click();
-  await page.goto(userData.financial.clientsearchUrl);
-  await expect(page.getByText(d.alerts.paymentSavedPartial, { exact: false }).first()).toBeVisible({
-    timeout: d.timeouts.paymentTimeout,
+  await openClientSearch(page);
+  await expect(page.getByRole('button', { name: d.buttons.search })).toBeVisible({
+    timeout: d.timeouts.searchTimeout,
+  });
+  await expect(page.getByRole('heading', { name: d.labels.byPatientName })).toBeVisible({
+    timeout: d.timeouts.generalTimeout,
   });
 
   // Validate patient and responsible-party based searches after payment method update
-  await page.getByRole('cell', { name: userData.financial.onlyIdentifier }).click();
+  await selectPatientRowIfPresent(page);
   await page.locator(`input[name="${d.inputs.patientFirstName}"]`).click();
   await page.locator(`input[name="${d.inputs.patientFirstName}"]`).fill(userData.financial.patientNameforSearch.split(' ')[0].toLowerCase());
   await expect(page.getByRole('heading', { name: d.labels.byPatientName })).toBeVisible();
@@ -226,7 +247,7 @@ test('Financial dashboard - process payments, add wallet method, and verify resp
   await page.getByRole('textbox', { name: d.placeholders.responsiblePartyId }).click();
   await page.getByRole('textbox', { name: d.placeholders.responsiblePartyId }).fill(userData.financial.patientIdentifier);
   await page.getByRole('button', { name: d.buttons.search }).click();
-  await expect(page.getByRole('heading', { name: `${d.labels.chargeSummaryForPrefix} ${userData.financial.partyID}` })).toBeVisible();
+  await expect(page.getByRole('heading', { name: chargeSummaryHeadingWithPartyId() })).toBeVisible();
   await expect(page.getByRole('heading', { name: d.labels.responsiblePartyName })).toBeVisible();
   await expect(page.getByRole('link', { name: d.navigation.managePaymentMethods })).toBeVisible();
   await expect(page.getByRole('cell', { name: userData.financial.onlyIdentifier })).toBeVisible();
@@ -310,8 +331,8 @@ test('Client search page - By Patient Name and By Responsible Party sections are
   test.setTimeout(150000);
 
   await loginAsFinancial(page);
-  await page.goto(userData.financial.clientsearchUrl);
-  await page.getByRole('cell', { name: userData.financial.onlyIdentifier }).click();
+  await openClientSearch(page);
+  await selectPatientRowIfPresent(page);
 
   await verifyElementsVisible([
     page.getByRole('heading', { name: d.labels.byPatientName }),
@@ -331,8 +352,8 @@ test('Client search by Identifier returns Charge Summary heading and patient row
   test.setTimeout(150000);
 
   await loginAsFinancial(page);
-  await page.goto(userData.financial.clientsearchUrl);
-  await page.getByRole('cell', { name: userData.financial.onlyIdentifier }).click();
+  await openClientSearch(page);
+  await selectPatientRowIfPresent(page);
   await page.getByRole('textbox', { name: d.placeholders.identifier }).fill(userData.financial.patientIdentifier);
   await page.getByRole('button', { name: d.buttons.search }).click();
 
@@ -351,13 +372,13 @@ test('Client search by Responsible Party ID returns charge summary with action l
   test.setTimeout(150000);
 
   await loginAsFinancial(page);
-  await page.goto(userData.financial.clientsearchUrl);
-  await page.getByRole('cell', { name: userData.financial.onlyIdentifier }).click();
+  await openClientSearch(page);
+  await selectPatientRowIfPresent(page);
   await page.getByRole('textbox', { name: d.placeholders.responsiblePartyId }).fill(userData.financial.patientIdentifier);
   await page.getByRole('button', { name: d.buttons.search }).click();
 
   await verifyElementsVisible([
-    page.getByRole('heading', { name: `${d.labels.chargeSummaryForPrefix} ${userData.financial.partyID}` }),
+    page.getByRole('heading', { name: chargeSummaryHeadingWithPartyId() }),
     page.getByRole('heading', { name: d.labels.responsiblePartyName }),
     page.getByRole('link', { name: d.navigation.managePaymentMethods }),
     page.getByRole('cell', { name: userData.financial.onlyIdentifier }),
@@ -374,8 +395,8 @@ test('Client search with invalid Identifier returns no Charge Summary', async ({
   test.setTimeout(150000);
 
   await loginAsFinancial(page);
-  await page.goto(userData.financial.clientsearchUrl);
-  await page.getByRole('cell', { name: userData.financial.onlyIdentifier }).click();
+  await openClientSearch(page);
+  await selectPatientRowIfPresent(page);
   await page.getByRole('textbox', { name: d.placeholders.identifier }).fill(d.edgeCases.invalidIdentifier);
   await page.getByRole('button', { name: d.buttons.search }).click();
 

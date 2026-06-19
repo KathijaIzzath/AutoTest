@@ -1,0 +1,58 @@
+{
+  "labels": {
+    "providerId": "Provider ID",
+    "groupId": "Group ID",
+    "groupName": "Group Name",
+    "accountNumber": "Account Number",
+    "accountName": "Account Name",
+    "contactName": "Contact Name",
+    "city": "City",
+    "state": "State",
+    "applyFilter": "Apply Filter",
+    "filterToggle": ""
+  },
+  "headers": {
+    "name": "name",
+    "email": "email",
+    "status": "status",
+    "address": "address",
+    "providerId": "provider ID",
+    "providerIdAsc": "provider ID ",
+    "groupId": "Group ID",
+    "accountNumber": "Account Number"
+  },
+  "placeholders": {
+    "providerId": "Enter Provider ID",
+    "groupId": "Enter Group ID",
+    "groupName": "Enter Group Name",
+    "accountNumber": "Enter Account Number",
+    "accountName": "Enter Account Name",
+    "contactName": "Enter Contact Name",
+    "city": "Enter City"
+  },
+  "selectors": {
+    "vendorFilter": "dropdown-filter-item",
+    "gridBody": "tbody"
+  },
+  "values": {
+    "providerId": "T00068",
+    "providerName": "DESIREE SCHROEDER",
+    "groupId": "G00016",
+    "accountNumber": "VMCTEST",
+    "vendorOption": "78: T",
+    "sortedName": "PROVIDER 01TEST",
+    "sortedProviderId": "A00001",
+    "sortedGroupId": "G00012",
+    "na": "N/A"
+  },
+  "edgeCases": {
+    "invalidProviderId": "NO_MATCH_PROVIDER_999999",
+    "invalidGroupId": "NO_MATCH_GROUP_999999",
+    "invalidCity": "NO_MATCH_CITY_999999",
+    "whitespaceProviderId": "   "
+  },
+  "timeouts": {
+    "filterPanelVisibleMs": 3000
+  },
+  "emptyValue": ""
+}
