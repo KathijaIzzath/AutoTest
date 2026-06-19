@@ -1,0 +1,79 @@
+{
+  "labels": {
+    "addPayerLink": " Add Payer",
+    "addPayerButton": "Add Payer",
+    "addPayerSetup": "Add Payer Setup",
+    "applyFilter": "Apply Filter",
+    "active": "Active",
+    "legacy": "Legacy",
+    "showInactiveOnly": "Show Inactive Only",
+    "claimFilingIndicator": "claim filing indicator",
+    "state": "state",
+    "payerName": "Payer Name",
+    "payerContact": "Payer Contact",
+    "phone": "Phone",
+    "billingIndicator": "billingIndicator",
+    "professional": "Professional",
+    "eligibility": "Eligibility",
+    "era": "ERA",
+    "institutional": "Institutional",
+    "claimStatus": "Claim Status",
+    "attachments": "Attachments",
+    "allowBulkEnrollments": "Allow Bulk Enrollments",
+    "secondaryClaims": "Secondary Claims",
+    "batchClaimStatus": "Batch Claim Status",
+    "notes": "Notes",
+    "javascript": "javascript"
+  },
+  "placeholders": {
+    "scInsuranceId": "Enter SC Insurance ID",
+    "payerId": "Enter Payer ID",
+    "altPayerId": "Enter Alternate Payer ID",
+    "payerName": "Enter Payer Name",
+    "payerContact": "Enter Payer Contact",
+    "phone": "Enter Phone",
+    "professionalProcessor": "Enter Professional Processor",
+    "eligibility": "Enter Eligibility",
+    "notes": "Enter Notes",
+    "followupDays": "Enter Folowup# of days",
+    "dashboardName": "Enter Name"
+  },
+  "headers": {
+    "payerNameAsc": "Payer name "
+  },
+  "values": {
+    "scInsuranceId": "Y16731",
+    "neicidWithLeadingSpace": " AUTOTEST",
+    "neicidUi": "AUTOTEST",
+    "claimFilingOption": "13",
+    "stateOption": "TX",
+    "payerName": "Kathija",
+    "payerNameSearch": "kathija",
+    "payerNameExpectedCell": "KATHIJA",
+    "payerContact": "kathii",
+    "phone": "8886667777",
+    "billingIndicator": "BB",
+    "notes": "Auto test",
+    "followupDays": "21",
+    "professionalProcessor": "RELAY",
+    "eligibilityId": "AVAILITY"
+  },
+  "edgeCases": {
+    "invalidDashboardName": "ZZZNOMATCH99999",
+    "empty": "",
+    "whitespace": "   "
+  },
+  "selectors": {
+    "modal": "app-edit-payer-modal",
+    "claimFilingSelect": "claim-filing-indicators-select",
+    "dashboardRoot": "app-payers"
+  },
+  "api": {
+    "host": "pulseinc.com"
+  },
+  "timeouts": {
+    "modalVisibleMs": 15000,
+    "searchMs": 15000,
+    "generalMs": 10000
+  }
+}

@@ -363,6 +363,37 @@ export async function deleteProviderAndBillingIdsByGroupId(providerGroupId: stri
     throw err;
   }
 }
+
+/**
+ * Fetch payer rows for the given id and neicid from sc_app.payer.
+ */
+export async function fetchPayerByIdAndNeicId(id: string, neicid: string): Promise<Array<{ id: string; neicid: string }>> {
+  const trimmedId = (id ?? '').trim();
+  const normalizedNeicid = (neicid ?? '').trim();
+  if (!trimmedId || !normalizedNeicid) {
+    console.warn('[fetchPayerByIdAndNeicId] Empty id or neicid provided.');
+    return [];
+  }
+
+  const query = 'SELECT id, neicid FROM sc_app.payer WHERE id = $1 AND btrim(neicid) = $2';
+  return executeQuery(query, [trimmedId, normalizedNeicid]);
+}
+
+/**
+ * Delete payer rows for the given id and neicid from sc_app.payer.
+ */
+export async function deletePayerByIdAndNeicId(id: string, neicid: string): Promise<number> {
+  const trimmedId = (id ?? '').trim();
+  const normalizedNeicid = (neicid ?? '').trim();
+  if (!trimmedId || !normalizedNeicid) {
+    console.warn('[deletePayerByIdAndNeicId] Empty id or neicid provided.');
+    return 0;
+  }
+
+  const query = 'DELETE FROM sc_app.payer WHERE id = $1 AND btrim(neicid) = $2 RETURNING id';
+  const result = await executeQuery(query, [trimmedId, normalizedNeicid]);
+  return result.length;
+}
 /**
  * Query and store account information from database
  */
