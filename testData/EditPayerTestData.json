@@ -1,0 +1,42 @@
+{
+  "labels": {
+    "payerId": "Payer ID",
+    "applyFilter": "Apply Filter",
+    "edit": "Edit",
+    "save": "Save",
+    "professionalType": "Professional TYPE",
+    "participating": "Participating",
+    "allowBulkEnrollments": "Allow Bulk Enrollments",
+    "eligibility": "Eligibility",
+    "claimStatus": "Claim Status",
+    "attachments": "Attachments",
+    "batchClaimStatus": "Batch Claim Status",
+    "payerUpdated": "Payer was updated"
+  },
+  "links": {
+    "javascript": "javascript"
+  },
+  "placeholders": {
+    "payerId": "Enter Payer Id",
+    "payerContact": "Enter Payer Contact"
+  },
+  "headers": {
+    "payerNameAsc": "Payer name "
+  },
+  "values": {
+    "validPayerFilterId": "SKWA0",
+    "expectedPayerCell": "MEDICAID OF WA - DSHS (ACS",
+    "initialPayerContact": "KATHIJA",
+    "updatedPayerContact": "Kathija"
+  },
+  "edgeCases": {
+    "invalidPayerFilterId": "NO_MATCH_EDIT_PAYER_999999",
+    "emptyValue": ""
+  },
+  "timeouts": {
+    "saveToastMs": 15000,
+    "functionalTestMs": 180000,
+    "participatingClickMs": 2000,
+    "checkboxToggleMs": 2000
+  }
+}
