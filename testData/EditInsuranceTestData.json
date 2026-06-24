@@ -1,0 +1,76 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "edit": "Edit",
+    "save": "Save",
+    "insurance": "Insurance",
+    "viewModifyInsuranceSetup": "View/Modify Insurance Setup",
+    "insuranceNameAsc": "insurance name ",
+    "recordStatus": "record status",
+    "savedToast": "Insurance was updated",
+    "scInsuranceId": "SC Insurance id",
+    "payerId": "Payer id",
+    "claimFilingIndicator": "claim filing indicator",
+    "contactName": "Contact name",
+    "phone": "Phone",
+    "fax": "Fax",
+    "state": "state",
+    "claimStatusId": "claim status id",
+    "eligibilityId": "Eligibility id",
+    "eligibilityType": "Eligibility type",
+    "claimStatusType": "Claim Status Type",
+    "notes": "Notes",
+    "active": "Active",
+    "legacy": "Legacy",
+    "transactions": "Transactions",
+    "publishTo": "Publish to",
+    "additionalTransactions": "Additional Transactions",
+    "participating": "Participating",
+    "nonParticipating": "Non-Participating",
+    "direct": "Direct",
+    "secondaryClaims": "Secondary Claims"
+  },
+  "placeholders": {
+    "name": "Enter Name",
+    "ediId": "Enter EDI ID",
+    "contactName": "Enter Contact Name",
+    "phone": "Enter Phone",
+    "fax": "Enter FAX",
+    "claimStatusId": "Enter Claim Status Id",
+    "eligibilityId": "Enter Eligibility id"
+  },
+  "values": {
+    "filterName": "blue",
+    "filterEdiId": "03036",
+    "expectedInsuranceName": "BLUE BENEFIT ADMINISTRATORS",
+    "recordStatusActive": "A",
+    "expectedState": "CO",
+    "expectedEligibilityId": "03036",
+    "contactName": "Kathija",
+    "notes": "AUTO TEST",
+    "claimFilingOption": "12",
+    "neicId": "03036",
+    "dbExpectedContactName": "KATHIJA",
+    "dbExpectedNotes": "AUTO TEST",
+    "dbExpectedClaimStatusType": "P",
+    "dbExpectedEligibilityType": "P"
+  },
+  "edgeCases": {
+    "invalidName": "ZZZNOTAVALIDINSURANCENAME999",
+    "invalidEdiId": "ZZZ999999",
+    "empty": ""
+  },
+  "selectors": {
+    "insuranceRoot": "app-insurances",
+    "editInsuranceModal": "app-edit-insurance-setup-modal",
+    "claimFilingSelect": "claim-filing-indicators-select",
+    "rowActionLink": "table",
+    "modalTextarea": "textarea",
+    "checkboxFilter": "checkbox"
+  },
+  "timeouts": {
+    "filterMs": 15000,
+    "saveMs": 20000,
+    "generalMs": 10000
+  }
+}

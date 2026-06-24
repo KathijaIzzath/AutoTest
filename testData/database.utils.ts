@@ -394,6 +394,179 @@ export async function deletePayerByIdAndNeicId(id: string, neicid: string): Prom
   const result = await executeQuery(query, [trimmedId, normalizedNeicid]);
   return result.length;
 }
+
+/**
+ * Fetch insurance company by processor id.
+ */
+export async function fetchInsuranceByProcessorId(
+  id: string
+): Promise<{ name: string; recordstatus: string } | null> {
+  const trimmedId = (id ?? '').trim();
+  if (!trimmedId) {
+    console.warn('[fetchInsuranceByProcessorId] Empty id provided.');
+    return null;
+  }
+
+  const query = 'select name, recordstatus from insurancecompany where id = $1';
+  const result = await executeQuery(query, [trimmedId]);
+  if (!result || result.length === 0) {
+    return null;
+  }
+
+  return {
+    name: String(result[0].name ?? ''),
+    recordstatus: String(result[0].recordstatus ?? ''),
+  };
+}
+
+/**
+ * Fetch insurance company by NEIC id.
+ */
+export async function fetchInsuranceByNeicId(
+  neicid: string
+): Promise<{ name: string; recordstatus: string } | null> {
+  const trimmedNeicid = (neicid ?? '').trim();
+  if (!trimmedNeicid) {
+    console.warn('[fetchInsuranceByNeicId] Empty neicid provided.');
+    return null;
+  }
+
+  const query = 'select name, recordstatus from insurancecompany where neicid = $1';
+  const result = await executeQuery(query, [trimmedNeicid]);
+  if (!result || result.length === 0) {
+    return null;
+  }
+
+  return {
+    name: String(result[0].name ?? ''),
+    recordstatus: String(result[0].recordstatus ?? ''),
+  };
+}
+
+/**
+ * Fetch all insurance rows by NEIC id.
+ */
+export async function fetchInsuranceRowsByNeicId(
+  neicid: string
+): Promise<Array<{ name: string; recordstatus: string }>> {
+  const trimmedNeicid = (neicid ?? '').trim();
+  if (!trimmedNeicid) {
+    console.warn('[fetchInsuranceRowsByNeicId] Empty neicid provided.');
+    return [];
+  }
+
+  const query = 'select name, recordstatus from insurancecompany where neicid = $1';
+  const result = await executeQuery(query, [trimmedNeicid]);
+  return (result || []).map((row: any) => ({
+    name: String(row.name ?? ''),
+    recordstatus: String(row.recordstatus ?? ''),
+  }));
+}
+
+/**
+ * Fetch latest insurance companies by recid descending.
+ */
+export async function fetchLatestInsuranceCompanies(
+  limit = 1
+): Promise<Array<{ id: string; neicid: string; name: string; recordstatus: string }>> {
+  const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 1;
+  const query =
+    'select id, neicid, name, recordstatus from insurancecompany order by recid desc limit $1';
+  const result = await executeQuery(query, [safeLimit]);
+
+  return (result || []).map((row: any) => ({
+    id: String(row.id ?? ''),
+    neicid: String(row.neicid ?? ''),
+    name: String(row.name ?? ''),
+    recordstatus: String(row.recordstatus ?? ''),
+  }));
+}
+
+/**
+ * Fetch insurancecompany recid/name/id for an insurance id.
+ */
+export async function fetchInsuranceCompanyById(
+  id: string
+): Promise<{ recid: number; name: string; id: string } | null> {
+  const trimmedId = (id ?? '').trim();
+  if (!trimmedId) {
+    console.warn('[fetchInsuranceCompanyById] Empty id provided.');
+    return null;
+  }
+
+  const query = 'select recid, name, id from insurancecompany where id = $1';
+  const result = await executeQuery(query, [trimmedId]);
+  if (!result || result.length === 0) {
+    return null;
+  }
+
+  return {
+    recid: Number(result[0].recid ?? 0),
+    name: String(result[0].name ?? ''),
+    id: String(result[0].id ?? ''),
+  };
+}
+
+/**
+ * Fetch payer id/name/recordstatus/neicid for an insurance id from payer.
+ */
+export async function fetchPayerInsuranceById(
+  id: string
+): Promise<{ id: string; name: string; recordstatus: string; neicid: string } | null> {
+  const trimmedId = (id ?? '').trim();
+  if (!trimmedId) {
+    console.warn('[fetchPayerInsuranceById] Empty id provided.');
+    return null;
+  }
+
+  const query = 'select id, name, recordstatus, neicid from payer where id = $1';
+  const result = await executeQuery(query, [trimmedId]);
+  if (!result || result.length === 0) {
+    return null;
+  }
+
+  return {
+    id: String(result[0].id ?? ''),
+    name: String(result[0].name ?? ''),
+    recordstatus: String(result[0].recordstatus ?? ''),
+    neicid: String(result[0].neicid ?? ''),
+  };
+}
+
+/**
+ * Fetch contactname, notes, claimstatustype, eligibilitytype from insurancecompany
+ * where neicid matches and name starts with the provided prefix.
+ * Query: select contactname, notes, claimstatustype, eligibilitytype from insurancecompany
+ *        where neicid = $1 and name like $2
+ */
+export async function fetchInsuranceCompanyEditFields(
+  neicId: string,
+  namePrefix: string
+): Promise<{ contactname: string; notes: string; claimstatustype: string; eligibilitytype: string } | null> {
+  const trimmedNeicId = (neicId ?? '').trim();
+  const trimmedPrefix = (namePrefix ?? '').trim();
+  if (!trimmedNeicId || !trimmedPrefix) {
+    console.warn('[fetchInsuranceCompanyEditFields] Empty neicId or namePrefix provided.');
+    return null;
+  }
+
+  const query = `select contactname, notes, claimstatustype, eligibilitytype
+                 from insurancecompany
+                 where neicid = $1 and name like $2`;
+  const result = await executeQuery(query, [trimmedNeicId, `${trimmedPrefix}%`]);
+  if (!result || result.length === 0) {
+    console.warn(`[fetchInsuranceCompanyEditFields] No row found for neicId='${trimmedNeicId}', namePrefix='${trimmedPrefix}'.`);
+    return null;
+  }
+
+  return {
+    contactname: String(result[0].contactname ?? ''),
+    notes: String(result[0].notes ?? ''),
+    claimstatustype: String(result[0].claimstatustype ?? ''),
+    eligibilitytype: String(result[0].eligibilitytype ?? ''),
+  };
+}
+
 /**
  * Query and store account information from database
  */

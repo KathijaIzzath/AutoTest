@@ -55,6 +55,23 @@ export async function navigateToPayer(page: Page): Promise<void> {
   await expect(page.locator('app-payers').getByText('Payer', { exact: true })).toBeVisible();
 }
 
+/** Expands the "PayerInsuranceEligibility" collapsible group in the left sidebar. */
+export async function expandPayerInsuranceEligibilityQuickLinks(page: Page): Promise<void> {
+  await page
+    .getByRole('listitem')
+    .filter({ hasText: 'PayerInsuranceEligibility' })
+    .getByRole('button')
+    .click();
+}
+
+/** Expands the sidebar group and navigates to the Insurance module. */
+export async function navigateToInsurance(page: Page): Promise<void> {
+  await expandPayerInsuranceEligibilityQuickLinks(page);
+  await expect(page.locator('a[href$="/dashboard/insurances"]')).toBeVisible();
+  await page.locator('a[href$="/dashboard/insurances"]').click();
+  await expect(page.locator('app-insurances').getByText('Insurance', { exact: true })).toBeVisible();
+}
+
 // ─── Legacy generic helpers ───────────────────────────────────────────────────
 
 /** Clicks any quick-link by name after the sidebar group has been expanded. */

@@ -1,0 +1,59 @@
+{
+  "labels": {
+    "payer": "Payer",
+    "applyFilter": "Apply Filter",
+    "edit": "Edit",
+    "viewModifyPayerSetup": "View/Modify Payer Setup",
+    "addInsuranceLink": "Add Insurance",
+    "addInsuranceSetupHeading": "Add Insurance Setup",
+    "insuranceCreatedToast": "Insurance was created",
+    "insurance": "Insurance",
+    "insuranceNameAsc": "insurance name ",
+    "recordStatus": "record status",
+    "showInactiveOnly": "Show Inactive Only"
+  },
+  "placeholders": {
+    "payerIdFilter": "Enter Payer Id",
+    "payerId": "Enter Payer ID",
+    "contactName": "Enter Contact Name",
+    "claimStatusId": "Enter Claim Status Id",
+    "eligibilityId": "Enter Eligibility id",
+    "ediId": "Enter EDI ID",
+    "name": "Enter Name",
+    "processorId": "Enter Processor ID"
+  },
+  "values": {
+    "payerDashboardFilterId": "4171",
+    "insuranceId": "Y12919",
+    "insuranceName": "PLASTERERS' & CEMENT MASONS' HEALTH & WELFARE FUND",
+    "insuranceNameFragment": "PLASTERERS' & CEMENT MASONS'",
+    "insuranceRecid": 6059,
+    "neicid": "4171",
+    "recordStatusActive": "A",
+    "contactName": "Kathija",
+    "claimStatusId": "AVAILITY",
+    "eligibilityId": "CMS",
+    "state": "TX",
+    "notes": "Auto test"
+  },
+  "edgeCases": {
+    "invalidEdiId": "ZZZ_NO_INS_MATCH_999999",
+    "invalidProcessorId": "ZZZ_NO_INS_MATCH_999999",
+    "empty": ""
+  },
+  "selectors": {
+    "payerRoot": "app-payers",
+    "insuranceRoot": "app-insurances",
+    "addInsuranceModal": "app-edit-insurance-setup-modal",
+    "rowActionLink": "a[href*='javascript']",
+    "stateSelect": "select",
+    "firstEligibilityTypeParticipating": ".input-wrap.radio.mr-3 > .text",
+    "firstClaimStatusTypeParticipating": "div:nth-child(7) > .col > .d-flex > label > .text",
+    "modalTextarea": "textarea"
+  },
+  "timeouts": {
+    "filterMs": 15000,
+    "generalMs": 10000,
+    "saveMs": 20000
+  }
+}

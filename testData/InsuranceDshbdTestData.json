@@ -1,0 +1,46 @@
+{
+  "labels": {
+    "insurance": "Insurance",
+    "name": "name",
+    "processorId": "Processor Id",
+    "ediId": "edi ID",
+    "state": "State",
+    "showInactiveOnly": "Show Inactive Only",
+    "applyFilter": "Apply Filter"
+  },
+  "placeholders": {
+    "name": "Enter Name",
+    "processorId": "Enter Processor ID",
+    "ediId": "Enter EDI ID"
+  },
+  "headers": {
+    "insuranceNameAsc": "insurance name ",
+    "recordStatus": "record status"
+  },
+  "values": {
+    "nameUpper": "BLUE",
+    "nameLower": "blue",
+    "processorId": "Y00009",
+    "neicid": "03036",
+    "expectedNameByNeicId": "BLUE BENEFIT ADMINISTRATORS",
+    "expectedNameByProcessorId": "HEALTHSOURCE MASSACHUSETTS",
+    "state": "TX",
+    "activeStatus": "A",
+    "inactiveStatus": "I"
+  },
+  "edgeCases": {
+    "invalidName": "ZZZ_NO_INSURANCE_MATCH_999999",
+    "invalidProcessorId": "ZZZ_NO_INSURANCE_MATCH_999999",
+    "invalidEdiId": "ZZZ_NO_INSURANCE_MATCH_999999",
+    "empty": ""
+  },
+  "selectors": {
+    "insuranceRoot": "app-insurances",
+    "stateSelect": "select",
+    "rowActions": "a[href*='javascript']"
+  },
+  "timeouts": {
+    "filterMs": 15000,
+    "generalMs": 10000
+  }
+}

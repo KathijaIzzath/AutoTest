@@ -25,6 +25,7 @@
 | 11 | Payer dashboard — empty filter still shows grid results | Edge Case |
 | 12 | Payer dashboard — Add Payer link is visible and clickable | Visibility |
 | 13 | Payer dashboard — clearing Payer ID filter restores full grid | Functional |
+| 14 | Payer dashboard — Show Inactive Only checkbox displays inactive payer records | Functional |
 
 ---
 
@@ -55,7 +56,10 @@ Confirms the Add Payer navigation link is visible and enabled.
 ### Test 13 — Clearing filter restores full grid
 Applies Payer ID filter, notes filtered row count, clears filter, applies again, and confirms the full result set is restored.
 
+### Test 14 — Show Inactive Only displays inactive payer records
+Verifies the "Show Inactive Only" label and checkbox are visible. Resets the checkbox to unchecked (safe for iterative runs), checks it, applies filter, and confirms the `Payer name` and `PROFESSIONAL PROCESSOR ID` column headers are visible and the `RELAY` processor cell appears in the inactive results. Unchecks the checkbox after assertions so subsequent tests are unaffected.
+
 ---
 
-**Total Tests:** 13  
+**Total Tests:** 14  
 **Helpers:** `applyFilterAndWait`, `clearAndFillFilter`, `navigateAndLoadGrid`, `verifyPayerDashboardElements`

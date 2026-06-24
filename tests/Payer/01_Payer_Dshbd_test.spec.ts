@@ -281,3 +281,38 @@ test('Payer dashboard - clearing Payer ID filter restores full grid', async ({ p
 
   expect(fullRows).toBeGreaterThanOrEqual(filteredRows);
 });
+
+// ---------------------------------------------------------------------------
+// Test 14 – Show Inactive Only checkbox displays inactive payer records
+// ---------------------------------------------------------------------------
+test('Payer dashboard - Show Inactive Only checkbox displays inactive payer records', async ({ page, loginAsAdmin }) => {
+  test.setTimeout(120000);
+
+  await loginAsAdmin();
+  await navigateToPayer(page);
+
+  await expect(page.getByText(d.labels.showInactiveOnly)).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: d.labels.showInactiveOnly })).toBeVisible();
+
+  const showInactiveCheckbox = page.getByRole('checkbox', { name: d.labels.showInactiveOnly });
+  if (await showInactiveCheckbox.isChecked()) {
+    await showInactiveCheckbox.uncheck();
+  }
+  await showInactiveCheckbox.check();
+  await expect(showInactiveCheckbox).toBeChecked();
+
+  await page.getByRole('button', { name: d.labels.applyFilter }).click();
+
+  await expect(page.getByRole('columnheader', { name: d.headers.payerNameAsc })).toBeVisible({
+    timeout: d.timeouts.filterTimeout,
+  });
+  await expect(page.getByRole('columnheader', { name: d.headers.professionalProcessorId })).toBeVisible({
+    timeout: d.timeouts.filterTimeout,
+  });
+  await expect(page.getByRole('cell', { name: d.filterValues.validProcessorId }).nth(2)).toBeVisible({
+    timeout: d.timeouts.filterTimeout,
+  });
+
+  // Reset checkbox so other tests are not affected
+  await showInactiveCheckbox.uncheck();
+});
