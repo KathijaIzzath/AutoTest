@@ -1,0 +1,50 @@
+{
+  "labels": {
+    "title": "Eligibility Routing",
+    "addEligibilityRouting": "Add Eligibility Routing",
+    "applyFilter": "Apply Filter",
+    "add": "Add",
+    "status": "Status",
+    "successToastPrefix": "Eligibility Routing was"
+  },
+  "placeholders": {
+    "scIdFilter": "Enter SC ID",
+    "processorId": "Enter Processor ID",
+    "ediId": "Enter Edi ID",
+    "groupId": "Enter Group ID"
+  },
+  "headers": {
+    "scId": "SC Id",
+    "payerNames": "Payer names",
+    "groupId": "Group Id",
+    "processorId": "Processor Id",
+    "ediId": "Edi Id",
+    "status": "Status"
+  },
+  "values": {
+    "payerOption": "Y00455 - TEAM CHOICE UMC",
+    "payerSearchText": "TEAM CHOICE",
+    "expectedPayerName": "TEAM CHOICE UMC",
+    "scId": "SX176",
+    "processorId": "TDFIC",
+    "ediId": "TDFIC",
+    "groupId": "ROUTE",
+    "statusActive": "A"
+  },
+  "edgeCases": {
+    "invalidScId": "ZZZ_NO_ELIGIBILITY_MATCH_999999",
+    "empty": "",
+    "whitespace": "   "
+  },
+  "selectors": {
+    "root": "app-eligibility-routing",
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i"
+  },
+  "timeouts": {
+    "filterMs": 1500,
+    "optionMs": 8000,
+    "generalMs": 10000,
+    "saveMs": 15000
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "labels": {
+    "title": "Eligibility Routing",
+    "addEligibilityRouting": "Add Eligibility Routing",
+    "applyFilter": "Apply Filter",
+    "add": "Add",
+    "edit": "Edit",
+    "save": "Save",
+    "successToastPrefix": "Eligibility Routing was",
+    "updatedSuccessToast": "Eligibility Routing was updated successfully!",
+    "editHeading": "Edit Eligibility Routing",
+    "active": "Active"
+  },
+  "placeholders": {
+    "scIdFilter": "Enter SC ID",
+    "processorId": "Enter Processor ID",
+    "ediId": "Enter Edi ID",
+    "groupId": "Enter Group ID"
+  },
+  "headers": {
+    "payerNames": "Payer names",
+    "scId": "SC Id",
+    "ediId": "Edi Id",
+    "status": "Status"
+  },
+  "values": {
+    "scId": "SX176",
+    "groupId": "ROUTE",
+    "processorId": "TDFIC",
+    "seedEdiId": "TDFIC",
+    "seedPayerOption": "Y00455 - TEAM CHOICE UMC",
+    "seedPayerSearchText": "TEAM CHOICE",
+    "editPayerOption": "Y00292 - AVERA HEALTH PLANS",
+    "editPayerSearchText": "AVERA",
+    "editedPayerName": "AVERA HEALTH PLANS",
+    "editedEdiId": "CMS",
+    "activeStatus": "A"
+  },
+  "edgeCases": {
+    "invalidScId": "ZZZ_NO_ELIGIBILITY_MATCH_999999",
+    "empty": "",
+    "whitespace": "   "
+  },
+  "selectors": {
+    "root": "app-eligibility-routing",
+    "tableRows": "tbody tr",
+    "rowActionLabel": "standart-link-action",
+    "noResults": "text=/no results|no records|no data/i"
+  },
+  "timeouts": {
+    "filterMs": 1500,
+    "optionMs": 8000,
+    "saveMs": 15000,
+    "generalMs": 10000
+  }
+}

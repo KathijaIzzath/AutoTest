@@ -72,6 +72,14 @@ export async function navigateToInsurance(page: Page): Promise<void> {
   await expect(page.locator('app-insurances').getByText('Insurance', { exact: true })).toBeVisible();
 }
 
+/** Expands the sidebar group and navigates to the Eligibility Routing module. */
+export async function navigateToEligibilityRouting(page: Page): Promise<void> {
+  await expandPayerInsuranceEligibilityQuickLinks(page);
+  await expect(page.locator('a[href$="/dashboard/eligibility-routing"]')).toBeVisible();
+  await page.locator('a[href$="/dashboard/eligibility-routing"]').click();
+  await expect(page.locator('app-eligibility-routing').getByText('Eligibility Routing', { exact: true })).toBeVisible();
+}
+
 // ─── Legacy generic helpers ───────────────────────────────────────────────────
 
 /** Clicks any quick-link by name after the sidebar group has been expanded. */

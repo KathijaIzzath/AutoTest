@@ -10,6 +10,8 @@ import { defineConfig, devices } from '@playwright/test';
 export const testConfig = {
   globalTimeoutMs: 60000,
   };
+
+const runOutputDir = `test-results/run-${process.pid}`;
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -17,7 +19,9 @@ export default defineConfig({
   timeout: testConfig.globalTimeoutMs,
   expect: { timeout: 15000 },
   testDir: './tests',
-  outputDir: 'test-results',
+  testMatch: ['**/*.spec.ts', '**/*_spec.ts'],
+  // Use per-process output folders so concurrent runs do not delete each other's artifacts.
+  outputDir: runOutputDir,
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

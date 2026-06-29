@@ -568,6 +568,157 @@ export async function fetchInsuranceCompanyEditFields(
 }
 
 /**
+ * Fetch eligibility routing row for the provided SC ID.
+ */
+export async function fetchEligibilityRoutingByScId(
+  scId: string
+): Promise<{
+  payername: string;
+  scid: string;
+  groupid: string;
+  processorid: string;
+  ediid: string;
+  remove_subscriber_address: string;
+  remove_subscriber_gender: string;
+  remove_subscriber_nm1_mi: string;
+  remove_subscriber_dtp_102: string;
+  remove_ref_sy: string;
+  remove_receiver_ref_0b: string;
+  remove_prv: string;
+  change_receiver_non_person_entity: string;
+  recordstatus: string;
+  ediid_qualifier: string;
+} | null> {
+  const trimmedScId = (scId ?? '').trim();
+  if (!trimmedScId) {
+    console.warn('[fetchEligibilityRoutingByScId] Empty scId provided.');
+    return null;
+  }
+
+  const query = `
+    select
+      payername,
+      scid,
+      groupid,
+      processorid,
+      ediid,
+      remove_subscriber_address,
+      remove_subscriber_gender,
+      remove_subscriber_nm1_mi,
+      remove_subscriber_dtp_102,
+      remove_ref_sy,
+      remove_receiver_ref_0b,
+      remove_prv,
+      change_receiver_non_person_entity,
+      recordstatus,
+      coalesce(ediid_qualifier, '') as ediid_qualifier
+    from eligibility_routing
+    where btrim(scid) = $1
+    limit 1
+  `;
+  const result = await executeQuery(query, [trimmedScId]);
+  if (!result || result.length === 0) {
+    return null;
+  }
+
+  return {
+    payername: String(result[0].payername ?? '').trim(),
+    scid: String(result[0].scid ?? '').trim(),
+    groupid: String(result[0].groupid ?? '').trim(),
+    processorid: String(result[0].processorid ?? '').trim(),
+    ediid: String(result[0].ediid ?? '').trim(),
+    remove_subscriber_address: String(result[0].remove_subscriber_address ?? '').trim(),
+    remove_subscriber_gender: String(result[0].remove_subscriber_gender ?? '').trim(),
+    remove_subscriber_nm1_mi: String(result[0].remove_subscriber_nm1_mi ?? '').trim(),
+    remove_subscriber_dtp_102: String(result[0].remove_subscriber_dtp_102 ?? '').trim(),
+    remove_ref_sy: String(result[0].remove_ref_sy ?? '').trim(),
+    remove_receiver_ref_0b: String(result[0].remove_receiver_ref_0b ?? '').trim(),
+    remove_prv: String(result[0].remove_prv ?? '').trim(),
+    change_receiver_non_person_entity: String(result[0].change_receiver_non_person_entity ?? '').trim(),
+    recordstatus: String(result[0].recordstatus ?? '').trim(),
+    ediid_qualifier: String(result[0].ediid_qualifier ?? '').trim(),
+  };
+}
+
+/**
+ * Fetch all eligibility routing rows for a provided SC ID.
+ */
+export async function fetchEligibilityRoutingRowsByScId(
+  scId: string
+): Promise<Array<{
+  payername: string;
+  scid: string;
+  groupid: string;
+  processorid: string;
+  ediid: string;
+  recordstatus: string;
+}>> {
+  const trimmedScId = (scId ?? '').trim();
+  if (!trimmedScId) {
+    console.warn('[fetchEligibilityRoutingRowsByScId] Empty scId provided.');
+    return [];
+  }
+
+  const query = `
+    select
+      payername,
+      scid,
+      groupid,
+      processorid,
+      ediid,
+      recordstatus
+    from eligibility_routing
+    where btrim(scid) = $1
+  `;
+  const result = await executeQuery(query, [trimmedScId]);
+
+  return (result || []).map((row: any) => ({
+    payername: String(row.payername ?? '').trim(),
+    scid: String(row.scid ?? '').trim(),
+    groupid: String(row.groupid ?? '').trim(),
+    processorid: String(row.processorid ?? '').trim(),
+    ediid: String(row.ediid ?? '').trim(),
+    recordstatus: String(row.recordstatus ?? '').trim(),
+  }));
+}
+
+/**
+ * Delete eligibility routing rows for iterative Add Eligibility runs.
+ */
+export async function deleteEligibilityRoutingByComposite(
+  scId: string,
+  processorId: string,
+  ediId: string,
+  groupId: string
+): Promise<number> {
+  const trimmedScId = (scId ?? '').trim();
+  const trimmedProcessorId = (processorId ?? '').trim();
+  const trimmedEdiId = (ediId ?? '').trim();
+  const trimmedGroupId = (groupId ?? '').trim();
+
+  if (!trimmedScId || !trimmedProcessorId || !trimmedEdiId || !trimmedGroupId) {
+    console.warn('[deleteEligibilityRoutingByComposite] Empty key value provided.');
+    return 0;
+  }
+
+  const query = `
+    delete from eligibility_routing
+    where btrim(scid) = $1
+      and btrim(processorid) = $2
+      and btrim(ediid) = $3
+      and btrim(groupid) = $4
+    returning scid
+  `;
+  const result = await executeQuery(query, [
+    trimmedScId,
+    trimmedProcessorId,
+    trimmedEdiId,
+    trimmedGroupId,
+  ]);
+  return result.length;
+}
+
+/**
  * Query and store account information from database
  */
 export async function fetchNPIAndTaxIDForGroupId(groupId?: string): Promise<Map<string, string>> {

@@ -1,0 +1,78 @@
+{
+  "labels": {
+    "title": "Eligibility Routing",
+    "payerName": "payer name",
+    "scId": "SC ID",
+    "processorId": "Processor Id",
+    "groupId": "group ID",
+    "ediId": "edi ID",
+    "showInactiveOnly": "Show Inactive Only",
+    "applyFilter": "Apply Filter",
+    "addEligibilityRouting": "Add Eligibility Routing"
+  },
+  "placeholders": {
+    "payerName": "Enter Payer Name",
+    "scId": "Enter SC ID",
+    "processorId": "Enter Processor ID",
+    "groupId": "Enter group ID",
+    "ediId": "Enter EDI ID"
+  },
+  "headers": {
+    "payerNames": "Payer names",
+    "scId": "SC Id",
+    "groupId": "Group Id",
+    "processorId": "Processor Id",
+    "ediId": "Edi Id",
+    "subAddress": "sub address",
+    "subGender": "sub gender",
+    "subMiddleInt": "sub middle int",
+    "subIssueDate": "sub issue date",
+    "patientSsn": "patient ssn",
+    "recLicenseNo": "rec license no",
+    "recTaxId": "rec tax id",
+    "prv": "Prv",
+    "changeEntity": "change entity",
+    "status": "Status",
+    "ediQualifier": "Edi Qualifier"
+  },
+  "values": {
+    "payerNameFilter": "Medicare",
+    "scIdFilter": "SX170",
+    "processorIdFilter": "availity",
+    "groupIdFilter": "route",
+    "ediIdFilter": "00710P",
+    "inactiveExpectedScId": "77034",
+    "activeStatus": "A",
+    "inactiveStatus": "I"
+  },
+  "expectedDbRow": {
+    "payername": "MEDICARE PLUS BLUE MICHIGAN",
+    "scid": "SX170",
+    "groupid": "ROUTE",
+    "processorid": "AVAILITY",
+    "ediid": "00710P",
+    "remove_subscriber_address": "N",
+    "remove_subscriber_gender": "N",
+    "remove_subscriber_nm1_mi": "N",
+    "remove_subscriber_dtp_102": "N",
+    "remove_ref_sy": "N",
+    "remove_receiver_ref_0b": "N",
+    "remove_prv": "N",
+    "change_receiver_non_person_entity": "N",
+    "recordstatus": "A",
+    "ediid_qualifier": ""
+  },
+  "edgeCases": {
+    "invalidText": "ZZZ_NO_ELIGIBILITY_MATCH_999999",
+    "empty": ""
+  },
+  "selectors": {
+    "root": "app-eligibility-routing",
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i"
+  },
+  "timeouts": {
+    "filterMs": 1500,
+    "generalMs": 10000
+  }
+}
