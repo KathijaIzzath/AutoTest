@@ -18,6 +18,7 @@
 | 3 | Edit provider — verify and check ERA, Claim Status, Eligibility and Statements checkboxes then save | Functional |
 | 4 | Edit Provider screen controls visibility and availability | Visibility |
 | 5 | Edit Provider invalid filter should show no matching provider row | Edge Case |
+| 6 | Edit Provider save without changes keeps persisted values stable | Persistence |
 
 ---
 
@@ -36,7 +37,10 @@ Opens the edit form and confirms Title, Degree, MI textboxes and ERA/Claim Statu
 ### Test 5 — Invalid filter shows no matching row
 Enters an invalid Provider ID in the filter, applies filter, and confirms no matching cell appears.
 
+### Test 6 — No-change save and persistence
+Opens a provider edit form, captures current Title/Degree/MI values, saves without changing fields, reopens the same provider, and verifies the captured values persist unchanged.
+
 ---
 
-**Total Tests:** 5  
+**Total Tests:** 6  
 **Helpers:** `openProvidersAndApplyFilter`, `openFirstProviderForEdit`, `captureProviderIdFromEditHeading`, `toggleCheckbox`

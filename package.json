@@ -5,11 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "npx playwright test",
+    "test:blob": "npx playwright test --reporter=blob",
     "test:chromium": "npx playwright test --project=chromium",
     "test:smoke": "npx playwright test tests/001_login_test.spec.ts tests/002_Dashboard_test.spec.ts --project=chromium",
     "test:ui": "npx playwright test --ui",
     "typecheck": "npx tsc -p tsconfig.json --noEmit",
-    "report": "npx playwright show-report"
+    "report": "npx playwright show-report",
+    "report:merge:today": "node scripts/merge-today-report.js",
+    "report:show:today": "node scripts/show-today-report.js"
   },
   "keywords": [],
   "author": "",

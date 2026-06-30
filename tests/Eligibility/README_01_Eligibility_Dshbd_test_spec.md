@@ -21,7 +21,9 @@ Navigation Helper: navigateToEligibilityRouting from tests/framework/navigation.
 | 9 | Eligibility invalid filters return no rows or empty state | Edge case |
 | 10 | Eligibility empty filters keep results and columns available | Edge case |
 | 11 | Eligibility sorting on Payer names and SC Id keeps ordered values | Sorting |
-| 12 | Eligibility row action and Add Eligibility Routing link are visible | Visibility |
+| 12 | Eligibility multi-filter by SC ID, Processor ID, and EDI ID keeps search behavior stable | Functional |
+| 13 | Eligibility SC Id sorting toggles between ascending and descending order | Sorting |
+| 14 | Eligibility row action and Add Eligibility Routing link are visible | Visibility |
 
 ## DB Query Coverage
 

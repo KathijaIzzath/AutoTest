@@ -73,6 +73,11 @@ async function searchByDashboardName(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: d.labels.applyFilter }).click();
 }
 
+async function searchByDashboardPayerId(page: Page, payerId: string): Promise<void> {
+  await page.getByRole('textbox', { name: 'Enter Payer Id' }).fill(payerId);
+  await page.getByRole('button', { name: d.labels.applyFilter }).click();
+}
+
 test.describe('Add Payer - Generated Flow Refactor', () => {
   test.beforeEach(async ({ loginAsAdmin }) => {
     await prepareUniquePayerRecord();
@@ -185,5 +190,48 @@ test.describe('Add Payer - Generated Flow Refactor', () => {
     expect(afterDelete.length).toBe(0);
 
     await navigateToPayer(page);
+  });
+
+  test('Add payer with required fields empty should not show success toast', async ({ page }) => {
+    await openAddPayerModal(page);
+
+    const addButton = page.getByRole('button', { name: d.labels.addPayerButton });
+    await expect(addButton).toBeVisible();
+    await expect(addButton).toBeDisabled();
+
+    const dashboardVisible = await page.locator(d.selectors.dashboardRoot).isVisible().catch(() => false);
+    const addModalHeadingVisible = await page.getByRole('heading', { name: d.labels.addPayerSetup }).isVisible().catch(() => false);
+    expect(dashboardVisible && !addModalHeadingVisible).toBeFalsy();
+    await expect(addButton).toBeVisible();
+  });
+
+  test('Duplicate add payer attempt keeps app stable and payer remains searchable', async ({ page }) => {
+    test.setTimeout(120000);
+    await openAddPayerModal(page);
+    await fillRequiredAddPayerFields(page);
+
+    await page.getByRole('button', { name: d.labels.addPayerButton }).click();
+    await page.waitForTimeout(d.timeouts.generalMs);
+
+    const backLink = page.getByRole('link', { name: d.labels.javascript });
+    if (await backLink.isVisible().catch(() => false)) {
+      await backLink.click();
+    }
+
+    await openAddPayerModal(page);
+    await fillRequiredAddPayerFields(page);
+    const secondAddButton = page.getByRole('button', { name: d.labels.addPayerButton });
+    if (await secondAddButton.isEnabled().catch(() => false)) {
+      await secondAddButton.click();
+    }
+    await page.waitForTimeout(d.timeouts.generalMs);
+
+    const stillOnModal = await page.getByRole('heading', { name: d.labels.addPayerSetup }).isVisible().catch(() => false);
+    const onDashboard = await page.locator(d.selectors.dashboardRoot).isVisible().catch(() => false);
+    expect(stillOnModal || onDashboard).toBeTruthy();
+
+    const duplicateAlertVisible = await page.locator('alert').filter({ hasText: /duplicate key|already exists|P0001/i }).first().isVisible().catch(() => false);
+    expect(duplicateAlertVisible || stillOnModal).toBeTruthy();
+    expect(page.isClosed()).toBeFalsy();
   });
 });

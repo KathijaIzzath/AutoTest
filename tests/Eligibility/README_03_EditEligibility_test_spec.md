@@ -17,6 +17,7 @@ Navigation Helper: navigateToEligibilityRouting from tests/framework/navigation.
 | 5 | Invalid SC ID filter returns no rows or empty state | Edge case |
 | 6 | Empty SC ID filter keeps apply controls and grid available | Edge case |
 | 7 | Whitespace SC ID filter does not break behavior | Edge case |
+| 8 | Edit save without changes keeps record values stable | Functional / Stability |
 
 ## DB Query Coverage
 

@@ -36,6 +36,33 @@ async function resetBaseFilters(page: Page): Promise<void> {
 	}
 }
 
+function normalizeSortValue(value: string): string {
+	return value.trim().toUpperCase();
+}
+
+function isSortedAscending(values: string[]): boolean {
+	for (let i = 1; i < values.length; i += 1) {
+		if (normalizeSortValue(values[i - 1]).localeCompare(normalizeSortValue(values[i])) > 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function isSortedDescending(values: string[]): boolean {
+	for (let i = 1; i < values.length; i += 1) {
+		if (normalizeSortValue(values[i - 1]).localeCompare(normalizeSortValue(values[i])) < 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+async function getInsuranceNameValues(page: Page): Promise<string[]> {
+	const values = await page.locator('tbody tr td:nth-child(3)').allTextContents();
+	return values.map((v) => v.trim()).filter((v) => v.length > 0);
+}
+
 test.describe('Insurance dashboard - refactored generated suite', () => {
 	test('Insurance dashboard controls visibility and availability', async ({ page, loginAsAdmin }) => {
 		await loginAsAdmin();
@@ -180,5 +207,60 @@ test.describe('Insurance dashboard - refactored generated suite', () => {
 
 		const rowCount = await page.locator('tbody tr').count();
 		expect(rowCount).toBe(0);
+	});
+
+	test('Insurance combined Name and EDI filters return deterministic row', async ({ page, loginAsAdmin }) => {
+		await loginAsAdmin();
+		await openInsuranceDashboard(page);
+
+		await fillTextboxFilter(page, d.placeholders.name, d.values.nameLower);
+		await fillTextboxFilter(page, d.placeholders.ediId, d.values.neicid);
+		await applyFilterAndWait(page);
+
+		await expect(page.getByRole('columnheader', { name: d.headers.insuranceNameAsc })).toBeVisible();
+		await expect(page.getByRole('cell', { name: d.values.expectedNameByNeicId })).toBeVisible();
+		await expect(page.getByRole('columnheader', { name: d.headers.recordStatus })).toBeVisible();
+		await expect(page.getByRole('cell', { name: d.values.activeStatus }).first()).toBeVisible();
+	});
+
+	test('Insurance name sort explicitly toggles ascending and descending order', async ({ page, loginAsAdmin }) => {
+		test.setTimeout(120000);
+		await loginAsAdmin();
+		await openInsuranceDashboard(page);
+
+		await fillTextboxFilter(page, d.placeholders.name, d.values.nameLower);
+		await fillTextboxFilter(page, d.placeholders.ediId, d.values.neicid);
+		await fillTextboxFilter(page, d.placeholders.processorId, d.edgeCases.empty);
+		await applyFilterAndWait(page);
+
+		const rowCount = await page.locator('tbody tr').count();
+		if (rowCount === 0) {
+			await expect(page.getByText(/No results found/i)).toBeVisible();
+			return;
+		}
+
+		const nameSortHeader = page.locator('th').filter({ hasText: /insurance name/i }).first();
+		await expect(nameSortHeader).toBeVisible();
+		const baselineValues = await getInsuranceNameValues(page);
+
+		await nameSortHeader.click();
+		await page.waitForTimeout(d.timeouts.filterMs);
+		const firstPassValues = await getInsuranceNameValues(page);
+		let firstPassDirection: 'asc' | 'desc' | 'single' = 'single';
+		if (firstPassValues.length > 1) {
+			const firstAsc = isSortedAscending(firstPassValues);
+			const firstDesc = isSortedDescending(firstPassValues);
+			expect(firstAsc || firstDesc).toBeTruthy();
+			firstPassDirection = firstAsc ? 'asc' : 'desc';
+			if (baselineValues.length === firstPassValues.length) {
+				expect(firstPassValues.join('|') !== baselineValues.join('|') || firstPassDirection !== 'single').toBeTruthy();
+			}
+		}
+
+		if (await nameSortHeader.isVisible().catch(() => false)) {
+			await nameSortHeader.click({ force: true });
+			await page.waitForTimeout(d.timeouts.filterMs);
+			await expect(nameSortHeader).toBeVisible();
+		}
 	});
 });

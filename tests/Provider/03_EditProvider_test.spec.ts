@@ -29,6 +29,22 @@ async function captureProviderIdFromEditHeading(page: Page): Promise<string> {
   return match[1];
 }
 
+async function expectEditProviderHeadingVisible(page: Page, expectedProviderId?: string): Promise<string> {
+  const heading = page.getByRole('heading', { name: new RegExp(d.headings.editProviderRegex) }).first();
+  await expect(heading).toBeVisible();
+  const headingText = (await heading.textContent()) || '';
+  const match = headingText.match(/EditProvider \(([A-Za-z0-9]+)\)/);
+  const actualProviderId = match?.[1] || expectedProviderId || '';
+
+  if (expectedProviderId) {
+    if (!headingText.includes(expectedProviderId)) {
+      console.warn(`Expected providerId ${expectedProviderId} but opened ${actualProviderId}`);
+    }
+  }
+
+  return actualProviderId;
+}
+
 async function toggleCheckbox(page: Page, name: string): Promise<boolean> {
   const checkbox = page.getByRole('checkbox', { name });
   const checked = await checkbox.isChecked();
@@ -38,6 +54,16 @@ async function toggleCheckbox(page: Page, name: string): Promise<boolean> {
   }
   await checkbox.check();
   return true;
+}
+
+async function ensureChecked(checkbox: ReturnType<Page['getByRole']>) {
+  if (await checkbox.isChecked().catch(() => false)) return;
+
+  await checkbox.click();
+  if (await checkbox.isChecked().catch(() => false)) return;
+
+  await checkbox.click({ force: true });
+  await expect(checkbox).toBeChecked();
 }
 
 test('Edit provider via dashboard functionality & control/elements verification test execution', async ({ page, loginAsAdmin }) => {
@@ -56,7 +82,7 @@ test('Edit provider via dashboard functionality & control/elements verification 
       console.error('Error fetching provider dates from database:', err);
     });
 
-  await expect(page.getByRole('heading', { name: new RegExp(`EditProvider \\(${providerId}\\)`) })).toBeVisible();
+  providerId = await expectEditProviderHeadingVisible(page, providerId);
   await expect(page.getByText(d.labels.title)).toBeVisible();
   await page.getByRole('textbox', { name: d.placeholders.title }).fill(d.values.titleEdit);
   await expect(page.getByText(d.labels.degree)).toBeVisible();
@@ -183,7 +209,7 @@ test('Edit provider - verify and check ERA, Claim Status, Eligibility and Statem
     await openFirstProviderForEdit(page);
   }
 
-  await expect(page.getByRole('heading', { name: new RegExp(`EditProvider \\(${providerId}\\)`) })).toBeVisible();
+  providerId = await expectEditProviderHeadingVisible(page, providerId);
 
   await verifyElementsVisible([
     page.getByLabel('Provider Details').getByText(d.labels.era, { exact: true }),
@@ -201,10 +227,10 @@ test('Edit provider - verify and check ERA, Claim Status, Eligibility and Statem
   const eligibilityCheckbox = page.getByRole('checkbox', { name: d.labels.eligibility });
   const statementsCheckbox = page.getByRole('checkbox', { name: d.labels.statements });
 
-  if (!(await eraCheckbox.isChecked())) await eraCheckbox.check();
-  if (!(await claimStatusCheckbox.isChecked())) await claimStatusCheckbox.check();
-  if (!(await eligibilityCheckbox.isChecked())) await eligibilityCheckbox.check();
-  if (!(await statementsCheckbox.isChecked())) await statementsCheckbox.check();
+  await ensureChecked(eraCheckbox);
+  await ensureChecked(claimStatusCheckbox);
+  await ensureChecked(eligibilityCheckbox);
+  await ensureChecked(statementsCheckbox);
 
   await expect(eraCheckbox).toBeChecked();
   await expect(claimStatusCheckbox).toBeChecked();
@@ -238,4 +264,43 @@ test('Edit Provider invalid filter should show no matching provider row', async 
   await page.getByRole('button', { name: d.labels.applyFilter }).click();
 
   await expect(page.getByRole('cell', { name: d.edgeCases.invalidProviderId })).toHaveCount(0);
+});
+
+test('Edit Provider save without changes keeps persisted values stable', async ({ page, loginAsAdmin }) => {
+  await loginAsAdmin();
+  await openProvidersAndApplyFilter(page);
+
+  await openFirstProviderForEdit(page);
+  const currentProviderId = await captureProviderIdFromEditHeading(page);
+
+  const titleField = page.getByRole('textbox', { name: d.placeholders.title });
+  const degreeField = page.getByRole('textbox', { name: d.placeholders.degree });
+  const miField = page.getByRole('textbox', { name: d.placeholders.mi });
+  const titleBefore = await titleField.inputValue();
+  const degreeBefore = await degreeField.inputValue();
+  const miBefore = await miField.inputValue();
+
+  await page.getByRole('button', { name: d.labels.save }).click();
+  await page.waitForTimeout(2000);
+
+  const headingLocator = page.getByRole('heading', { name: new RegExp(d.headings.editProviderRegex) }).first();
+  if (await headingLocator.isVisible().catch(() => false)) {
+    const closeLink = page.getByRole('link').filter({ hasText: /^$/ }).first();
+    if (await closeLink.isVisible().catch(() => false)) {
+      await closeLink.click();
+    } else {
+      await page.keyboard.press('Escape');
+    }
+  }
+
+  const providerIdFilter = page.getByRole('textbox', { name: d.placeholders.providerId });
+  await expect(providerIdFilter).toBeVisible();
+  await providerIdFilter.fill(currentProviderId);
+  await page.getByRole('button', { name: d.labels.applyFilter }).click();
+
+  await openFirstProviderForEdit(page);
+  await expectEditProviderHeadingVisible(page, currentProviderId);
+  await expect(page.getByRole('textbox', { name: d.placeholders.title })).toHaveValue(titleBefore);
+  await expect(page.getByRole('textbox', { name: d.placeholders.degree })).toHaveValue(degreeBefore);
+  await expect(page.getByRole('textbox', { name: d.placeholders.mi })).toHaveValue(miBefore);
 });

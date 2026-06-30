@@ -60,6 +60,18 @@ async function submitAddInsurance(modal: Locator): Promise<void> {
     await modal.getByRole('button', { name: d.labels.addInsuranceLink }).click();
 }
 
+async function fillAddInsuranceRequiredValues(modal: Locator): Promise<void> {
+    await fillTextboxIn(modal, d.placeholders.contactName, d.values.contactName, 1);
+    const stateSelect = modal.getByRole('combobox').nth(1);
+    if (await stateSelect.isVisible().catch(() => false)) {
+        const stateOptions = await stateSelect.locator('option').allTextContents();
+        if (stateOptions.some((opt) => opt.trim() === d.values.state)) {
+            await stateSelect.selectOption(d.values.state);
+        }
+    }
+    await modal.locator(d.selectors.modalTextarea).first().fill(d.values.notes);
+}
+
 async function verifyInsuranceInInsuranceDashboard(page: Page): Promise<void> {
     const baseOrigin = new URL(page.url()).origin;
     await page.goto(`${baseOrigin}/SecureConnectWeb/dashboard/insurances`);
@@ -198,5 +210,55 @@ test.describe('Add Insurance from Edit Payer flow', () => {
         await expect(page.getByRole('button', { name: d.labels.applyFilter })).toBeVisible();
         await expect(page.getByRole('columnheader', { name: d.labels.insuranceNameAsc })).toBeVisible();
         await expect(page.getByRole('columnheader', { name: d.labels.recordStatus })).toBeVisible();
+    });
+
+    test('Add Insurance with required fields empty keeps modal in a stable validation state', async ({ page, loginAsAdmin }) => {
+        await loginAsAdmin();
+        await openPayerEditFromDashboard(page);
+        const modal = await openAddInsuranceSetupModal(page);
+
+        const addButton = modal.getByRole('button', { name: d.labels.addInsuranceLink });
+        await expect(addButton).toBeVisible();
+        await expect(addButton).toBeDisabled();
+
+        const successToastVisible = await page.getByLabel(d.labels.insuranceCreatedToast).isVisible().catch(() => false);
+        const modalHeadingVisible = await page.getByRole('heading', { name: d.labels.addInsuranceSetupHeading }).isVisible().catch(() => false);
+        expect(!successToastVisible || modalHeadingVisible).toBeTruthy();
+        await expect(addButton).toBeVisible();
+    });
+
+    test('Duplicate Add Insurance attempt keeps app stable and dashboard remains searchable', async ({ page, loginAsAdmin }) => {
+        await loginAsAdmin();
+        await openPayerEditFromDashboard(page);
+
+        let modal = await openAddInsuranceSetupModal(page);
+    await fillAddInsuranceRequiredValues(modal);
+        await submitAddInsurance(modal);
+        await page.waitForTimeout(d.timeouts.filterMs);
+
+        const addHeadingVisibleAfterFirst = await page
+            .getByRole('heading', { name: d.labels.addInsuranceSetupHeading })
+            .isVisible()
+            .catch(() => false);
+
+        if (!addHeadingVisibleAfterFirst) {
+            modal = await openAddInsuranceSetupModal(page);
+        } else {
+            modal = page.locator(d.selectors.addInsuranceModal).last();
+        }
+
+        await fillAddInsuranceRequiredValues(modal);
+        await submitAddInsurance(modal);
+        await page.waitForTimeout(d.timeouts.filterMs);
+
+        const toastVisible = await page.getByLabel(d.labels.insuranceCreatedToast).isVisible().catch(() => false);
+        const modalStillVisible = await page.getByRole('heading', { name: d.labels.addInsuranceSetupHeading }).isVisible().catch(() => false);
+        expect(toastVisible || modalStillVisible).toBeTruthy();
+
+        await closeDialogByHeadingIfOpen(page, d.labels.addInsuranceSetupHeading);
+        await closeDialogByHeadingIfOpen(page, d.labels.viewModifyPayerSetup);
+        await expect(page.locator(d.selectors.payerRoot)).toBeVisible();
+        const duplicateErrorVisible = await page.locator('alert').filter({ hasText: /duplicate key|already exists|P0001/i }).first().isVisible().catch(() => false);
+        expect(duplicateErrorVisible || toastVisible || modalStillVisible).toBeTruthy();
     });
 });

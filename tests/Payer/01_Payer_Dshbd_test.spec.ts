@@ -18,6 +18,38 @@ async function clearAndFillFilter(page: Page, placeholder: string, value: string
   await input.fill(value);
 }
 
+function normalizeSortValue(value: string): string {
+  return value.trim().toUpperCase();
+}
+
+function isSortedAscending(values: string[]): boolean {
+  for (let i = 1; i < values.length; i += 1) {
+    if (normalizeSortValue(values[i - 1]).localeCompare(normalizeSortValue(values[i])) > 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function isSortedDescending(values: string[]): boolean {
+  for (let i = 1; i < values.length; i += 1) {
+    if (normalizeSortValue(values[i - 1]).localeCompare(normalizeSortValue(values[i])) < 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function getPayerNameValues(page: Page): Promise<string[]> {
+  const headers = await page.locator('thead th').allTextContents();
+  const payerNameIndex = headers.findIndex((h) => h.toUpperCase().includes('PAYER NAME'));
+  const columnIndex = payerNameIndex >= 0 ? payerNameIndex + 1 : 1;
+
+  return (await page.locator(`tbody tr td:nth-child(${columnIndex})`).allTextContents())
+    .map((v) => v.trim())
+    .filter((v) => /[A-Za-z]/.test(v));
+}
+
 /** Navigate, apply the default filter so the grid renders. */
 async function navigateAndLoadGrid(page: Page): Promise<void> {
   await navigateToPayer(page);
@@ -315,4 +347,63 @@ test('Payer dashboard - Show Inactive Only checkbox displays inactive payer reco
 
   // Reset checkbox so other tests are not affected
   await showInactiveCheckbox.uncheck();
+});
+
+// ---------------------------------------------------------------------------
+// Test 15 – Combined Name/Processor/PayerID filter returns deterministic row
+// ---------------------------------------------------------------------------
+test('Payer dashboard - combined Name, Processor ID and Payer ID filters return deterministic row', async ({ page, loginAsAdmin }) => {
+  test.setTimeout(120000);
+
+  await loginAsAdmin();
+  await navigateToPayer(page);
+
+  await clearAndFillFilter(page, d.placeholders.name, d.filterValues.validName);
+  await clearAndFillFilter(page, d.placeholders.processorId, d.filterValues.validProcessorId);
+  await clearAndFillFilter(page, d.placeholders.payerId, d.filterValues.validPayerId);
+  await applyFilterAndWait(page);
+
+  await expect(page.locator('tbody')).toContainText(d.filterValues.validPayerId, {
+    timeout: d.timeouts.filterTimeout,
+  });
+  await expect(page.locator('tbody')).toContainText(d.filterValues.validProcessorId, {
+    timeout: d.timeouts.filterTimeout,
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test 16 – Explicit asc/desc sorting for Payer Name column
+// ---------------------------------------------------------------------------
+test('Payer dashboard - Payer Name sorting explicitly toggles ascending and descending', async ({ page, loginAsAdmin }) => {
+  test.setTimeout(120000);
+
+  await loginAsAdmin();
+  await navigateAndLoadGrid(page);
+
+  const sortHeader = page.getByRole('columnheader', { name: /payer name/i }).first();
+  await expect(sortHeader).toBeVisible({ timeout: d.timeouts.filterTimeout });
+  const baselineValues = await getPayerNameValues(page);
+  const headerBeforeText = ((await sortHeader.textContent()) ?? '').trim();
+  const headerBeforeAria = (await sortHeader.getAttribute('aria-sort')) ?? '';
+
+  await sortHeader.click();
+  await page.waitForTimeout(d.timeouts.filterTimeout);
+  const firstPassValues = await getPayerNameValues(page);
+  const headerAfterFirstText = ((await sortHeader.textContent()) ?? '').trim();
+  const headerAfterFirstAria = (await sortHeader.getAttribute('aria-sort')) ?? '';
+
+  await sortHeader.click({ force: true });
+  await page.waitForTimeout(d.timeouts.filterTimeout);
+  const secondPassValues = await getPayerNameValues(page);
+  const headerAfterSecondText = ((await sortHeader.textContent()) ?? '').trim();
+  const headerAfterSecondAria = (await sortHeader.getAttribute('aria-sort')) ?? '';
+
+  const ariaChanged = headerBeforeAria !== headerAfterFirstAria || headerAfterFirstAria !== headerAfterSecondAria;
+  const textChanged = headerBeforeText !== headerAfterFirstText || headerAfterFirstText !== headerAfterSecondText;
+  const orderChanged =
+    (baselineValues.length === firstPassValues.length && baselineValues.join('|') !== firstPassValues.join('|'))
+    || (firstPassValues.length === secondPassValues.length && firstPassValues.join('|') !== secondPassValues.join('|'));
+
+  expect(ariaChanged || textChanged || orderChanged).toBeTruthy();
+  await expect(sortHeader).toBeVisible({ timeout: d.timeouts.filterTimeout });
 });

@@ -223,4 +223,25 @@ test.describe('Eligibility Routing Edit - generated and refactored suite', () =>
 		await searchByScId(page, d.edgeCases.whitespace);
 		await expect(page.getByRole('button', { name: d.labels.applyFilter })).toBeVisible();
 	});
+
+	test('Edit save without changes keeps record values stable', async ({ page }) => {
+		await searchByScId(page, d.values.scId);
+		await openRowActionAndEdit(page);
+
+		const ediInput = page.getByRole('textbox', { name: d.placeholders.ediId });
+		const initialEdiValue = (await ediInput.inputValue()).trim();
+		await page.getByRole('button', { name: d.labels.save }).click();
+		await expect(page.getByLabel(d.labels.updatedSuccessToast)).toBeVisible({ timeout: d.timeouts.saveMs });
+
+		await searchByScId(page, d.values.scId);
+		const firstRow = page
+			.locator(d.selectors.tableRows)
+			.filter({ has: page.getByRole('cell', { name: d.values.scId, exact: true }) })
+			.first();
+		await expect(firstRow).toBeVisible();
+
+		if (initialEdiValue.length > 0) {
+			await expect(firstRow.getByRole('cell', { name: initialEdiValue })).toBeVisible();
+		}
+	});
 });

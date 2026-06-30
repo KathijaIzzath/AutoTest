@@ -18,6 +18,7 @@
 | 4 | Provider dashboard invalid filters should not show known seeded row | Edge Case |
 | 5 | Provider dashboard empty filters should load default grid successfully | Edge Case |
 | 6 | Provider dashboard invalid city should not show known seeded row | Edge Case |
+| 7 | Provider dashboard Provider ID sorting explicitly toggles ascending and descending | Sorting |
 
 ---
 
@@ -39,6 +40,9 @@ Clears all filters, applies filter, and confirms the grid body is visible with a
 ### Test 6 — Invalid city shows no known row
 Enters an invalid city value, applies filter, and confirms the seeded provider row is absent.
 
+### Test 7 — Explicit Provider ID asc/desc sorting
+Applies filters, clicks the Provider ID column header twice, and verifies the first click produces a valid sorted order and the second click toggles to the opposite order when sufficient rows are available.
+
 ---
 
-**Total Tests:** 6
+**Total Tests:** 7

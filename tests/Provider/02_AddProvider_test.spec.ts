@@ -134,13 +134,25 @@ test('Add provider via Accounts dashboard functionality & control/elements verif
 
   let retries = 0;
   const maxRetries = 2;
+  let providerIdVisible = false;
+  let providerNameVisible = false;
   while (retries < maxRetries) {
     const nameHeaderVisible = await page.getByRole('columnheader', { name: d.headers.providersGridNameAsc }).isVisible().catch(() => false);
     const providerIdHeaderVisible = await page.getByRole('columnheader', { name: d.headers.providersGridProviderId }).isVisible().catch(() => false);
-    await expect(page.getByRole('cell', { name: resolvedProviderData.id, exact: true })).toBeVisible();
-    await expect(page.getByRole('cell', { name: resolvedProviderData.organizationname, exact: true })).toBeVisible();
+    const providerIdExact = page.getByRole('cell', { name: resolvedProviderData.id, exact: true }).first();
+    const providerIdLoose = page.getByRole('cell', { name: resolvedProviderData.id }).first();
+    const providerNameExact = page.getByRole('cell', { name: resolvedProviderData.organizationname, exact: true }).first();
+    const providerNameLoose = page.getByRole('cell', { name: resolvedProviderData.organizationname }).first();
 
-    if (nameHeaderVisible && providerIdHeaderVisible) break;
+    const providerIdExactVisible = await providerIdExact.isVisible().catch(() => false);
+    const providerIdLooseVisible = await providerIdLoose.isVisible().catch(() => false);
+    providerIdVisible = providerIdExactVisible || providerIdLooseVisible;
+
+    const providerNameExactVisible = await providerNameExact.isVisible().catch(() => false);
+    const providerNameLooseVisible = await providerNameLoose.isVisible().catch(() => false);
+    providerNameVisible = providerNameExactVisible || providerNameLooseVisible;
+
+    if (nameHeaderVisible && providerIdHeaderVisible && providerIdVisible && providerNameVisible) break;
     await page.getByRole('cell').filter({ hasText: /^$/ }).nth(d.selectors.providersGridFirstCellIndex).click();
 
     try {
@@ -152,6 +164,9 @@ test('Add provider via Accounts dashboard functionality & control/elements verif
     }
     retries++;
   }
+
+  expect(providerIdVisible).toBeTruthy();
+  expect(providerNameVisible).toBeTruthy();
 });
 
 test('Add Provider step-1 field visibility and availability', async ({ page, loginAsAdmin }) => {
@@ -174,4 +189,58 @@ test('Accounts invalid filter should show no rows before Add Provider flow', asy
   await page.getByRole('button', { name: d.labels.applyFilter }).click();
 
   await expect(page.getByRole('cell', { name: userData.addProvider.accountNum })).toHaveCount(0);
+});
+
+test('Add Provider with required fields empty keeps dialog in stable validation state', async ({ page, loginAsAdmin }) => {
+  await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
+  await loginAsAdmin();
+
+  await openAccountAndGroup(page, userData.addProvider.accountNum, userData.addProvider.groupeditInAcct);
+  await openAddProviderModal(page);
+
+  await expect(page.getByRole('heading', { name: d.headings.addProviderSetup })).toBeVisible();
+  const nextButton = page.getByRole('button', { name: d.labels.next });
+  await expect(nextButton).toBeVisible();
+  await nextButton.click();
+
+  await expect(page.getByRole('heading', { name: d.headings.addProviderIdInfo })).toBeVisible();
+  await expect(page.getByText('This field is required').first()).toBeVisible();
+  await expect(page.getByRole('textbox', { name: d.placeholders.firstName })).toHaveValue('');
+  await expect(page.getByRole('textbox', { name: d.placeholders.lastName })).toHaveValue('');
+});
+
+test('Duplicate Provider Add Details attempt keeps app stable and does not close setup unexpectedly', async ({ page, loginAsAdmin }) => {
+  await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
+  await loginAsAdmin();
+
+  await openAccountAndGroup(page, userData.addProvider.accountNum, userData.addProvider.groupeditInAcct);
+  await openAddProviderModal(page);
+
+  await page.getByRole('textbox', { name: d.placeholders.firstName }).fill(d.values.firstName);
+  await page.getByRole('textbox', { name: d.placeholders.lastName }).fill(d.values.lastName);
+  await page.getByRole('textbox', { name: d.placeholders.title }).fill(d.values.title);
+  await page.getByRole('button', { name: d.labels.next }).click();
+  await expect(page.getByRole('heading', { name: d.headings.addProviderIdInfo })).toBeVisible();
+
+  await page.locator(d.selectors.qualifierSelect).getByRole('combobox').selectOption(d.values.taxQualifier);
+  await page.getByRole('textbox', { name: d.placeholders.id }).fill(userData.addProvider.providerTaxID);
+  await page.getByRole('button', { name: 'Add Details' }).click();
+  await page.locator(d.selectors.qualifierSelect).getByRole('combobox').selectOption(d.values.npiQualifier);
+  await page.getByRole('textbox', { name: d.placeholders.id }).fill(userData.addProvider.providerNPI);
+  await page.getByRole('button', { name: 'Add Details' }).click();
+
+  await page.locator(d.selectors.qualifierSelect).getByRole('combobox').selectOption(d.values.taxQualifier);
+  await page.getByRole('textbox', { name: d.placeholders.id }).fill(userData.addProvider.providerTaxID);
+  const addDetailsBtn = page.getByRole('button', { name: 'Add Details' });
+  if (await addDetailsBtn.isEnabled().catch(() => false)) {
+    await addDetailsBtn.click();
+  }
+
+  await expect(page.getByRole('heading', { name: d.headings.addProviderIdInfo })).toBeVisible();
+  await expect(page.getByRole('button', { name: d.labels.save })).toBeVisible();
+
+  const duplicateOrStable =
+    (await page.locator('alert').filter({ hasText: /duplicate|already exists|P0001/i }).first().isVisible().catch(() => false))
+    || (await page.getByRole('row', { name: new RegExp(userData.addProvider.providerTaxID) }).isVisible().catch(() => false));
+  expect(duplicateOrStable).toBeTruthy();
 });

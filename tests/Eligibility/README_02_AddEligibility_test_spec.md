@@ -15,7 +15,9 @@ Navigation Helper: navigateToEligibilityRouting from tests/framework/navigation.
 | 3 | Apply filter with empty values keeps grid available | Edge case |
 | 4 | Invalid SC ID filter returns no rows or empty state | Edge case |
 | 5 | Whitespace SC ID filter does not break page behavior | Edge case |
-| 6 | SC ID field is retained after successful search | Functional |
+| 6 | Add Eligibility with required fields empty should not create success toast | Field validation |
+| 7 | Duplicate add attempt keeps application stable and record remains searchable (saved or blocked) | Functional / Stability |
+| 8 | SC ID search remains successful and field behavior is stable | Functional |
 
 ## DB Query Coverage
 

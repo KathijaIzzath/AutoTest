@@ -11,7 +11,12 @@ export const testConfig = {
   globalTimeoutMs: 60000,
   };
 
-const runOutputDir = `test-results/run-${process.pid}`;
+const isoNow = new Date().toISOString();
+const runDate = isoNow.slice(0, 10);
+const runTime = isoNow.slice(11, 19).replace(/:/g, '-');
+const runId = `${runDate}_${runTime}-pid${process.pid}`;
+const runOutputDir = `test-results/run-${runId}`;
+const blobOutputFile = `blob-report/${runDate}/report-${runId}.zip`;
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -33,6 +38,7 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['blob', { outputFile: blobOutputFile }],
     ['list'],
   ],
    globalSetup: require.resolve('./global-setup'),

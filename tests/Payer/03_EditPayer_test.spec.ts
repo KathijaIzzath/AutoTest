@@ -163,4 +163,43 @@ test.describe('Edit Payer - Refactored and Extended Coverage', () => {
 		const saveButtonVisible = await page.getByRole('button', { name: d.labels.save }).isVisible().catch(() => false);
 		expect(saveButtonVisible).toBe(true);
 	});
+
+	test('Edit payer save without changes keeps payer contact persisted', async ({ page, loginAsAdmin }) => {
+		await loginAsAdmin();
+
+		await applyFilter(page, d.values.validPayerFilterId);
+		await openEditFromGrid(page);
+
+		const payerContactField = page.getByRole('textbox', { name: d.placeholders.payerContact });
+		const originalContact = await payerContactField.inputValue();
+
+		await page.getByRole('button', { name: d.labels.save }).click();
+		const successToastVisible = await page.getByLabel(d.labels.payerUpdated).isVisible({ timeout: d.timeouts.saveToastMs }).catch(() => false);
+		if (successToastVisible) {
+			await expect(page.getByLabel(d.labels.payerUpdated)).toBeVisible();
+		}
+
+		const editHeading = page.getByRole('heading', { name: /View\/Modify Payer Setup/i });
+		if (await editHeading.isVisible().catch(() => false)) {
+			const editDialog = page.getByRole('dialog').filter({ has: editHeading }).first();
+			const closeLink = editDialog.getByRole('link').first();
+			if (await closeLink.isVisible().catch(() => false)) {
+				await closeLink.click();
+			} else {
+				await page.keyboard.press('Escape');
+			}
+		}
+
+		const payerIdInput = page.getByRole('textbox', { name: d.placeholders.payerId });
+		if (await payerIdInput.isVisible().catch(() => false)) {
+			await payerIdInput.clear();
+			await payerIdInput.fill(d.values.validPayerFilterId);
+			await page.getByRole('button', { name: d.labels.applyFilter }).click();
+		} else {
+			await applyFilter(page, d.values.validPayerFilterId);
+		}
+		await openEditFromGrid(page);
+
+		await expect(page.getByRole('textbox', { name: d.placeholders.payerContact })).toHaveValue(originalContact);
+	});
 });

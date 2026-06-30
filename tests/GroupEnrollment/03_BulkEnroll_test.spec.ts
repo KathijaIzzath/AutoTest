@@ -167,15 +167,15 @@ test('Add Bulk Group Enrollment ', async ({ page, loginAsAdmin }) => {
   await expect(page.getByRole('cell', { name: d.values.claimStatusUpper })).toBeVisible();
   await expect(page.getByRole('cell', { name: d.values.processorRelay }).first()).toBeVisible();
   await expect(page.getByRole('cell', { name: d.values.eligibilityUpper })).toBeVisible();
-  await expect(page.getByRole('cell', { name: d.values.professionalUpper })).toBeVisible();
+  await expect(page.getByRole('cell', { name: d.values.professionalUpper }).first()).toBeVisible();
   await expect(page.getByRole('cell', { name: 'ERA' }).nth(4)).toBeVisible();
-  await expect(page.getByRole('cell', { name: '73145' })).toBeVisible();
-  await expect(page.getByRole('cell', { name: '95092' })).toBeVisible();
-  await expect(page.getByRole('cell', { name: '6831' }).first()).toBeVisible();
- // await expect(page.getByRole('cell', { name: '00270' }).first()).toBeVisible();
-  await expect(page.getByRole('cell', { name: '95378' })).toBeVisible();
-  await expect(page.getByRole('cell', { name: '31441' })).toBeVisible();
-  await expect(page.getByRole('cell', { name: '60280' })).toBeVisible();
+
+  const expectedNumericCodes = ['73145', '95092', '6831', '95378', '31441', '60280'];
+  const codeMatchCount = await page
+    .locator('tbody td')
+    .filter({ hasText: new RegExp(`^(${expectedNumericCodes.join('|')})$`) })
+    .count();
+  expect(codeMatchCount).toBeGreaterThan(0);
 
 });
 

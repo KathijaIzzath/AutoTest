@@ -237,4 +237,35 @@ test.describe('Edit Insurance - Extended Coverage', () => {
     await expect(modal.getByRole('button', { name: d.labels.save })).toBeVisible();
   });
 
+  test('Edit Insurance save without changes keeps persisted values stable', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await navigateAndFilter(page);
+
+    const modal = await openInsuranceEditModal(page);
+    const contactBefore = await modal.getByRole('textbox', { name: d.placeholders.contactName }).nth(1).inputValue();
+    const notesBefore = await modal.locator(d.selectors.modalTextarea).inputValue();
+    const eligibilityBefore = await modal.getByRole('textbox', { name: d.placeholders.eligibilityId }).inputValue();
+
+    await modal.getByRole('button', { name: d.labels.save }).click();
+    await page.waitForTimeout(d.timeouts.saveMs);
+
+    const savedToastVisible = await page.getByLabel(d.labels.savedToast).isVisible().catch(() => false);
+    if (savedToastVisible) {
+      await expect(page.getByLabel(d.labels.savedToast)).toBeVisible();
+    }
+
+    const closeLink = modal.getByRole('link').first();
+    if (await closeLink.isVisible().catch(() => false)) {
+      await closeLink.click();
+    } else {
+      await page.keyboard.press('Escape');
+    }
+
+    await applyFilterAndWait(page);
+    const reopened = await openInsuranceEditModal(page);
+    await expect(reopened.getByRole('textbox', { name: d.placeholders.contactName }).nth(1)).toHaveValue(contactBefore);
+    await expect(reopened.locator(d.selectors.modalTextarea)).toHaveValue(notesBefore);
+    await expect(reopened.getByRole('textbox', { name: d.placeholders.eligibilityId })).toHaveValue(eligibilityBefore);
+  });
+
 });

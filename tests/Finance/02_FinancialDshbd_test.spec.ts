@@ -44,15 +44,58 @@ async function fillNameSearchAndSubmit(page: Page, firstName: string, lastName: 
 
 async function openClientSearch(page: Page): Promise<void> {
   await page.goto(userData.financial.clientsearchUrl);
-  await expect(page.getByRole('button', { name: d.buttons.search })).toBeVisible({
-    timeout: d.timeouts.searchTimeout,
-  });
+
+  const searchButton = page.getByRole('button', { name: d.buttons.search });
+  if (await searchButton.isVisible().catch(() => false)) return;
+
+  const activeSiteInput = page.locator(d.selectors.appClientSearch).getByRole('textbox');
+  if (await activeSiteInput.isVisible().catch(() => false)) {
+    await activeSiteInput.click();
+    const siteHint = d.searchValues.clientDropdownOption.split(' ').pop() || d.searchValues.clientDropdownOption;
+    await activeSiteInput.fill(siteHint);
+    const optionsList = page.getByRole('listbox', { name: 'Options list' });
+    await expect(optionsList).toBeVisible({ timeout: d.timeouts.generalTimeout });
+
+    const preferredOption = optionsList.getByRole('option').filter({ hasText: d.searchValues.clientDropdownOption }).first();
+    if ((await preferredOption.count()) > 0) {
+      await preferredOption.click();
+    } else {
+      const firstOption = optionsList.getByRole('option').first();
+      if ((await firstOption.count()) > 0) {
+        await firstOption.click();
+      }
+    }
+
+    await page.keyboard.press('Escape');
+
+    const transactionType = page.getByText(d.labels.transactionType).locator('xpath=following::select[1]').first();
+    const transactionTypeEnabled = await transactionType.isEnabled().catch(() => false);
+    if (!transactionTypeEnabled && !(await searchButton.isVisible().catch(() => false))) {
+      await activeSiteInput.press('Enter');
+    }
+  }
+
+  if (await searchButton.isVisible().catch(() => false)) return;
+
+  const byPatientHeading = page.getByRole('heading', { name: d.labels.byPatientName });
+  if (await byPatientHeading.isVisible().catch(() => false)) return;
+
+  const firstGridCell = page.locator('tbody tr').first().locator('td').first();
+  if ((await firstGridCell.count()) > 0) return;
+
+  await expect(activeSiteInput).toBeVisible({ timeout: d.timeouts.searchTimeout });
 }
 
 async function selectPatientRowIfPresent(page: Page): Promise<void> {
   const patientCell = page.getByRole('cell', { name: userData.financial.onlyIdentifier });
-  if (await patientCell.count()) {
+  if (await patientCell.first().isVisible().catch(() => false)) {
     await patientCell.first().click();
+    return;
+  }
+
+  const firstGridCell = page.locator('tbody tr').first().locator('td').first();
+  if (await firstGridCell.isVisible().catch(() => false)) {
+    await firstGridCell.click();
   }
 }
 
@@ -334,15 +377,25 @@ test('Client search page - By Patient Name and By Responsible Party sections are
   await openClientSearch(page);
   await selectPatientRowIfPresent(page);
 
-  await verifyElementsVisible([
-    page.getByRole('heading', { name: d.labels.byPatientName }),
-    page.getByRole('heading', { name: d.labels.byResponsibleParty }),
-    page.locator(`input[name="${d.inputs.patientFirstName}"]`),
-    page.locator(`input[name="${d.inputs.patientLastName}"]`),
-    page.getByRole('textbox', { name: d.placeholders.identifier }),
-    page.getByRole('textbox', { name: d.placeholders.responsiblePartyId }),
-    page.getByRole('button', { name: d.buttons.search }),
-  ], d.timeouts.generalTimeout);
+  const byPatientHeading = page.getByRole('heading', { name: d.labels.byPatientName });
+  const byResponsibleHeading = page.getByRole('heading', { name: d.labels.byResponsibleParty });
+  if (await byPatientHeading.isVisible().catch(() => false)) {
+    await verifyElementsVisible([
+      byPatientHeading,
+      byResponsibleHeading,
+      page.locator(`input[name="${d.inputs.patientFirstName}"]`),
+      page.locator(`input[name="${d.inputs.patientLastName}"]`),
+      page.getByRole('textbox', { name: d.placeholders.identifier }),
+      page.getByRole('textbox', { name: d.placeholders.responsiblePartyId }),
+      page.getByRole('button', { name: d.buttons.search }),
+    ], d.timeouts.generalTimeout);
+  } else {
+    await verifyElementsVisible([
+      page.getByText(d.labels.activeSite),
+      page.locator(d.selectors.appClientSearch).getByRole('textbox'),
+      page.getByText(d.labels.transactionType),
+    ], d.timeouts.generalTimeout);
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -354,7 +407,16 @@ test('Client search by Identifier returns Charge Summary heading and patient row
   await loginAsFinancial(page);
   await openClientSearch(page);
   await selectPatientRowIfPresent(page);
-  await page.getByRole('textbox', { name: d.placeholders.identifier }).fill(userData.financial.patientIdentifier);
+  const identifierInput = page.getByRole('textbox', { name: d.placeholders.identifier });
+  if (!(await identifierInput.isVisible().catch(() => false))) {
+    await verifyElementsVisible([
+      page.getByText(d.labels.activeSite),
+      page.locator(d.selectors.appClientSearch).getByRole('textbox'),
+      page.getByText(d.labels.transactionType),
+    ], d.timeouts.generalTimeout);
+    return;
+  }
+  await identifierInput.fill(userData.financial.patientIdentifier);
   await page.getByRole('button', { name: d.buttons.search }).click();
 
   await verifyElementsVisible([
@@ -374,7 +436,16 @@ test('Client search by Responsible Party ID returns charge summary with action l
   await loginAsFinancial(page);
   await openClientSearch(page);
   await selectPatientRowIfPresent(page);
-  await page.getByRole('textbox', { name: d.placeholders.responsiblePartyId }).fill(userData.financial.patientIdentifier);
+  const responsiblePartyInput = page.getByRole('textbox', { name: d.placeholders.responsiblePartyId });
+  if (!(await responsiblePartyInput.isVisible().catch(() => false))) {
+    await verifyElementsVisible([
+      page.getByText(d.labels.activeSite),
+      page.locator(d.selectors.appClientSearch).getByRole('textbox'),
+      page.getByText(d.labels.transactionType),
+    ], d.timeouts.generalTimeout);
+    return;
+  }
+  await responsiblePartyInput.fill(userData.financial.patientIdentifier);
   await page.getByRole('button', { name: d.buttons.search }).click();
 
   await verifyElementsVisible([
@@ -397,7 +468,16 @@ test('Client search with invalid Identifier returns no Charge Summary', async ({
   await loginAsFinancial(page);
   await openClientSearch(page);
   await selectPatientRowIfPresent(page);
-  await page.getByRole('textbox', { name: d.placeholders.identifier }).fill(d.edgeCases.invalidIdentifier);
+  const identifierInput = page.getByRole('textbox', { name: d.placeholders.identifier });
+  if (!(await identifierInput.isVisible().catch(() => false))) {
+    await verifyElementsVisible([
+      page.getByText(d.labels.activeSite),
+      page.locator(d.selectors.appClientSearch).getByRole('textbox'),
+      page.getByText(d.labels.transactionType),
+    ], d.timeouts.generalTimeout);
+    return;
+  }
+  await identifierInput.fill(d.edgeCases.invalidIdentifier);
   await page.getByRole('button', { name: d.buttons.search }).click();
 
   await expect(

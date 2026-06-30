@@ -30,6 +30,38 @@ async function fillTextboxByName(page: Page, placeholderName: string, value: str
   await input.fill(value);
 }
 
+function normalizeSortValue(value: string): string {
+  return value.trim().toUpperCase();
+}
+
+function isSortedAscending(values: string[]): boolean {
+  for (let i = 1; i < values.length; i += 1) {
+    if (normalizeSortValue(values[i - 1]).localeCompare(normalizeSortValue(values[i])) > 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function isSortedDescending(values: string[]): boolean {
+  for (let i = 1; i < values.length; i += 1) {
+    if (normalizeSortValue(values[i - 1]).localeCompare(normalizeSortValue(values[i])) < 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function getColumnValues(page: Page, headerPattern: RegExp): Promise<string[]> {
+  const headers = await page.locator('thead th').allTextContents();
+  const targetIdx = headers.findIndex((h) => headerPattern.test(h));
+  const columnIndex = targetIdx >= 0 ? targetIdx + 1 : 1;
+
+  return (await page.locator(`tbody tr td:nth-child(${columnIndex})`).allTextContents())
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0 && v !== d.values.na);
+}
+
 test('ProviderGroupDashboard control/elements verification test execution', async ({ page, loginAsAdmin }) => {
   await loginAsAdmin();
   await openProvidersDashboard(page);
@@ -193,4 +225,44 @@ test('Provider dashboard invalid city should not show known seeded row', async (
 
   await expect(page.getByRole('cell', { name: d.values.providerId })).toHaveCount(0);
   await expect(page.getByRole('cell', { name: d.values.providerName })).toHaveCount(0);
+});
+
+test('Provider dashboard Provider ID sorting explicitly toggles ascending and descending', async ({ page, loginAsAdmin }) => {
+  test.setTimeout(120000);
+
+  await loginAsAdmin();
+  await openProvidersDashboard(page);
+  await applyFilters(page);
+
+  const rowCount = await page.locator('tbody tr').count();
+  if (rowCount < 2) {
+    await expect(page.locator('tbody')).toBeVisible();
+    return;
+  }
+
+  const providerIdHeader = page.getByRole('columnheader', { name: /provider ID/i }).first();
+  await expect(providerIdHeader).toBeVisible();
+
+  await providerIdHeader.click();
+  await page.waitForTimeout(d.timeouts.gridRefreshMs);
+  const firstPassValues = await getColumnValues(page, /provider\s*ID/i);
+  let firstDirection: 'asc' | 'desc' | 'single' = 'single';
+  if (firstPassValues.length > 1) {
+    const firstAsc = isSortedAscending(firstPassValues);
+    const firstDesc = isSortedDescending(firstPassValues);
+    expect(firstAsc || firstDesc).toBeTruthy();
+    firstDirection = firstAsc ? 'asc' : 'desc';
+  }
+
+  await providerIdHeader.click({ force: true });
+  await page.waitForTimeout(d.timeouts.gridRefreshMs);
+  const secondPassValues = await getColumnValues(page, /provider\s*ID/i);
+  if (secondPassValues.length > 1) {
+    const secondAsc = isSortedAscending(secondPassValues);
+    const secondDesc = isSortedDescending(secondPassValues);
+    expect(secondAsc || secondDesc).toBeTruthy();
+    if (firstDirection !== 'single') {
+      expect((firstDirection === 'asc' && secondDesc) || (firstDirection === 'desc' && secondAsc)).toBeTruthy();
+    }
+  }
 });
