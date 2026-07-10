@@ -1,0 +1,53 @@
+{
+  "labels": {
+    "title": "Claims Archive",
+    "applyFilter": "Apply Filter"
+  },
+  "placeholders": {
+    "groupId": "Enter Group Id",
+    "claimId": "Enter Claim ID",
+    "patientAccountNumber": "Enter Patient Account Number",
+    "patientName": "Enter Patient Name",
+    "payerId": "Enter payer id"
+  },
+  "headers": {
+    "patientName": "PATIENT NAME",
+    "patientAccount": "PATIENT ACCOUNT #",
+    "receivedDate": "RECEIVED DATE",
+    "serviceDate": "DATE OF SERVICE",
+    "payerId": "PAYER ID",
+    "provider": "PROVIDER",
+    "charges": "CHARGES",
+    "status": "STATUS"
+  },
+  "values": {
+    "claimId": "G310922512100853040Y",
+    "groupId": "G31092",
+    "patientAccountNumber": "C245519150",
+    "startDate": "2025-12-02",
+    "endDate": "2025-12-25"
+  },
+  "edgeCases": {
+    "empty": "",
+    "whitespace": "   ",
+    "invalidClaimId": "NO_MATCH_ARCHIVE_CLAIM_999999"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i"
+  },
+  "panelOptions": [
+    "keyfields",
+    "inputClaim",
+    "outputClaim",
+    "errors",
+    "inputFile",
+    "transmit",
+    "remittance"
+  ],
+  "timeouts": {
+    "filterMs": 1200,
+    "searchMs": 20000,
+    "generalMs": 12000
+  }
+}

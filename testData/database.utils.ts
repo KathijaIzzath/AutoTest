@@ -719,6 +719,685 @@ export async function deleteEligibilityRoutingByComposite(
 }
 
 /**
+ * Fetch claim status routing rows for a provided SC ID.
+ */
+export async function fetchClaimStatusRoutingRowsByScId(
+  scId: string
+): Promise<Array<{
+  id: number;
+  scid: string;
+  groupid: string;
+  processorid: string;
+  ediid: string;
+  online_batch: string;
+  payername: string;
+  recordstatus: string;
+  nm1_upper: string;
+}>> {
+  const trimmedScId = (scId ?? '').trim();
+  if (!trimmedScId) {
+    console.warn('[fetchClaimStatusRoutingRowsByScId] Empty scId provided.');
+    return [];
+  }
+
+  const query = `
+    select
+      id,
+      scid,
+      groupid,
+      processorid,
+      ediid,
+      online_batch,
+      payername,
+      recordstatus,
+      nm1_upper
+    from sc_app.claimstatus_routing
+    where btrim(scid) = $1
+    order by id
+  `;
+
+  const result = await executeQuery(query, [trimmedScId]);
+  return (result || []).map((row: any) => ({
+    id: Number(row.id ?? 0),
+    scid: String(row.scid ?? '').trim(),
+    groupid: String(row.groupid ?? '').trim(),
+    processorid: String(row.processorid ?? '').trim(),
+    ediid: String(row.ediid ?? '').trim(),
+    online_batch: String(row.online_batch ?? '').trim(),
+    payername: String(row.payername ?? '').trim(),
+    recordstatus: String(row.recordstatus ?? '').trim(),
+    nm1_upper: String(row.nm1_upper ?? '').trim(),
+  }));
+}
+
+/**
+ * Fetch one claim status routing row for a provided SC ID.
+ */
+export async function fetchClaimStatusRoutingByScId(
+  scId: string
+): Promise<{
+  id: number;
+  scid: string;
+  groupid: string;
+  processorid: string;
+  ediid: string;
+  online_batch: string;
+  payername: string;
+  recordstatus: string;
+  nm1_upper: string;
+} | null> {
+  const rows = await fetchClaimStatusRoutingRowsByScId(scId);
+  return rows.length > 0 ? rows[0] : null;
+}
+
+/**
+ * Fetch a claim status routing row by composite key.
+ */
+export async function fetchClaimStatusRoutingByComposite(
+  scId: string,
+  processorId: string,
+  ediId: string,
+  groupId: string
+): Promise<{
+  id: number;
+  scid: string;
+  groupid: string;
+  processorid: string;
+  ediid: string;
+  online_batch: string;
+  payername: string;
+  recordstatus: string;
+  nm1_upper: string;
+} | null> {
+  const trimmedScId = (scId ?? '').trim();
+  const trimmedProcessorId = (processorId ?? '').trim();
+  const trimmedEdiId = (ediId ?? '').trim();
+  const trimmedGroupId = (groupId ?? '').trim();
+
+  if (!trimmedScId || !trimmedProcessorId || !trimmedEdiId || !trimmedGroupId) {
+    console.warn('[fetchClaimStatusRoutingByComposite] Empty key value provided.');
+    return null;
+  }
+
+  const query = `
+    select
+      id,
+      scid,
+      groupid,
+      processorid,
+      ediid,
+      online_batch,
+      payername,
+      recordstatus,
+      nm1_upper
+    from sc_app.claimstatus_routing
+    where btrim(scid) = $1
+      and btrim(processorid) = $2
+      and btrim(ediid) = $3
+      and btrim(groupid) = $4
+    order by id
+    limit 1
+  `;
+
+  const result = await executeQuery(query, [trimmedScId, trimmedProcessorId, trimmedEdiId, trimmedGroupId]);
+  if (!result || result.length === 0) {
+    return null;
+  }
+
+  const row = result[0];
+  return {
+    id: Number(row.id ?? 0),
+    scid: String(row.scid ?? '').trim(),
+    groupid: String(row.groupid ?? '').trim(),
+    processorid: String(row.processorid ?? '').trim(),
+    ediid: String(row.ediid ?? '').trim(),
+    online_batch: String(row.online_batch ?? '').trim(),
+    payername: String(row.payername ?? '').trim(),
+    recordstatus: String(row.recordstatus ?? '').trim(),
+    nm1_upper: String(row.nm1_upper ?? '').trim(),
+  };
+}
+
+/**
+ * Delete claim status routing rows by composite key for iterative reruns.
+ */
+export async function deleteClaimStatusRoutingByComposite(
+  scId: string,
+  processorId: string,
+  ediId: string,
+  groupId: string
+): Promise<number> {
+  const trimmedScId = (scId ?? '').trim();
+  const trimmedProcessorId = (processorId ?? '').trim();
+  const trimmedEdiId = (ediId ?? '').trim();
+  const trimmedGroupId = (groupId ?? '').trim();
+
+  if (!trimmedScId || !trimmedProcessorId || !trimmedEdiId || !trimmedGroupId) {
+    console.warn('[deleteClaimStatusRoutingByComposite] Empty key value provided.');
+    return 0;
+  }
+
+  const query = `
+    delete from sc_app.claimstatus_routing
+    where btrim(scid) = $1
+      and btrim(processorid) = $2
+      and btrim(ediid) = $3
+      and btrim(groupid) = $4
+    returning id
+  `;
+
+  const result = await executeQuery(query, [trimmedScId, trimmedProcessorId, trimmedEdiId, trimmedGroupId]);
+  return result.length;
+}
+
+/**
+ * Update claim status routing group id by composite key.
+ */
+export async function updateClaimStatusRoutingGroupIdByComposite(
+  scId: string,
+  processorId: string,
+  ediId: string,
+  fromGroupId: string,
+  toGroupId: string
+): Promise<number> {
+  const trimmedScId = (scId ?? '').trim();
+  const trimmedProcessorId = (processorId ?? '').trim();
+  const trimmedEdiId = (ediId ?? '').trim();
+  const trimmedFromGroupId = (fromGroupId ?? '').trim();
+  const trimmedToGroupId = (toGroupId ?? '').trim();
+
+  if (!trimmedScId || !trimmedProcessorId || !trimmedEdiId || !trimmedFromGroupId || !trimmedToGroupId) {
+    console.warn('[updateClaimStatusRoutingGroupIdByComposite] Empty key value provided.');
+    return 0;
+  }
+
+  const query = `
+    update sc_app.claimstatus_routing
+    set groupid = $5
+    where btrim(scid) = $1
+      and btrim(processorid) = $2
+      and btrim(ediid) = $3
+      and btrim(groupid) = $4
+    returning id
+  `;
+
+  const result = await executeQuery(query, [
+    trimmedScId,
+    trimmedProcessorId,
+    trimmedEdiId,
+    trimmedFromGroupId,
+    trimmedToGroupId,
+  ]);
+  return result.length;
+}
+
+/**
+ * Ensure claim status routing record is reset to base group id for deterministic edit runs.
+ */
+export async function resetClaimStatusRoutingGroupForEdit(
+  scId: string,
+  processorId: string,
+  ediId: string,
+  baseGroupId: string,
+  editedGroupId: string
+): Promise<void> {
+  const trimmedScId = (scId ?? '').trim();
+  const trimmedProcessorId = (processorId ?? '').trim();
+  const trimmedEdiId = (ediId ?? '').trim();
+  const trimmedBaseGroupId = (baseGroupId ?? '').trim();
+  const trimmedEditedGroupId = (editedGroupId ?? '').trim();
+
+  if (!trimmedScId || !trimmedProcessorId || !trimmedEdiId || !trimmedBaseGroupId || !trimmedEditedGroupId) {
+    console.warn('[resetClaimStatusRoutingGroupForEdit] Empty key value provided.');
+    return;
+  }
+
+  // If an edited row exists, normalize it back to base value before test execution.
+  await updateClaimStatusRoutingGroupIdByComposite(
+    trimmedScId,
+    trimmedProcessorId,
+    trimmedEdiId,
+    trimmedEditedGroupId,
+    trimmedBaseGroupId
+  );
+
+  // Remove duplicate edited rows if they exist from previous unstable runs.
+  await deleteClaimStatusRoutingByComposite(
+    trimmedScId,
+    trimmedProcessorId,
+    trimmedEdiId,
+    trimmedEditedGroupId
+  );
+}
+
+/**
+ * Fetch a single claims row by claim ID using the full dashboard query projection.
+ */
+export async function fetchClaimDashboardRowByClaimId(
+  claimId: string
+): Promise<{
+  claimid: string;
+  patientname: string;
+  patientaccountnumber: string;
+  payerid: string;
+  providerfirstname: string;
+  providerlastname: string;
+  claimstatus: string;
+  totalcharges: string;
+  worked: string;
+  processorid: string;
+  inputfilename: string;
+  reportfilename: string;
+  csvfilename: string;
+} | null> {
+  const trimmedClaimId = (claimId ?? '').trim();
+  if (!trimmedClaimId) {
+    console.warn('[fetchClaimDashboardRowByClaimId] Empty claimId provided.');
+    return null;
+  }
+
+  const query = `
+    select
+      inputfilename, inputseqnumber, providerid, statusflag, batchstatus, payerid, processorid,
+      patientname, dateofservice, patientaccountnumber, modeinfo, hintimestamp, insuredname,
+      transmitfilename, totalcharges, inputformat, outputformat, inputclaim, rejecterrors,
+      warningerrors, processcode, patientbirthdate, patientgender, patientrelationship,
+      insuranceplan, reportid, reportfilename, billed, statementdate, routingmethod,
+      payerzipcode, sop, claimid, batchnumber, formattype, outputbatchnumber,
+      carrierprocessdate, carrierprocesstime, claimstatus, billingnpi, billingtaxid,
+      renderingnpi, providerlastname, providerfirstname, providermi, attachments,
+      billingproviderlastname, billingproviderfirstname, billingprovidermi, neicid,
+      filename277ca, filename277u, xmlfilename, insuredid, patientlastname,
+      patientfirstname, patientmi, ediid2, ediid3, payerresp1, payerresp2, payerresp3,
+      paymentfilename, csvfilename, claimstatusfilename, mappedoutput,
+      interchangesenderid, applicationsendercode, numberofattachments, worked
+    from sc_app.claims
+    where btrim(claimid) = $1
+    order by hintimestamp desc
+    limit 1
+  `;
+
+  const rows = await executeQuery(query, [trimmedClaimId]);
+  if (!rows || rows.length === 0) {
+    return null;
+  }
+
+  const row = rows[0];
+  return {
+    claimid: String(row.claimid ?? '').trim(),
+    patientname: String(row.patientname ?? '').trim(),
+    patientaccountnumber: String(row.patientaccountnumber ?? '').trim(),
+    payerid: String(row.payerid ?? '').trim(),
+    providerfirstname: String(row.providerfirstname ?? '').trim(),
+    providerlastname: String(row.providerlastname ?? '').trim(),
+    claimstatus: String(row.claimstatus ?? '').trim(),
+    totalcharges: String(row.totalcharges ?? '').trim(),
+    worked: String(row.worked ?? '').trim(),
+    processorid: String(row.processorid ?? '').trim(),
+    inputfilename: String(row.inputfilename ?? '').trim(),
+    reportfilename: String(row.reportfilename ?? '').trim(),
+    csvfilename: String(row.csvfilename ?? '').trim(),
+  };
+}
+
+/**
+ * Fetch one claims dashboard row by claim ID for Claims extended menu/read-only validations.
+ */
+export async function fetchClaimExtendedMenuRowByClaimId(
+  claimId: string
+): Promise<{
+  claimid: string;
+  patientname: string;
+  patientaccountnumber: string;
+  payerid: string;
+  providerid: string;
+  providerfirstname: string;
+  providerlastname: string;
+  reportid: string;
+  claimstatus: string;
+} | null> {
+  const trimmedClaimId = (claimId ?? '').trim();
+  if (!trimmedClaimId) {
+    console.warn('[fetchClaimExtendedMenuRowByClaimId] Empty claimId provided.');
+    return null;
+  }
+
+  const query = `
+    select
+      inputfilename, inputseqnumber, providerid, statusflag, batchstatus, payerid, processorid,
+      patientname, dateofservice, patientaccountnumber, modeinfo, hintimestamp, insuredname,
+      transmitfilename, totalcharges, inputformat, outputformat, inputclaim, rejecterrors,
+      warningerrors, processcode, patientbirthdate, patientgender, patientrelationship,
+      insuranceplan, reportid, reportfilename, billed, statementdate, routingmethod,
+      payerzipcode, sop, claimid, batchnumber, formattype, outputbatchnumber,
+      carrierprocessdate, carrierprocesstime, claimstatus, billingnpi, billingtaxid,
+      renderingnpi, providerlastname, providerfirstname, providermi, attachments,
+      billingproviderlastname, billingproviderfirstname, billingprovidermi, neicid,
+      filename277ca, filename277u, xmlfilename, insuredid, patientlastname,
+      patientfirstname, patientmi, ediid2, ediid3, payerresp1, payerresp2, payerresp3,
+      paymentfilename, csvfilename, claimstatusfilename, mappedoutput,
+      interchangesenderid, applicationsendercode, numberofattachments
+    from sc_app.claims
+    where btrim(claimid) = $1
+    order by hintimestamp desc
+    limit 1
+  `;
+
+  const rows = await executeQuery(query, [trimmedClaimId]);
+  if (!rows || rows.length === 0) {
+    return null;
+  }
+
+  const row = rows[0];
+  return {
+    claimid: String(row.claimid ?? '').trim(),
+    patientname: String(row.patientname ?? '').trim(),
+    patientaccountnumber: String(row.patientaccountnumber ?? '').trim(),
+    payerid: String(row.payerid ?? '').trim(),
+    providerid: String(row.providerid ?? '').trim(),
+    providerfirstname: String(row.providerfirstname ?? '').trim(),
+    providerlastname: String(row.providerlastname ?? '').trim(),
+    reportid: String(row.reportid ?? '').trim(),
+    claimstatus: String(row.claimstatus ?? '').trim(),
+  };
+}
+
+/**
+ * Fetch one recent worked claim for show-worked dashboard validation.
+ */
+export async function fetchOneWorkedClaim(): Promise<{
+  claimid: string;
+  patientname: string;
+  patientaccountnumber: string;
+  worked: string;
+} | null> {
+  const query = `
+    select claimid, patientname, patientaccountnumber, worked
+    from sc_app.claims
+    where worked is true
+    order by hintimestamp desc
+    limit 1
+  `;
+
+  const rows = await executeQuery(query);
+  if (!rows || rows.length === 0) {
+    return null;
+  }
+
+  return {
+    claimid: String(rows[0].claimid ?? '').trim(),
+    patientname: String(rows[0].patientname ?? '').trim(),
+    patientaccountnumber: String(rows[0].patientaccountnumber ?? '').trim(),
+    worked: String(rows[0].worked ?? '').trim(),
+  };
+}
+
+/**
+ * Fetch a single claims archive row by claim ID with optional mailbox/group filter.
+ */
+export async function fetchClaimArchiveDashboardRowByClaimId(
+  claimId: string,
+  groupId?: string
+): Promise<{
+  claimid: string;
+  patientname: string;
+  patientaccountnumber: string;
+  payerid: string;
+  providerfirstname: string;
+  providerlastname: string;
+  claimstatus: string;
+  totalcharges: string;
+  processorid: string;
+  inputfilename: string;
+  reportfilename: string;
+  csvfilename: string;
+} | null> {
+  const trimmedClaimId = (claimId ?? '').trim();
+  const trimmedGroupId = (groupId ?? '').trim();
+
+  if (!trimmedClaimId) {
+    console.warn('[fetchClaimArchiveDashboardRowByClaimId] Empty claimId provided.');
+    return null;
+  }
+
+  const query = `
+    select
+      inputfilename, inputseqnumber, providerid, statusflag, batchstatus, payerid, processorid,
+      patientname, dateofservice, patientaccountnumber, modeinfo, hintimestamp, insuredname,
+      transmitfilename, totalcharges, inputformat, outputformat, inputclaim, rejecterrors,
+      warningerrors, processcode, patientbirthdate, patientgender, patientrelationship,
+      insuranceplan, reportid, reportfilename, billed, statementdate, routingmethod,
+      payerzipcode, sop, claimid, batchnumber, formattype, outputbatchnumber,
+      carrierprocessdate, carrierprocesstime, claimstatus, billingnpi, billingtaxid,
+      renderingnpi, providerlastname, providerfirstname, providermi, attachments,
+      billingproviderlastname, billingproviderfirstname, billingprovidermi, neicid,
+      filename277ca, filename277u, xmlfilename, insuredid, patientlastname,
+      patientfirstname, patientmi, ediid2, ediid3, payerresp1, payerresp2, payerresp3,
+      paymentfilename, csvfilename, claimstatusfilename, mappedoutput,
+      interchangesenderid, applicationsendercode, numberofattachments
+    from sc_app_archive.claims
+    where btrim(claimid) = $1
+      and ($2 = '' or btrim(reportid) = $2)
+    order by hintimestamp desc
+    limit 1
+  `;
+
+  const rows = await executeQuery(query, [trimmedClaimId, trimmedGroupId]);
+  if (!rows || rows.length === 0) {
+    return null;
+  }
+
+  const row = rows[0];
+  return {
+    claimid: String(row.claimid ?? '').trim(),
+    patientname: String(row.patientname ?? '').trim(),
+    patientaccountnumber: String(row.patientaccountnumber ?? '').trim(),
+    payerid: String(row.payerid ?? '').trim(),
+    providerfirstname: String(row.providerfirstname ?? '').trim(),
+    providerlastname: String(row.providerlastname ?? '').trim(),
+    claimstatus: String(row.claimstatus ?? '').trim(),
+    totalcharges: String(row.totalcharges ?? '').trim(),
+    processorid: String(row.processorid ?? '').trim(),
+    inputfilename: String(row.inputfilename ?? '').trim(),
+    reportfilename: String(row.reportfilename ?? '').trim(),
+    csvfilename: String(row.csvfilename ?? '').trim(),
+  };
+}
+
+/**
+ * Fetch one claims archive row by claim ID using the full projection required for Claim Menu validations.
+ */
+export async function fetchClaimArchiveMenuRowByClaimId(
+  claimId: string
+): Promise<{
+  inputfilename: string;
+  inputseqnumber: string;
+  providerid: string;
+  statusflag: string;
+  batchstatus: string;
+  payerid: string;
+  processorid: string;
+  patientname: string;
+  dateofservice: string;
+  patientaccountnumber: string;
+  modeinfo: string;
+  hintimestamp: string;
+  insuredname: string;
+  transmitfilename: string;
+  totalcharges: string;
+  inputformat: string;
+  outputformat: string;
+  inputclaim: string;
+  rejecterrors: string;
+  warningerrors: string;
+  processcode: string;
+  patientbirthdate: string;
+  patientgender: string;
+  patientrelationship: string;
+  insuranceplan: string;
+  reportid: string;
+  reportfilename: string;
+  billed: string;
+  statementdate: string;
+  routingmethod: string;
+  payerzipcode: string;
+  sop: string;
+  claimid: string;
+  batchnumber: string;
+  formattype: string;
+  outputbatchnumber: string;
+  carrierprocessdate: string;
+  carrierprocesstime: string;
+  claimstatus: string;
+  billingnpi: string;
+  billingtaxid: string;
+  renderingnpi: string;
+  providerlastname: string;
+  providerfirstname: string;
+  providermi: string;
+  attachments: string;
+  billingproviderlastname: string;
+  billingproviderfirstname: string;
+  billingprovidermi: string;
+  neicid: string;
+  filename277ca: string;
+  filename277u: string;
+  xmlfilename: string;
+  insuredid: string;
+  patientlastname: string;
+  patientfirstname: string;
+  patientmi: string;
+  ediid2: string;
+  ediid3: string;
+  payerresp1: string;
+  payerresp2: string;
+  payerresp3: string;
+  paymentfilename: string;
+  csvfilename: string;
+  claimstatusfilename: string;
+  mappedoutput: string;
+  interchangesenderid: string;
+  applicationsendercode: string;
+  numberofattachments: string;
+} | null> {
+  const trimmedClaimId = (claimId ?? '').trim();
+  if (!trimmedClaimId) {
+    console.warn('[fetchClaimArchiveMenuRowByClaimId] Empty claimId provided.');
+    return null;
+  }
+
+  const query = `
+    select
+      inputfilename, inputseqnumber, providerid, statusflag, batchstatus, payerid, processorid,
+      patientname, dateofservice, patientaccountnumber, modeinfo, hintimestamp, insuredname,
+      transmitfilename, totalcharges, inputformat, outputformat, inputclaim, rejecterrors,
+      warningerrors, processcode, patientbirthdate, patientgender, patientrelationship,
+      insuranceplan, reportid, reportfilename, billed, statementdate, routingmethod,
+      payerzipcode, sop, claimid, batchnumber, formattype, outputbatchnumber,
+      carrierprocessdate, carrierprocesstime, claimstatus, billingnpi, billingtaxid,
+      renderingnpi, providerlastname, providerfirstname, providermi, attachments,
+      billingproviderlastname, billingproviderfirstname, billingprovidermi, neicid,
+      filename277ca, filename277u, xmlfilename, insuredid, patientlastname,
+      patientfirstname, patientmi, ediid2, ediid3, payerresp1, payerresp2, payerresp3,
+      paymentfilename, csvfilename, claimstatusfilename, mappedoutput,
+      interchangesenderid, applicationsendercode, numberofattachments
+    from sc_app_archive.claims
+    where btrim(claimid) = $1
+    order by hintimestamp desc
+    limit 1
+  `;
+
+  const rows = await executeQuery(query, [trimmedClaimId]);
+  if (!rows || rows.length === 0) {
+    return null;
+  }
+
+  const row = rows[0];
+  const toText = (value: unknown): string => String(value ?? '').trim();
+
+  return {
+    inputfilename: toText(row.inputfilename),
+    inputseqnumber: toText(row.inputseqnumber),
+    providerid: toText(row.providerid),
+    statusflag: toText(row.statusflag),
+    batchstatus: toText(row.batchstatus),
+    payerid: toText(row.payerid),
+    processorid: toText(row.processorid),
+    patientname: toText(row.patientname),
+    dateofservice: toText(row.dateofservice),
+    patientaccountnumber: toText(row.patientaccountnumber),
+    modeinfo: toText(row.modeinfo),
+    hintimestamp: toText(row.hintimestamp),
+    insuredname: toText(row.insuredname),
+    transmitfilename: toText(row.transmitfilename),
+    totalcharges: toText(row.totalcharges),
+    inputformat: toText(row.inputformat),
+    outputformat: toText(row.outputformat),
+    inputclaim: toText(row.inputclaim),
+    rejecterrors: toText(row.rejecterrors),
+    warningerrors: toText(row.warningerrors),
+    processcode: toText(row.processcode),
+    patientbirthdate: toText(row.patientbirthdate),
+    patientgender: toText(row.patientgender),
+    patientrelationship: toText(row.patientrelationship),
+    insuranceplan: toText(row.insuranceplan),
+    reportid: toText(row.reportid),
+    reportfilename: toText(row.reportfilename),
+    billed: toText(row.billed),
+    statementdate: toText(row.statementdate),
+    routingmethod: toText(row.routingmethod),
+    payerzipcode: toText(row.payerzipcode),
+    sop: toText(row.sop),
+    claimid: toText(row.claimid),
+    batchnumber: toText(row.batchnumber),
+    formattype: toText(row.formattype),
+    outputbatchnumber: toText(row.outputbatchnumber),
+    carrierprocessdate: toText(row.carrierprocessdate),
+    carrierprocesstime: toText(row.carrierprocesstime),
+    claimstatus: toText(row.claimstatus),
+    billingnpi: toText(row.billingnpi),
+    billingtaxid: toText(row.billingtaxid),
+    renderingnpi: toText(row.renderingnpi),
+    providerlastname: toText(row.providerlastname),
+    providerfirstname: toText(row.providerfirstname),
+    providermi: toText(row.providermi),
+    attachments: toText(row.attachments),
+    billingproviderlastname: toText(row.billingproviderlastname),
+    billingproviderfirstname: toText(row.billingproviderfirstname),
+    billingprovidermi: toText(row.billingprovidermi),
+    neicid: toText(row.neicid),
+    filename277ca: toText(row.filename277ca),
+    filename277u: toText(row.filename277u),
+    xmlfilename: toText(row.xmlfilename),
+    insuredid: toText(row.insuredid),
+    patientlastname: toText(row.patientlastname),
+    patientfirstname: toText(row.patientfirstname),
+    patientmi: toText(row.patientmi),
+    ediid2: toText(row.ediid2),
+    ediid3: toText(row.ediid3),
+    payerresp1: toText(row.payerresp1),
+    payerresp2: toText(row.payerresp2),
+    payerresp3: toText(row.payerresp3),
+    paymentfilename: toText(row.paymentfilename),
+    csvfilename: toText(row.csvfilename),
+    claimstatusfilename: toText(row.claimstatusfilename),
+    mappedoutput: toText(row.mappedoutput),
+    interchangesenderid: toText(row.interchangesenderid),
+    applicationsendercode: toText(row.applicationsendercode),
+    numberofattachments: toText(row.numberofattachments),
+  };
+}
+
+/**
+ * Fetch one claims archive row by claim ID for Claim Archive Timely Filing report validations.
+ */
+export async function fetchClaimArchiveTimelyFilingRowByClaimId(
+  claimId: string
+): Promise<Awaited<ReturnType<typeof fetchClaimArchiveMenuRowByClaimId>>> {
+  return fetchClaimArchiveMenuRowByClaimId(claimId);
+}
+
+/**
  * Query and store account information from database
  */
 export async function fetchNPIAndTaxIDForGroupId(groupId?: string): Promise<Map<string, string>> {

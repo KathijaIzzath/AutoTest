@@ -1,0 +1,46 @@
+{
+  "labels": {
+    "title": "Claims",
+    "applyFilter": "Apply Filter",
+    "claimsArchive": "Claims Archive"
+  },
+  "placeholders": {
+    "claimId": "Enter Claim ID",
+    "groupId": "Enter Group Id",
+    "billingNpi": "Enter Billing NPI",
+    "taxId": "Enter Tax ID",
+    "payerId": "Enter payer id",
+    "renderNpi": "Enter render npi",
+    "receiver": "Enter Receiver",
+    "patientAccountNumber": "Enter Patient Account Number",
+    "patientName": "Enter Patient Name"
+  },
+  "values": {
+    "claimId": "G2349622082513321601",
+    "expectedPatientName": "QUIGLEY FERMIN"
+  },
+  "edgeCases": {
+    "empty": "",
+    "whitespace": "   ",
+    "invalidClaimId": "NO_MATCH_CLAIM_EXT_MENU_999999"
+  },
+  "readonly": {
+    "buttons": ["Provider", "Group", "Payer", "Enrollment"],
+    "providerHeading": "Provider",
+    "groupHeading": "Provider Group",
+    "providerRequiredTexts": ["First name", "last name", "Practice Management", "Address 1", "Phone", "Fax", "email"],
+    "groupRequiredTexts": ["Provider Details", "Identifiers", "Processor", "Financial Settings", "account number", "fee schedule", "Practice Management"]
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i"
+  },
+  "indexes": {
+    "rowActionFallbackIndex": 4
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "searchMs": 20000,
+    "generalMs": 12000
+  }
+}

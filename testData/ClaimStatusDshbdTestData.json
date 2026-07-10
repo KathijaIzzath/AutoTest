@@ -1,0 +1,54 @@
+{
+  "labels": {
+    "title": "Claim Status Routing",
+    "applyFilter": "Apply Filter",
+    "showInactiveOnly": "Show Inactive Only",
+    "addClaimStatusRouting": "Add Claim Status Routing",
+    "payerName": "payer name",
+    "scId": "SC ID",
+    "processorId": "Processor Id",
+    "groupId": "group ID",
+    "ediId": "Edi Id"
+  },
+  "placeholders": {
+    "payerName": "Enter Payer Name",
+    "scId": "Enter SC ID",
+    "processorId": "Enter Processor ID",
+    "groupId": "Enter group ID",
+    "ediId": "Enter EDI ID"
+  },
+  "headers": {
+    "payerName": "Payer Name",
+    "scId": "SC Id",
+    "groupId": "Group Id",
+    "processorId": "Processor Id",
+    "ediId": "Edi Id",
+    "type": "Type",
+    "status": "Status"
+  },
+  "filters": {
+    "payerName": "SCMEDICAID",
+    "scId": "SKSC0",
+    "processorId": "MCAID-SC",
+    "groupId": "ROUTE",
+    "ediId": "SCMEDICAID"
+  },
+  "edgeCases": {
+    "invalidValue": "NO_MATCH_CLAIM_STATUS_999999",
+    "empty": ""
+  },
+  "expectedDb": {
+    "scId": "SKSC0",
+    "recordStatus": "A",
+    "inactiveStatus": "I"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noRows": "tbody tr"
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "generalTimeout": 12000,
+    "searchTimeout": 20000
+  }
+}

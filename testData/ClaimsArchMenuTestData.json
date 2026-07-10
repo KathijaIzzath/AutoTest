@@ -1,0 +1,74 @@
+{
+  "labels": {
+    "claimsArchive": "Claims Archive",
+    "applyFilter": "Apply Filter",
+    "timelyFiling": "Timely Filing",
+    "timelyFilingReportHeading": "Timely Filing Report",
+    "startDate": "start date",
+    "endDate": "end date"
+  },
+  "placeholders": {
+    "claimId": "Enter Claim ID",
+    "groupId": "Enter Group Id",
+    "patientAccountNumber": "Enter Patient Account Number",
+    "patientName": "Enter Patient Name",
+    "payerId": "Enter payer id"
+  },
+  "values": {
+    "claimId": "G310922512100853040Y",
+    "groupId": "G31092",
+    "startDate": "2025-12-02",
+    "endDate": "2025-12-26",
+    "proofByText": "WISOKY, MANTE AND ORTIZ",
+    "payerName": "CARELON BEHAVIORAL HLTH",
+    "claimControlNumber": "204871234",
+    "billingProviderTaxId": "300837458",
+    "billingProviderNpi": "1639578834",
+    "renderingProviderNpi": "1659122539",
+    "billingProviderName": "INTEGRATED HEALTHCARE",
+    "patientName": "MONRROY ERNESTO A",
+    "insuredId": "732841503",
+    "patientControlNumber": "C245519150",
+    "dateOfServiceToken": "12/05/",
+    "payerId": "BHOVO"
+  },
+  "timelyFiling": {
+    "requiredLabels": [
+      "Date:",
+      "Payer Name:",
+      "Proof of Timely Filing by:",
+      "Secure Connect Claim ID:",
+      "Claim Control Number:",
+      "Billing Provider Tax ID:",
+      "Billing Provider NPI:",
+      "Rendering Provider NPI:",
+      "Billing Provider Name:",
+      "Patient Name:",
+      "Insured ID:",
+      "Patient Control Number:",
+      "Dates of Service:",
+      "Payer ID:",
+      "Total Amount Billed:",
+      "Thank you.",
+      "Billing Representative"
+    ]
+  },
+  "edgeCases": {
+    "empty": "",
+    "whitespace": "   ",
+    "invalidClaimId": "NO_MATCH_ARCHIVE_MENU_999999"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "closeModalButton": "button:has-text('✖')"
+  },
+  "indexes": {
+    "rowActionFallbackIndex": 2
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "searchMs": 20000,
+    "generalMs": 12000
+  }
+}

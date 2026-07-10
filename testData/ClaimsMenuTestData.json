@@ -1,0 +1,76 @@
+{
+  "labels": {
+    "title": "Claims",
+    "claimsArchive": "Claims Archive",
+    "applyFilter": "Apply Filter",
+    "worked": "Worked",
+    "timelyFiling": "Timely Filing",
+    "timelyFilingReportHeading": "Timely Filing Report",
+    "workedConfirmation": "Claim has been marked as"
+  },
+  "placeholders": {
+    "claimId": "Enter Claim ID",
+    "groupId": "Enter Group Id",
+    "billingNpi": "Enter Billing NPI",
+    "taxId": "Enter Tax ID",
+    "payerId": "Enter payer id",
+    "renderNpi": "Enter render npi",
+    "receiver": "Enter Receiver",
+    "patientAccountNumber": "Enter Patient Account Number",
+    "patientName": "Enter Patient Name"
+  },
+  "values": {
+    "claimId": "G2349622081814030403",
+    "billingProviderTaxId": "954405076",
+    "billingProviderNpi": "1811958747",
+    "renderingProviderNpi": "1497721914",
+    "billingProviderName": "CUMMERATA INC AND SONS",
+    "patientName": "YOST ILENE",
+    "insuredId": "4UA1FF3MR79",
+    "patientControlNumber": "3C0868992X0110019",
+    "dateOfServiceToken": "07/02/",
+    "payerId": "87726",
+    "payerNameTop": "BLUE CROSS",
+    "payerNameBottom": "UNITEDHEALTHCARE"
+  },
+  "edgeCases": {
+    "empty": "",
+    "whitespace": "   ",
+    "invalidClaimId": "NO_MATCH_CLAIM_MENU_999999"
+  },
+  "timelyFiling": {
+    "requiredLabels": [
+      "Date:",
+      "Payer Name:",
+      "Proof of Timely Filing by:",
+      "Secure Connect Claim ID:",
+      "Claim Control Number:",
+      "Billing Provider Tax ID:",
+      "Billing Provider NPI:",
+      "Rendering Provider NPI:",
+      "Billing Provider Name:",
+      "Patient Name:",
+      "Insured ID:",
+      "Patient Control Number:",
+      "Dates of Service:",
+      "Payer ID:",
+      "Total Amount Billed:",
+      "Thank you.",
+      "Billing Representative"
+    ]
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "closeModalButton": "button:has-text('✖')",
+    "claimsTable": "#claimsTable"
+  },
+  "indexes": {
+    "rowActionFallbackIndex": 4
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "searchMs": 20000,
+    "generalMs": 12000
+  }
+}

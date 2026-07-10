@@ -1,0 +1,62 @@
+{
+  "labels": {
+    "title": "Claim Status Routing",
+    "addClaimStatusRouting": "Add Claim Status Routing",
+    "applyFilter": "Apply Filter",
+    "add": "Add",
+    "close": "Close",
+    "active": "Active",
+    "payerName": "payer name",
+    "scId": "SC ID",
+    "groupId": "group ID",
+    "processorId": "Processor ID",
+    "ediId": "edi ID",
+    "onlineBatch": "Online / Batch",
+    "onlineBatchSelectPlaceholder": "Select ONLINE / BATCH",
+    "optionsList": "Options list",
+    "successToastPrefix": "Claim Status Routing was"
+  },
+  "placeholders": {
+    "payerName": "Enter Payer Name",
+    "scId": "Enter SC ID",
+    "groupId": "Enter Group ID",
+    "processorId": "Enter Processor ID",
+    "ediId": "Enter Edi ID"
+  },
+  "headers": {
+    "scId": "SC Id"
+  },
+  "values": {
+    "payerOption": "Y00296 - FLORIDA HOSPITAL",
+    "payerSearchText": "FLORIDA HOSPITAL",
+    "scId": "SKNC0",
+    "groupId": "ROUTE",
+    "processorId": "MCAID-NC",
+    "ediId": "NCTRACKS",
+    "onlineBatchOnline": "ONLINE",
+    "onlineBatchBatch": "BATCH"
+  },
+  "expectedDb": {
+    "scId": "SKNC0",
+    "groupId": "ROUTE",
+    "processorId": "MCAID-NC",
+    "ediId": "NCTRACKS"
+  },
+  "edgeCases": {
+    "empty": "",
+    "whitespace": "   ",
+    "invalidScId": "NO_MATCH_SKNC0_999999"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "onlineBatchNgSelect": "ng-select"
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "optionMs": 8000,
+    "saveMs": 15000,
+    "searchMs": 20000,
+    "generalMs": 10000
+  }
+}

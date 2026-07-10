@@ -80,6 +80,48 @@ export async function navigateToEligibilityRouting(page: Page): Promise<void> {
   await expect(page.locator('app-eligibility-routing').getByText('Eligibility Routing', { exact: true })).toBeVisible();
 }
 
+/** Expands the sidebar group and navigates to the Claim Status Routing module. */
+export async function navigateToClaimStatusRouting(page: Page): Promise<void> {
+  await expandPayerInsuranceEligibilityQuickLinks(page);
+  const byHref = page.locator('a[href$="/dashboard/claim-status-routing"]').first();
+  const byText = page.getByRole('link', { name: /Claims?\s+Status\s+Routing/i }).first();
+
+  if (await byHref.isVisible().catch(() => false)) {
+    await byHref.click();
+  } else {
+    await expect(byText).toBeVisible();
+    await byText.click();
+  }
+
+  await expect(page.getByText('Claim Status Routing', { exact: true })).toBeVisible();
+}
+
+/** Navigates to the Claims dashboard module. */
+export async function navigateToClaimsDashboard(page: Page): Promise<void> {
+  const byHref = page.locator('a[href$="/dashboard/claims"]').first();
+  const byText = page.getByRole('link', { name: /Claims/i }).first();
+
+  if (await byHref.isVisible().catch(() => false)) {
+    await byHref.click();
+  } else {
+    await expect(byText).toBeVisible();
+    await byText.click();
+  }
+
+  await expect(page.getByRole('button', { name: 'Claims', exact: true })).toBeVisible();
+}
+
+/** Navigates to the Claims Archive dashboard from the Claims module. */
+export async function navigateToClaimsArchiveDashboard(page: Page): Promise<void> {
+  await navigateToClaimsDashboard(page);
+  const archiveButton = page.getByRole('button', { name: /Claims Archive/i }).first();
+  await expect(archiveButton).toBeVisible();
+  await archiveButton.click();
+
+  await expect(page.getByText(/start date/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /Apply Filter/i })).toBeVisible();
+}
+
 // ─── Legacy generic helpers ───────────────────────────────────────────────────
 
 /** Clicks any quick-link by name after the sidebar group has been expanded. */
