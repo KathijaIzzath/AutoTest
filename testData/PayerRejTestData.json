@@ -1,0 +1,57 @@
+{
+  "reportOption": {
+    "value": "payer-rejection",
+    "label": "Group Payer Rejection Report"
+  },
+  "groups": {
+    "primary": {
+      "id":          "G23496",
+      "idLowercase": "g23496",
+      "name":        "CUMMERATA INC AND SONS",
+      "account":     "FFC001",
+      "displayText": "G23496 – CUMMERATA INC AND SONS",
+      "partialText": "G23496 – CUMMERATA INC AND"
+    }
+  },
+  "setupClaimIds": [
+    "G234962207071312193U",
+    "G234962207071241121F"
+  ],
+  "setupClaimStatus": "A3",
+  "labels": {
+    "group":          "Group",
+    "startDate":      "START DATE",
+    "endDate":        "END DATE",
+    "generateReport": "Generate Report",
+    "exportToExcel":  "Export to Excel",
+    "totals":         "Totals"
+  },
+  "columnHeaders": [
+    "Practice Name",
+    "Account",
+    "Group ID",
+    "Payer ID",
+    "Payer Name",
+    "Rejection Reason",
+    "Claims"
+  ],
+  "selectors": {
+    "analyticsRoot":   "app-analytics",
+    "dashboardLayout": "app-dashboard-layout-component",
+    "datepicker":      "datepicker"
+  },
+  "placeholders": {
+    "datePicker":  "mm/dd/yyyy",
+    "groupSearch": "Search group..."
+  },
+  "maxDaysBack": 90,
+  "edgeCases": {
+    "nonExistentGroupId": "G99999",
+    "invalidText":        "ZZZINVALID"
+  },
+  "timeouts": {
+    "reportGenerateMs": 8000,
+    "filterMs":         3000,
+    "downloadMs":       15000
+  }
+}

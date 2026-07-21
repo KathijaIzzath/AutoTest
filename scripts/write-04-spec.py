@@ -1,4 +1,9 @@
-/**
+"""Helper script: writes the 04_PayerRejected_test.spec.ts file."""
+import os
+
+TARGET = r'C:\AutoTest\tests\Analytics_Report\04_PayerRejected_test.spec.ts'
+
+spec = r"""/**
  * Payer Rejection Report – Test Suite
  * File: tests/Analytics_Report/04_PayerRejected_test.spec.ts
  *
@@ -629,3 +634,10 @@ test.describe('Payer Rejection Report', () => {
   });
 
 });
+"""
+
+with open(TARGET, 'w', encoding='utf-8') as f:
+    f.write(spec)
+
+lines = spec.count('\n') + 1
+print(f'Written {lines} lines to {TARGET}')

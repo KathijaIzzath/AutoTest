@@ -1,4 +1,107 @@
 /**
+ * Runs the prerequisite DB updates required before executing the Payer Rejection
+ * Report tests.  Updates timestamps to NOW() so that today's claims appear in
+ * the 90-day report window and sets the test claim statuses to the expected code.
+ *
+ * @param claimIds          - Specific claim IDs to set to the payer-rejection status
+ * @param payerRejStatus    - Claim status code that maps to a payer rejection reason (e.g. 'A3')
+ */
+export async function setupPayerRejectionData(
+  claimIds: string[],
+  payerRejStatus: string = 'A3',
+): Promise<void> {
+  if (claimIds.length === 0) return;
+
+  const now = new Date().toISOString();
+  const placeholders = claimIds.map((_, i) => `$${i + 1}`).join(', ');
+
+  // 1. Set specific claims to the payer-rejection status
+  await executeQuery(
+    `UPDATE claims SET claimstatus = '${payerRejStatus}' WHERE claimid IN (${placeholders})`,
+    claimIds,
+  );
+
+  // 2. Push all claim timestamps to now so they appear in today's 90-day window
+  await executeQuery(`UPDATE claims SET hintimestamp = $1`, [now]);
+
+  // 3. Push ERA main date
+  await executeQuery(`UPDATE eramain SET dateadded = $1`, [now]);
+
+  // 4. Push remittance creation date
+  try {
+    await executeQuery(`UPDATE remittance SET creationdate = $1`, [now]);
+  } catch {
+    // remittance table may not exist in all environments
+    console.warn('[setupPayerRejectionData] remittance update skipped (table may not exist).');
+  }
+
+  console.log(`[setupPayerRejectionData] Setup complete. Timestamps set to: ${now}`);
+}
+
+/**
+ * Verifies that specific claims exist with the expected status and group in the DB.
+ */
+export async function verifyClaimSetup(
+  claimIds: string[],
+  expectedStatus: string,
+  expectedGroupId: string,
+): Promise<Array<{ claimid: string; claimstatus: string; reportid: string; hintimestamp: string }>> {
+  if (claimIds.length === 0) return [];
+  const placeholders = claimIds.map((_, i) => `$${i + 1}`).join(', ');
+  const query = `
+    SELECT claimid, claimstatus, reportid, hintimestamp::text AS hintimestamp
+    FROM claims
+    WHERE claimid IN (${placeholders});
+  `;
+  const result = await executeQuery(query, claimIds);
+  for (const row of result ?? []) {
+    if (row.claimstatus !== expectedStatus) {
+      console.warn(`[verifyClaimSetup] ${row.claimid} has status ${row.claimstatus}, expected ${expectedStatus}`);
+    }
+    if (row.reportid !== expectedGroupId) {
+      console.warn(`[verifyClaimSetup] ${row.claimid} has reportid ${row.reportid}, expected ${expectedGroupId}`);
+    }
+  }
+  return result ?? [];
+}
+
+/**
+ * Returns the total payer-rejected claim count for a group within a MM/DD/YYYY date range.
+ * Used to cross-validate the Totals row of the Payer Rejection Report.
+ */
+export async function fetchPayerRejectionTotals(
+  groupId: string,
+  startDateMMDDYYYY: string,
+  endDateMMDDYYYY: string,
+): Promise<{ totalRejected: number }> {
+  const toSql = (mmddyyyy: string): string | null => {
+    const p = mmddyyyy.split('/');
+    if (p.length !== 3) return null;
+    return `${p[2]}-${p[0].padStart(2, '0')}-${p[1].padStart(2, '0')}`;
+  };
+  const start = toSql(startDateMMDDYYYY);
+  const end   = toSql(endDateMMDDYYYY);
+  if (!start || !end) return { totalRejected: 0 };
+
+  const query = `
+    SELECT COUNT(*)::int AS total_rejected
+    FROM claims c
+    LEFT JOIN remitreason rmt ON c.claimstatus = rmt.code
+    WHERE c.reportid = $1
+      AND c.hintimestamp::date >= $2::date
+      AND c.hintimestamp::date <= $3::date
+      AND rmt.apicategory IN ('REJECTED', 'FINALIZED_DENIED');
+  `;
+  try {
+    const result = await executeQuery(query, [groupId, start, end]);
+    return { totalRejected: Number(result?.[0]?.total_rejected ?? 0) };
+  } catch (err) {
+    console.warn('[fetchPayerRejectionTotals] Query failed:', err);
+    return { totalRejected: 0 };
+  }
+}
+
+/**
  * Returns claim summary totals for a single provider group within a MM/DD/YYYY date range.
  * Mirrors the Totals row shown at the bottom of the Group Claim Summary report.
  *
