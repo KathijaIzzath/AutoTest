@@ -40,8 +40,10 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['blob', { outputFile: blobOutputFile }],
     ['list'],
+    ['./scripts/summary-reporter.ts'],
   ],
-   globalSetup: require.resolve('./global-setup'),
+  globalSetup: require.resolve('./global-setup'),
+  globalTeardown: require.resolve('./global-teardown'),
   
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

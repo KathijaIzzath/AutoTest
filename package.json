@@ -12,7 +12,9 @@
     "typecheck": "npx tsc -p tsconfig.json --noEmit",
     "report": "npx playwright show-report",
     "report:merge:today": "node scripts/merge-today-report.js",
-    "report:show:today": "node scripts/show-today-report.js"
+    "report:show:today": "node scripts/show-today-report.js",
+    "cleanup": "node scripts/cleanup-old-artifacts.js",
+    "email:test": "node scripts/send-mock-report.js"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +23,9 @@
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "@types/node": "^25.0.3",
+    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.16.0",
+    "nodemailer": "^9.0.3",
     "pg": "^8.17.2",
     "typescript": "^5.9.3"
   },

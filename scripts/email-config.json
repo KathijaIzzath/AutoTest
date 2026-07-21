@@ -1,0 +1,11 @@
+{
+  "recipients": [
+    "kmohamed@harriscomputer.com"
+  ],
+  "sender": {
+    "name": "AutoTest Suite",
+    "address": "autotest@harriscomputer.com"
+  },
+  "subject": "AutoTest Execution Summary – {date}",
+  "reportOutputDir": "C:\\Users\\kmohamed\\Desktop\\Daily Test Execution Summary"
+}
