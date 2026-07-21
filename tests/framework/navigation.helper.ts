@@ -124,6 +124,24 @@ export async function navigateToClaimsArchiveDashboard(page: Page): Promise<void
 
 // ─── Legacy generic helpers ───────────────────────────────────────────────────
 
+/**
+ * Navigates to the Analytics module (top-level nav item between Accounts and Claims).
+ * Falls back from href-based to text-based locator for resilience.
+ */
+export async function navigateToAnalytics(page: Page): Promise<void> {
+  const byHref = page.locator('a[href*="/dashboard/analytics"]').first();
+  const byText = page.getByRole('link', { name: / Analytics/i }).first();
+
+  if (await byHref.isVisible().catch(() => false)) {
+    await byHref.click();
+  } else {
+    await expect(byText).toBeVisible();
+    await byText.click();
+  }
+
+  await expect(page.locator('app-analytics').getByText('Analytics')).toBeVisible();
+}
+
 /** Clicks any quick-link by name after the sidebar group has been expanded. */
 export async function openQuickLink(page: Page, name: string | RegExp): Promise<void> {
   await page.getByRole('link', { name }).first().click();

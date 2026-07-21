@@ -1,0 +1,53 @@
+{
+  "reportOption": {
+    "value":  "claim-summary",
+    "label":  "Group Claim Summary"
+  },
+  "groups": {
+    "primary": {
+      "id":          "G23496",
+      "name":        "CUMMERATA INC AND SONS",
+      "account":     "FFC001",
+      "displayText": "G23496 – CUMMERATA INC AND SONS"
+    }
+  },
+  "labels": {
+    "group":          "Group",
+    "startDate":      "START DATE",
+    "endDate":        "END DATE",
+    "generateReport": "Generate Report",
+    "exportToExcel":  "Export to Excel",
+    "totals":         "Totals"
+  },
+  "columnHeaders": [
+    "Practice Name",
+    "Account",
+    "Group ID",
+    "Payer ID",
+    "Insurance Plan",
+    "Claims Sent",
+    "SC Rejected",
+    "No Response",
+    "Payer Rejected",
+    "Passed"
+  ],
+  "selectors": {
+    "reportTileIcon":  ".fas.fa-chart-bar.report-tile-icon",
+    "datepicker":      "datepicker",
+    "dashboardLayout": "app-dashboard-layout-component"
+  },
+  "placeholders": {
+    "datePicker":  "mm/dd/yyyy",
+    "groupSearch": "Search group..."
+  },
+  "maxDaysBack": 90,
+  "edgeCases": {
+    "nonExistentGroupId": "G99999",
+    "invalidText":        "ZZZINVALID"
+  },
+  "timeouts": {
+    "reportGenerateMs": 8000,
+    "filterMs":         3000,
+    "downloadMs":       15000
+  }
+}

@@ -1,4 +1,148 @@
 /**
+ * Returns claim summary totals for a single provider group within a MM/DD/YYYY date range.
+ * Mirrors the Totals row shown at the bottom of the Group Claim Summary report.
+ *
+ * @param groupId           - Provider group G-number  (e.g. 'G23496')
+ * @param startDateMMDDYYYY - Start date in MM/DD/YYYY format
+ * @param endDateMMDDYYYY   - End date  in MM/DD/YYYY format
+ */
+export async function fetchClaimSummaryTotals(
+  groupId: string,
+  startDateMMDDYYYY: string,
+  endDateMMDDYYYY: string,
+): Promise<{
+  claimsSent: number;
+  scRejected: number;
+  noResponse: number;
+  payerRejected: number;
+  passed: number;
+}> {
+  const empty = { claimsSent: 0, scRejected: 0, noResponse: 0, payerRejected: 0, passed: 0 };
+
+  const toSql = (mmddyyyy: string): string | null => {
+    const parts = mmddyyyy.split('/');
+    if (parts.length !== 3) return null;
+    const [mm, dd, yyyy] = parts;
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  };
+
+  const start = toSql(startDateMMDDYYYY);
+  const end   = toSql(endDateMMDDYYYY);
+  if (!start || !end) {
+    console.warn('[fetchClaimSummaryTotals] Invalid date format. Expected MM/DD/YYYY.');
+    return empty;
+  }
+
+  const query = `
+    SELECT
+      COUNT(*)::int                                                              AS claims_sent,
+      COUNT(*) FILTER (WHERE rmt.apicategory = 'SC_REJECTED')::int              AS sc_rejected,
+      COUNT(*) FILTER (
+        WHERE rmt.apicategory IN ('REJECTED', 'FINALIZED_DENIED')
+      )::int                                                                     AS payer_rejected,
+      COUNT(*) FILTER (WHERE rmt.code IS NULL)::int                             AS no_response,
+      COUNT(*) FILTER (
+        WHERE rmt.apicategory IN ('FINALIZED_PAID', 'ACCEPTED')
+      )::int                                                                     AS passed
+    FROM claims c
+    LEFT JOIN remitreason rmt ON c.claimstatus = rmt.code
+    WHERE c.reportid = $1
+      AND c.hintimestamp::date >= $2::date
+      AND c.hintimestamp::date <= $3::date;
+  `;
+
+  try {
+    const result = await executeQuery(query, [groupId, start, end]);
+    if (!result || result.length === 0) return empty;
+    const row = result[0];
+    return {
+      claimsSent:    Number(row.claims_sent    ?? 0),
+      scRejected:    Number(row.sc_rejected    ?? 0),
+      noResponse:    Number(row.no_response    ?? 0),
+      payerRejected: Number(row.payer_rejected ?? 0),
+      passed:        Number(row.passed         ?? 0),
+    };
+  } catch (err) {
+    console.warn('[fetchClaimSummaryTotals] Query failed — cross-validation skipped:', err);
+    return empty;
+  }
+}
+
+/**
+ * Returns analytics claim summary counts for a given MM/DD/YYYY date range.
+ * Used to cross-validate the stat cards shown on the Analytics Dashboard.
+ * Mirrors the claim status categories displayed in the UI.
+ *
+ * @param startDateMMDDYYYY - Start date in MM/DD/YYYY format (read from the UI date picker)
+ * @param endDateMMDDYYYY   - End date  in MM/DD/YYYY format (read from the UI date picker)
+ */
+export async function fetchAnalyticsClaimSummary(
+  startDateMMDDYYYY: string,
+  endDateMMDDYYYY: string,
+): Promise<{
+  total: number;
+  paid: number;
+  accepted: number;
+  rejected: number;
+  scRejected: number;
+  errors: number;
+}> {
+  const empty = { total: 0, paid: 0, accepted: 0, rejected: 0, scRejected: 0, errors: 0 };
+
+  // Convert MM/DD/YYYY → YYYY-MM-DD for PostgreSQL date literals
+  const toSql = (mmddyyyy: string): string | null => {
+    const parts = mmddyyyy.split('/');
+    if (parts.length !== 3) return null;
+    const [mm, dd, yyyy] = parts;
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  };
+
+  const start = toSql(startDateMMDDYYYY);
+  const end   = toSql(endDateMMDDYYYY);
+  if (!start || !end) {
+    console.warn('[fetchAnalyticsClaimSummary] Invalid date format. Expected MM/DD/YYYY.');
+    return empty;
+  }
+
+  const query = `
+    SELECT
+      COUNT(*)::int                                                           AS total,
+      COUNT(*) FILTER (WHERE rmt.apicategory = 'FINALIZED_PAID')::int        AS paid,
+      COUNT(*) FILTER (WHERE rmt.apicategory = 'ACCEPTED')::int              AS accepted,
+      COUNT(*) FILTER (
+        WHERE rmt.apicategory IN ('REJECTED', 'FINALIZED_DENIED')
+      )::int                                                                  AS rejected,
+      COUNT(*) FILTER (WHERE rmt.apicategory = 'SC_REJECTED')::int           AS sc_rejected,
+      COUNT(*) FILTER (
+        WHERE rmt.apicategory IN ('ERROR', 'FINALIZED_ERROR', 'CLAIM_ERROR')
+      )::int                                                                  AS errors
+    FROM claims c
+    INNER JOIN files f ON c.reportid = f.id
+    LEFT JOIN remitreason rmt ON c.claimstatus = rmt.code
+    WHERE f.queue = 'I'
+      AND c.hintimestamp::date >= $1::date
+      AND c.hintimestamp::date <= $2::date;
+  `;
+
+  try {
+    const result = await executeQuery(query, [start, end]);
+    if (!result || result.length === 0) return empty;
+    const row = result[0];
+    return {
+      total:      Number(row.total       ?? 0),
+      paid:       Number(row.paid        ?? 0),
+      accepted:   Number(row.accepted    ?? 0),
+      rejected:   Number(row.rejected    ?? 0),
+      scRejected: Number(row.sc_rejected ?? 0),
+      errors:     Number(row.errors      ?? 0),
+    };
+  } catch (err) {
+    console.warn('[fetchAnalyticsClaimSummary] Query failed — cross-validation skipped:', err);
+    return empty;
+  }
+}
+
+/**
  * Fetches id, ecsdate, eradate, claimstatusdate, eligilibitydate, statementdate from provider table for a given providerGroupId
  * @param providerGroupId - The provider group id to search for
  * @returns An array of objects with the requested columns if found, otherwise an empty array

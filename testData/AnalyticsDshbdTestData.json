@@ -1,0 +1,76 @@
+{
+  "labels": {
+    "analytics":          "Analytics",
+    "navMenuAnalytics":   " Analytics",
+    "claimReports":       "Claim Reports",
+    "enrollmentReports":  "Enrollment Reports",
+    "eraReports":         "ERA Reports",
+    "adminReports":       "Admin Reports",
+    "otherReports":       "Other Reports",
+    "selectReport":       "Select Report",
+    "recentClaimSummary": "Recent Claim Summary",
+    "recentEraSummary":   "Recent ERA Summary",
+    "startDate":          "START DATE",
+    "endDate":            "END DATE",
+    "applyFilter":        "Apply Filter",
+    "totalClaims":        "Total Claims",
+    "paid":               "Paid",
+    "accepted":           "Accepted",
+    "rejected":           "Rejected",
+    "scRejected":         "SC Rejected",
+    "errors":             "Errors",
+    "claimsBreakdown":    "Claims Breakdown"
+  },
+  "reportSections": [
+    "Claim Reports",
+    "Enrollment Reports",
+    "ERA Reports",
+    "Admin Reports",
+    "Other Reports"
+  ],
+  "expectedDropdownCount": 5,
+  "dropdownOptions": {
+    "claimReports": [
+      "Select Report",
+      "Group Claim Summary",
+      "Group Payer Rejection Report",
+      "Group SC Rejection Report"
+    ]
+  },
+  "tableHeaders": {
+    "status":         "Status",
+    "count":          "Count",
+    "percentOfTotal": "% of Total"
+  },
+  "tableRows": {
+    "paid":       "Paid",
+    "accepted":   "Accepted",
+    "rejected":   "Rejected",
+    "scRejected": "SC Rejected",
+    "errors":     "Errors"
+  },
+  "selectors": {
+    "analyticsRoot":        "app-analytics",
+    "dashboardLayout":      "app-dashboard-layout-component",
+    "statCardIcon":         ".stat-card-icon > .fas",
+    "paidIcon":             ".fas.fa-check-circle",
+    "acceptedIcon":         ".fas.fa-thumbs-up",
+    "rejectedIcon":         ".fas.fa-times-circle",
+    "scRejectedIcon":       ".fas.fa-ban",
+    "errorCard":            ".stat-card.error > .stat-card-icon",
+    "analyticsNavIconCss":  ".fas.fa-chart-line",
+    "analyticsHref":        "a[href*='/dashboard/analytics']"
+  },
+  "placeholders": {
+    "datePicker": "mm/dd/yyyy"
+  },
+  "edgeCases": {
+    "futureDateStart": "01/01/2030",
+    "futureDateEnd":   "12/31/2030",
+    "sameDateRange":   "01/01/2024"
+  },
+  "timeouts": {
+    "filterMs":     3000,
+    "navigationMs": 15000
+  }
+}
