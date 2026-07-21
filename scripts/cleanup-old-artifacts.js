@@ -69,9 +69,27 @@ if (fs.existsSync(blobReportDir)) {
   }
 }
 
-// --- run-log-*.txt and test-summary-*.html in project root ---
+// --- run-log-*.txt: keep ONLY today's logs, delete everything older ---
+const todayStart = new Date();
+todayStart.setHours(0, 0, 0, 0);
+
 for (const entry of fs.readdirSync(ROOT)) {
-  if (!/^run-log-.+\.txt$/i.test(entry) && !/^test-summary-\d{4}-\d{2}-\d{2}\.html$/i.test(entry)) continue;
+  if (!/^run-log-.+\.txt$/i.test(entry)) continue;
+  const fullPath = path.join(ROOT, entry);
+  try {
+    const stat = fs.statSync(fullPath);
+    if (stat.isFile() && stat.mtimeMs < todayStart.getTime()) {
+      removeFile(fullPath);
+      removed++;
+    }
+  } catch {
+    // skip
+  }
+}
+
+// --- test-summary-*.html in project root: keep for 30 days ---
+for (const entry of fs.readdirSync(ROOT)) {
+  if (!/^test-summary-\d{4}-\d{2}-\d{2}.*\.html$/i.test(entry)) continue;
   const fullPath = path.join(ROOT, entry);
   try {
     const stat = fs.statSync(fullPath);
