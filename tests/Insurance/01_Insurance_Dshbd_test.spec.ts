@@ -253,7 +253,7 @@ test.describe('Insurance dashboard - refactored generated suite', () => {
 			expect(firstAsc || firstDesc).toBeTruthy();
 			firstPassDirection = firstAsc ? 'asc' : 'desc';
 			if (baselineValues.length === firstPassValues.length) {
-				expect(firstPassValues.join('|') !== baselineValues.join('|') || firstPassDirection !== 'single').toBeTruthy();
+				expect(firstPassValues.join('|') !== baselineValues.join('|')).toBeTruthy();
 			}
 		}
 

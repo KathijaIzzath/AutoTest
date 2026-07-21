@@ -1,4 +1,5 @@
 import { test, expect } from '../myTestData';
+import type { Locator } from '@playwright/test';
 import * as d from '../../testData/EnrollDshbdTestData.json';
 import { verifyElementsVisible } from '../framework/element-verifier.helper';
 
