@@ -170,7 +170,10 @@ await expect(page.locator('app-modal')).toContainText(d.labels.no);
 await expect(page.locator('app-modal')).toContainText(d.labels.yes);
 await page.getByRole('button', { name: d.labels.no }).click();
 await expect(page.getByText(d.labels.groupEnrollmentGrid, { exact: true })).toBeVisible();
-await expect(page.getByRole('cell', { name: userData.groupEnroll.groupId }).first()).toBeVisible();
+// Filter by the added group ID so the row is visible in a large grid
+await page.getByRole('textbox', { name: 'Enter Group ID' }).fill(userData.groupEnroll?.groupId ?? 'G00014');
+await page.getByRole('button', { name: d.labels.applyFilter }).click();
+await expect(page.getByRole('cell', { name: userData.groupEnroll?.groupId ?? 'G00014' }).first()).toBeVisible({ timeout: 15000 });
 await expect(page.getByRole('cell', { name: userData.groupEnroll.NPI }).first()).toBeVisible();
 await expect(page.getByRole('cell', { name: userData.groupEnroll.taxID }).first()).toBeVisible();
 

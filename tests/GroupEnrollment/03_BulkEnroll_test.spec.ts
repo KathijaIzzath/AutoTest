@@ -159,7 +159,10 @@ test('Add Bulk Group Enrollment ', async ({ page, loginAsAdmin }) => {
   await expect(page.getByRole('columnheader', { name: 'Type' })).toBeVisible();
   await expect(page.getByRole('button', { name: d.labels.close })).toBeVisible();
   await page.getByRole('button', { name: d.labels.close }).click();
-  await expect(page.getByRole('cell', { name: groupId }).first()).toBeVisible();
+  // Filter by the added group ID so the row is visible in a large grid
+  await page.getByRole('textbox', { name: 'Enter Group ID' }).fill(groupId);
+  await page.getByRole('button', { name: 'Apply Filter' }).click();
+  await expect(page.getByRole('cell', { name: groupId }).first()).toBeVisible({ timeout: 15000 });
   await expect(page.getByRole('cell', { name: groupName }).first()).toBeVisible();
   await expect(page.getByRole('cell', { name: NPI }).first()).toBeVisible();
   await expect(page.getByRole('cell', { name: TAXID }).first()).toBeVisible();

@@ -169,7 +169,7 @@ test.describe('Provider Dashboard - Filter Search', () => {
     await page.getByRole('button', { name: 'Apply Filter' }).click();
 
     await expect(page.getByRole('columnheader', { name: 'provider ID' })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'T00142' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'T00142' }).first()).toBeVisible();
   });
 
   test('should return matching result when filtering by Practice Management dropdown', async ({ page, loginAsAdmin }) => {

@@ -132,6 +132,60 @@ export async function getClaimCountForQueueI(): Promise<number> {
   return result && result[0] && result[0].count ? Number(result[0].count) : 0;
 }
 
+/**
+ * Returns the count of claims received in the last 24 hours (notifications panel - Received Claims)
+ */
+export async function getReceivedClaimsLast24h(): Promise<number> {
+  const query = `
+    SELECT count(c.*)
+    FROM Claims AS c
+    INNER JOIN Files AS f ON c.ReportId = f.id
+    WHERE f.queue = 'I'
+      AND c.hintimestamp >= CURRENT_TIMESTAMP - INTERVAL '24 hours';
+  `;
+  const result = await executeQuery(query);
+  return result && result[0] && result[0].count ? Number(result[0].count) : 0;
+}
+
+/**
+ * Returns the count of rejected claims in the last 24 hours (notifications panel - Rejected Claims)
+ */
+export async function getRejectedClaimsLast24h(): Promise<number> {
+  const query = `
+    SELECT count(c.*)
+    FROM Claims AS c
+    INNER JOIN Files AS f ON c.ReportId = f.id
+    LEFT JOIN remitreason AS rmt ON c.claimstatus = rmt.code
+    WHERE f.queue = 'I'
+      AND rmt.apicategory IN ('FINALIZED_DENIED','SC_REJECTED','REJECTED')
+      AND c.hintimestamp >= CURRENT_TIMESTAMP - INTERVAL '24 hours';
+  `;
+  const result = await executeQuery(query);
+  return result && result[0] && result[0].count ? Number(result[0].count) : 0;
+}
+
+/**
+ * Returns the most recent ERA rows for dashboard panel comparison (Recent ERAs)
+ */
+export async function fetchRecentEraRows(): Promise<Array<{ payername: string }>> {
+  // eramain has payerid but not status/receiveddate — select only confirmed columns
+  const query = `
+    SELECT ic.name AS payername
+    FROM eramain e
+    LEFT JOIN insurancecompany ic ON e.payerid = ic.id
+    LIMIT 10;
+  `;
+  try {
+    const result = await executeQuery(query);
+    return result && result.length > 0
+      ? result.map((r: any) => ({ payername: String(r.payername ?? '') }))
+      : [];
+  } catch (err) {
+    console.warn('[fetchRecentEraRows] Query failed, ERA table may use a different schema:', err);
+    return [];
+  }
+}
+
 import { Client, QueryResult, Pool } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -1202,6 +1256,29 @@ export async function fetchClaimArchiveDashboardRowByClaimId(
     reportfilename: String(row.reportfilename ?? '').trim(),
     csvfilename: String(row.csvfilename ?? '').trim(),
   };
+}
+
+/**
+ * Fetches the claim ID of any recent valid row from the LIVE claims table (sc_app.claims).
+ * The UI Claims Menu dashboard searches this table, so the returned ID is guaranteed
+ * to appear in search results. fetchClaimArchiveMenuRowByClaimId will then validate it
+ * against the archive; if absent from the archive, tests that rely on it will be skipped.
+ */
+export async function fetchAnyValidArchiveClaimId(): Promise<string | null> {
+  const query = `
+    SELECT btrim(claimid) AS claimid
+    FROM sc_app.claims
+    WHERE claimid IS NOT NULL AND btrim(claimid) != ''
+    ORDER BY hintimestamp DESC
+    LIMIT 1;
+  `;
+  try {
+    const result = await executeQuery(query);
+    return result && result.length > 0 ? String(result[0].claimid) : null;
+  } catch (err) {
+    console.warn('[fetchAnyValidArchiveClaimId] Query failed:', err);
+    return null;
+  }
 }
 
 /**

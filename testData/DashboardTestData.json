@@ -3,12 +3,8 @@
     "userInitials": "SA",
     "dashboardTitle": "Dashboard",
     "dashboardSidebarLink": " Dashboard",
-    "last10Days": "Last 10 Days",
-    "claimHealthMeter": "Claim Health Meter",
     "support": "Support",
     "todaysClaims": "Today's Claims",
-    "scReceived": "Secure Connect Received",
-    "scErrors": "Secure Connect errors",
     "quickQueries": "Quick Queries",
     "claimsSent": "CLAIMS SENT",
     "erasReceived": "ERAs RECEIVED",
@@ -19,12 +15,34 @@
   },
   "support": {
     "contactUsCell": "Contact Us",
-    "phoneLink": "-855-734-4668",
-    "phoneText": "855-734-4668",
+    "phoneLink": "(888) 555-",
+    "phoneText": "(888) 555-",
     "emailSupportCell": "Email Support",
-    "emailLink": "Secureconnect@harriscomputer.",
-    "emailFull": "Secureconnect@harriscomputer.com",
-    "documentationCell": "Documentation"
+    "emailLink": "support@secureconnect.com",
+    "emailFull": "support@secureconnect.com",
+    "documentationCell": "Documentation",
+    "viewDocumentationLink": "View Documentation"
+  },
+  "notifications": {
+    "infoButtonName": "Information",
+    "notificationsHeading": "Notifications",
+    "futureReleaseText": "Notifications to be included in future release.",
+    "todayClaimTotalsHeading": "Today's Claim Totals",
+    "receivedClaimsLabel": "Received Claims",
+    "rejectedClaimsLabel": "Rejected Claims",
+    "claimsBreakdownLabel": "Claims Breakdown",
+    "totalClaimsLabel": "Total Claims:",
+    "outstandingEnrollmentsLabel": "Outstanding Enrollments",
+    "recentErasLabel": "Recent ERAs",
+    "viewLinkName": "View",
+    "moreLinkName": "More",
+    "supportLabel": "Secure Connect Support",
+    "panelPhoneLink": "(888) 555-",
+    "panelEmailLink": "support@secureconnect.com",
+    "viewDocumentationLink": "View Documentation",
+    "last24hLabel": "Last 24h",
+    "noEnrollmentsFoundText": "No outstanding enrollments found.",
+    "noErasFoundText": "No recent ERAs found."
   },
   "claims": {
     "errorStatus": "Error",
@@ -73,15 +91,31 @@
       "payerId": "payer id",
       "payerName": "Payer Name",
       "payerAmount": "Payer amount",
-      "status": "status"
+      "status": "status",
+      "receivedDate": "Received Date"
     },
     "enrollment": {
-      "groupId": "GROUP ID"
+      "groupId": "GROUP ID",
+      "groupName": "GROUP NAME"
+    },
+    "enrollmentPanel": {
+      "groupId": "Group ID",
+      "provider": "Provider",
+      "payer": "Payer",
+      "type": "Type",
+      "submittedDate": "Submitted Date",
+      "status": "Status"
+    },
+    "recentEra": {
+      "receivedDate": "Received Date",
+      "payer": "Payer",
+      "checkId": "Check ID",
+      "amount": "Amount",
+      "status": "Status"
     }
   },
   "selectors": {
     "dashboardClaimsItemValue": ".dashboard-claims-item-value",
-    "claimsErrorItemValue": ".dashboard-claims-item.errors > .dashboard-claims-item-value",
     "ngSelectArrow": ".ng-select-multiple > .ng-select-container > .ng-arrow-wrapper",
     "appDashboard": "app-dashboard"
   }
