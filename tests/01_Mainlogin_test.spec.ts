@@ -1,16 +1,12 @@
 import { test, expect } from './myTestData';
 import * as userData from '../testData/UserInfo.json';
 import LoginPage from '../testData/LoginPage';
-import DBQueries from '../testData/DBQueries';
 import * as td from '../testData/LoginTestData.json';
 
-test.use({ timezoneId: 'America/Los_Angeles' });
+// DB prerequisites are now run in global-setup.ts before the full suite starts.
+// No per-worker beforeAll needed here.
 
-test.beforeAll(async () => {
-  const dbQueries = new DBQueries();
-  console.log('Running setup before all tests in the worker process');
-  await dbQueries.beforeAllUpdateQueries();
-});
+test.use({ timezoneId: 'America/Los_Angeles' });
 
 test.beforeEach(async ({ page }) => {
   const loginPage = new LoginPage(page);

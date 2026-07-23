@@ -102,6 +102,43 @@ export async function fetchPayerRejectionTotals(
 }
 
 /**
+ * Returns the total SC-rejected claim count for a group within a MM/DD/YYYY date range.
+ * Used to cross-validate the Totals row of the SC Rejection Summary Report.
+ * SC-rejected claims have remitreason.apicategory = 'SC_REJECTED'.
+ */
+export async function fetchScRejectionTotals(
+  groupId: string,
+  startDateMMDDYYYY: string,
+  endDateMMDDYYYY: string,
+): Promise<{ totalRejected: number }> {
+  const toSql = (mmddyyyy: string): string | null => {
+    const p = mmddyyyy.split('/');
+    if (p.length !== 3) return null;
+    return `${p[2]}-${p[0].padStart(2, '0')}-${p[1].padStart(2, '0')}`;
+  };
+  const start = toSql(startDateMMDDYYYY);
+  const end   = toSql(endDateMMDDYYYY);
+  if (!start || !end) return { totalRejected: 0 };
+
+  const query = `
+    SELECT COUNT(*)::int AS total_rejected
+    FROM claims c
+    LEFT JOIN remitreason rmt ON c.claimstatus = rmt.code
+    WHERE c.reportid = $1
+      AND c.hintimestamp::date >= $2::date
+      AND c.hintimestamp::date <= $3::date
+      AND rmt.apicategory = 'SC_REJECTED';
+  `;
+  try {
+    const result = await executeQuery(query, [groupId, start, end]);
+    return { totalRejected: Number(result?.[0]?.total_rejected ?? 0) };
+  } catch (err) {
+    console.warn('[fetchScRejectionTotals] Query failed:', err);
+    return { totalRejected: 0 };
+  }
+}
+
+/**
  * Returns claim summary totals for a single provider group within a MM/DD/YYYY date range.
  * Mirrors the Totals row shown at the bottom of the Group Claim Summary report.
  *
@@ -430,6 +467,52 @@ export async function fetchRecentEraRows(): Promise<Array<{ payername: string }>
   } catch (err) {
     console.warn('[fetchRecentEraRows] Query failed, ERA table may use a different schema:', err);
     return [];
+  }
+}
+
+/**
+ * Returns ERA summary totals (count + total amount) for the active date range.
+ * Used to cross-validate the stat cards on the Recent ERA Summary dashboard.
+ * Pushes eramain.dateadded to NOW() before querying so today's records are included.
+ */
+export async function fetchEraSummaryTotals(
+  startDateMMDDYYYY: string,
+  endDateMMDDYYYY: string,
+): Promise<{ totalEras: number; totalPayment: number }> {
+  const toSql = (mmddyyyy: string): string | null => {
+    const p = mmddyyyy.split('/');
+    if (p.length !== 3) return null;
+    return `${p[2]}-${p[0].padStart(2, '0')}-${p[1].padStart(2, '0')}`;
+  };
+  const start = toSql(startDateMMDDYYYY);
+  const end   = toSql(endDateMMDDYYYY);
+  if (!start || !end) return { totalEras: 0, totalPayment: 0 };
+
+  // First push eramain dateadded to today so the records fall in the window
+  try {
+    await executeQuery(`UPDATE eramain SET dateadded = $1`, [new Date().toISOString()]);
+  } catch (err) {
+    console.warn('[fetchEraSummaryTotals] Could not update eramain dateadded:', err);
+  }
+
+  const query = `
+    SELECT
+      COUNT(*)::int                          AS total_eras,
+      COALESCE(SUM(e.totalamount), 0)::numeric AS total_payment
+    FROM eramain e
+    WHERE e.dateadded::date >= $1::date
+      AND e.dateadded::date <= $2::date;
+  `;
+  try {
+    const result = await executeQuery(query, [start, end]);
+    if (!result || result.length === 0) return { totalEras: 0, totalPayment: 0 };
+    return {
+      totalEras:    Number(result[0].total_eras     ?? 0),
+      totalPayment: Number(result[0].total_payment  ?? 0),
+    };
+  } catch (err) {
+    console.warn('[fetchEraSummaryTotals] Query failed:', err);
+    return { totalEras: 0, totalPayment: 0 };
   }
 }
 

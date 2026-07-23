@@ -1,4 +1,7 @@
-/**
+"""Writes 05_ERASummary_test.spec.ts for the Recent ERA Summary Report."""
+TARGET = r'C:\AutoTest\tests\Analytics_Report\05_ERASummary_test.spec.ts'
+
+spec = r"""/**
  * Recent ERA Summary Report – Test Suite
  * File: tests/Analytics_Report/05_ERASummary_test.spec.ts
  *
@@ -439,3 +442,8 @@ test.describe('Recent ERA Summary Report', () => {
   });
 
 });
+"""
+
+with open(TARGET, 'w', encoding='utf-8') as f:
+    f.write(spec)
+print(f'Written {spec.count(chr(10))+1} lines to {TARGET}')

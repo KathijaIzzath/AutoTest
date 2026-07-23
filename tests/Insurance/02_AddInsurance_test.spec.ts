@@ -262,3 +262,92 @@ test.describe('Add Insurance from Edit Payer flow', () => {
         expect(duplicateErrorVisible || toastVisible || modalStillVisible).toBeTruthy();
     });
 });
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mandatory field validation – negative tests (Add Insurance)
+// ─────────────────────────────────────────────────────────────────────────────
+test.describe('Add Insurance – mandatory field validation', () => {
+
+  test('Negative: Add Insurance must not succeed when Claim Status ID is empty', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openPayerEditFromDashboard(page);
+    const modal = await openAddInsuranceSetupModal(page);
+
+    // Fill Eligibility ID and radios but leave Claim Status ID empty
+    await modal.locator(d.selectors.firstEligibilityTypeParticipating).first().click();
+    await modal.locator(d.selectors.firstClaimStatusTypeParticipating).first().click();
+    await modal.getByRole('textbox', { name: d.placeholders.eligibilityId }).fill(d.values.eligibilityId);
+    // Claim Status ID intentionally left empty
+    await expect(
+      modal.getByRole('textbox', { name: d.placeholders.claimStatusId }),
+    ).toHaveValue('');
+
+    const addBtn = modal.getByRole('button', { name: d.labels.addInsuranceLink });
+    const btnDisabled = await addBtn.isDisabled().catch(() => false);
+    if (btnDisabled) {
+      // UI enforces: button is disabled – form cannot be submitted
+      await expect(addBtn).toBeDisabled();
+    } else {
+      // UI allows click: assert the success toast does NOT appear (save was blocked server-side)
+      await addBtn.click();
+      await page.waitForTimeout(d.timeouts.filterMs);
+      await expect(
+        page.getByLabel(d.labels.insuranceCreatedToast),
+        'Success toast must NOT appear when Claim Status ID is empty',
+      ).not.toBeVisible();
+    }
+  });
+
+  test('Negative: Add Insurance must not succeed when Eligibility ID is empty', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openPayerEditFromDashboard(page);
+    const modal = await openAddInsuranceSetupModal(page);
+
+    // Fill Claim Status ID and radios but leave Eligibility ID empty
+    await modal.locator(d.selectors.firstEligibilityTypeParticipating).first().click();
+    await modal.locator(d.selectors.firstClaimStatusTypeParticipating).first().click();
+    await modal.getByRole('textbox', { name: d.placeholders.claimStatusId }).fill(d.values.claimStatusId);
+    // Eligibility ID intentionally left empty
+    await expect(
+      modal.getByRole('textbox', { name: d.placeholders.eligibilityId }),
+    ).toHaveValue('');
+
+    const addBtn = modal.getByRole('button', { name: d.labels.addInsuranceLink });
+    const btnDisabled = await addBtn.isDisabled().catch(() => false);
+    if (btnDisabled) {
+      await expect(addBtn).toBeDisabled();
+    } else {
+      await addBtn.click();
+      await page.waitForTimeout(d.timeouts.filterMs);
+      await expect(
+        page.getByLabel(d.labels.insuranceCreatedToast),
+        'Success toast must NOT appear when Eligibility ID is empty',
+      ).not.toBeVisible();
+    }
+  });
+
+  test('Negative: Add Insurance must not succeed when no radio types are selected', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openPayerEditFromDashboard(page);
+    const modal = await openAddInsuranceSetupModal(page);
+
+    // Fill both ID fields but do NOT select Eligibility Type or Claim Status Type radios
+    await modal.getByRole('textbox', { name: d.placeholders.claimStatusId }).fill(d.values.claimStatusId);
+    await modal.getByRole('textbox', { name: d.placeholders.eligibilityId }).fill(d.values.eligibilityId);
+
+    const addBtn = modal.getByRole('button', { name: d.labels.addInsuranceLink });
+    const btnDisabled = await addBtn.isDisabled().catch(() => false);
+    if (btnDisabled) {
+      await expect(addBtn).toBeDisabled();
+    } else {
+      await addBtn.click();
+      await page.waitForTimeout(d.timeouts.filterMs);
+      await expect(
+        page.getByLabel(d.labels.insuranceCreatedToast),
+        'Success toast must NOT appear when type radios are not selected',
+      ).not.toBeVisible();
+    }
+  });
+
+});

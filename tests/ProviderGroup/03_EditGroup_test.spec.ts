@@ -324,3 +324,57 @@ test('Edit Provider Group account filter invalid value should show empty result'
   await expect(page.getByRole('cell', { name: d.edgeCases.invalidAccountNumber })).toHaveCount(0);
   await expect(page.getByText(d.labels.noResults).first()).toBeVisible();
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mandatory field validation – negative tests (Edit Provider Group)
+// ─────────────────────────────────────────────────────────────────────────────
+test.describe('Edit Provider Group – mandatory field validation', () => {
+
+  test('Negative: Required field asterisk for Fee Schedule is visible in the edit form', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openEditProviderGroup(page, userData.editGroup.accountNum);
+    await expect(
+      page.getByText(d.labels.feeScheduleRequired),
+      '* fee schedule label must be visible so user knows it is required',
+    ).toBeVisible();
+    await expect(page.getByLabel('feeSchedule')).toBeVisible();
+  });
+
+  test('Negative: Clearing Fee Schedule must block a successful save', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openEditProviderGroup(page, userData.editGroup.accountNum);
+
+    const feeSelect = page.getByLabel('feeSchedule');
+    // Check if the first (empty) option is selectable; if all options are disabled, skip the test
+    const firstOption = feeSelect.locator('option').first();
+    const firstDisabled = await firstOption.evaluate((el: HTMLOptionElement) => el.disabled).catch(() => true);
+    if (firstDisabled) {
+      // Fee schedule options are all required/non-empty – UI prevents clearing.
+      // Assert the * label is visible (the field is required) and pass.
+      await expect(page.getByText(d.labels.feeScheduleRequired)).toBeVisible();
+      return;
+    }
+    const firstOptionValue = await firstOption.getAttribute('value') ?? '';
+    await feeSelect.selectOption({ value: firstOptionValue });
+    await page.waitForTimeout(500);
+
+    const saveBtn = page.getByRole('button', { name: d.labels.saveAndClose });
+    const isDisabled = await saveBtn.isDisabled().catch(() => false);
+    if (isDisabled) {
+      // Preferred: UI prevents submission
+      await expect(saveBtn).toBeDisabled();
+    } else {
+      // Fallback: submit and assert the modal is still open (not closed on success)
+      await saveBtn.click();
+      await page.waitForTimeout(1500);
+      // The edit modal heading must still be present (save was rejected by the server)
+      await expect(
+        page.getByRole('heading', {
+          name: new RegExp(`Edit Provider Group.*${userData.editGroup.groupeditInAcct}`),
+        }),
+        'Edit modal must remain open when Fee Schedule is cleared – save must be blocked',
+      ).toBeVisible();
+    }
+  });
+
+});

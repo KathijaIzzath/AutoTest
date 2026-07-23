@@ -328,3 +328,58 @@ test('Accounts filter invalid account should show no results before Provider Gro
   await expect(page.getByRole('cell', { name: d.edgeCases.invalidAccountNumber })).toHaveCount(0);
   await expect(page.getByText(d.labels.noResults).first()).toBeVisible();
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mandatory field validation – negative tests (Create Provider Group)
+// ─────────────────────────────────────────────────────────────────────────────
+test.describe('Create Provider Group – mandatory field validation', () => {
+
+  test('Negative: Add & Close is disabled on fresh form (all required fields empty)', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openCreateProviderGroup(page, userData.providerGroup.accountNum);
+
+    await expect(
+      page.getByRole('button', { name: d.labels.addAndClose }),
+      'Add & Close must be disabled when no required fields are filled',
+    ).toBeDisabled();
+  });
+
+  test('Negative: Required field asterisk labels are all visible on the fresh form', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openCreateProviderGroup(page, userData.providerGroup.accountNum);
+
+    // All required-field asterisk labels must be visible so users know what is mandatory
+    await expect(page.getByRole('dialog').getByText('* name')).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('* fee schedule')).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('* certification status')).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('* Practice Management')).toBeVisible();
+  });
+
+  test('Negative: Add & Close stays disabled when Group Name is the only required field missing', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openCreateProviderGroup(page, userData.providerGroup.accountNum);
+
+    // Leave Group Name empty; button must remain disabled
+    await expect(
+      page.getByRole('textbox', { name: d.roles.groupNameTextbox }),
+    ).toHaveValue('');
+    await expect(
+      page.getByRole('button', { name: d.labels.addAndClose }),
+      'Add & Close must be disabled while Group Name is empty',
+    ).toBeDisabled();
+  });
+
+  test('Negative: Clearing Group Name after filling re-disables Add & Close', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await openCreateProviderGroup(page, userData.providerGroup.accountNum);
+
+    const nameField = page.getByRole('textbox', { name: d.roles.groupNameTextbox });
+    await nameField.fill('Temp-Group-Negative-Test');
+    await nameField.clear();
+    await expect(
+      page.getByRole('button', { name: d.labels.addAndClose }),
+      'Clearing Group Name must re-disable Add & Close',
+    ).toBeDisabled();
+  });
+
+});

@@ -1,0 +1,42 @@
+{
+  "labels": {
+    "analytics":           "Analytics",
+    "recentEraSummary":    "Recent ERA Summary",
+    "recentClaimSummary":  "Recent Claim Summary",
+    "applyFilter":         "Apply Filter",
+    "totalEras":           "Total ERAs",
+    "totalPaymentAmount":  "Total Payment Amount",
+    "eraBreakdown":        "ERA Breakdown",
+    "startDate":           "START DATE",
+    "endDate":             "END DATE"
+  },
+  "columnHeaders": [
+    "Payer Name",
+    "Payer ID",
+    "Total Received",
+    "Total Paid"
+  ],
+  "selectors": {
+    "analyticsRoot":        "app-analytics",
+    "dashboardLayout":      "app-dashboard-layout-component",
+    "statCardPaidIcon":     ".stat-card.paid > .stat-card-icon > .fas",
+    "statCardFirstIcon":    ".stat-card-icon > .fas"
+  },
+  "placeholders": {
+    "datePicker": "mm/dd/yyyy"
+  },
+  "patterns": {
+    "currencyAmount":    "\\$[\\d,]+\\.\\d+",
+    "totalErasText":     "\\d[\\d,]* Total ERAs",
+    "totalPaymentText":  "\\$[\\d,]+\\.\\d+ Total Payment Amount"
+  },
+  "edgeCases": {
+    "futureDateStart": "01/01/2030",
+    "futureDateEnd":   "12/31/2030",
+    "sameDateRange":   "01/01/2024"
+  },
+  "timeouts": {
+    "filterMs":     5000,
+    "navigationMs": 15000
+  }
+}

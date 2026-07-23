@@ -45,10 +45,10 @@ class DBQueries {
     console.log(claimspayerupdate, params2);
     await executeQuery(claimspayerupdate, params2);
 
-    // Enrollment received - update agreement dates
+    // Enrollment received - update agreement dates for all active statuses (C/D/M/P/A)
     const groupenrollmentupdate =
-      'UPDATE groupenrollment SET agreementSentDate = $1, agreementDeniedDate = $2 WHERE enrollmentStatus IN ($3, $4, $5)';
-    const params3 = [formattedDate, formattedDate, 'C', 'D', 'M'];
+      'UPDATE groupenrollment SET agreementSentDate = $1, agreementDeniedDate = $2 WHERE enrollmentStatus IN ($3, $4, $5, $6, $7)';
+    const params3 = [formattedDate, formattedDate, 'C', 'D', 'M', 'P', 'A'];
     console.log(groupenrollmentupdate, params3);
     await executeQuery(groupenrollmentupdate, params3);
 

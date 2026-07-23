@@ -249,3 +249,72 @@ test('Account filter should handle invalid/non-existing account number gracefull
 });
 
 
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mandatory field validation – negative tests
+// Rule: if any required field is missing the Save button must remain disabled.
+//       If the Save button is somehow enabled and clicked, no success state
+//       should appear.  A passing test confirms the form DID NOT submit.
+// ─────────────────────────────────────────────────────────────────────────────
+test.describe('Add Account – mandatory field validation', () => {
+
+  test('Negative: Add & Close is disabled on a fresh (empty) form', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await navigateToAccounts(page);
+    await page.getByRole('link', { name: ` ${d.labels.addAccount}` }).click();
+    await expect(
+      page.getByRole('button', { name: d.roles.addAndClose }),
+      'Add & Close must be disabled when no fields are filled',
+    ).toBeDisabled();
+  });
+
+  test('Negative: Add & Close stays disabled when only Account Name is filled (Account Number missing)', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await navigateToAccounts(page);
+    await page.getByRole('link', { name: ` ${d.labels.addAccount}` }).click();
+    await page.getByRole('textbox', { name: d.roles.accountNameTextbox }).fill('Name Without Number');
+    await expect(
+      page.getByRole('button', { name: d.roles.addAndClose }),
+      'Add & Close must stay disabled when Account Number is empty',
+    ).toBeDisabled();
+  });
+
+  test('Negative: Add & Close stays disabled when only Account Number is filled (Account Name missing)', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await navigateToAccounts(page);
+    await page.getByRole('link', { name: ` ${d.labels.addAccount}` }).click();
+    await page.getByRole('textbox', { name: d.roles.accountNumberTextbox }).fill('ACCT-NO-NAME');
+    await expect(
+      page.getByRole('button', { name: d.roles.addAndClose }),
+      'Add & Close must stay disabled when Account Name is empty',
+    ).toBeDisabled();
+  });
+
+  test('Negative: Clearing Account Number after filling re-disables Add & Close', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await navigateToAccounts(page);
+    await page.getByRole('link', { name: ` ${d.labels.addAccount}` }).click();
+    await page.getByRole('textbox', { name: d.roles.accountNumberTextbox }).fill('TEMP-001');
+    await page.getByRole('textbox', { name: d.roles.accountNameTextbox }).fill('TEMP Name');
+    await page.getByRole('textbox', { name: d.roles.accountNumberTextbox }).clear();
+    await expect(
+      page.getByRole('button', { name: d.roles.addAndClose }),
+      'Clearing Account Number must re-disable Add & Close',
+    ).toBeDisabled();
+  });
+
+  test('Negative: Clearing Account Name after filling re-disables Add & Close', async ({ page, loginAsAdmin }) => {
+    await loginAsAdmin();
+    await navigateToAccounts(page);
+    await page.getByRole('link', { name: ` ${d.labels.addAccount}` }).click();
+    await page.getByRole('textbox', { name: d.roles.accountNumberTextbox }).fill('TEMP-002');
+    await page.getByRole('textbox', { name: d.roles.accountNameTextbox }).fill('TEMP Name');
+    await page.getByRole('textbox', { name: d.roles.accountNameTextbox }).clear();
+    await expect(
+      page.getByRole('button', { name: d.roles.addAndClose }),
+      'Clearing Account Name must re-disable Add & Close',
+    ).toBeDisabled();
+  });
+
+});
