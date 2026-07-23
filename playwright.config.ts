@@ -40,6 +40,8 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['blob', { outputFile: blobOutputFile }],
     ['list'],
+    // Generates the Desktop daily summary HTML after every run
+    ['./scripts/daily-reporter.cjs'],
     ['./scripts/summary-reporter.ts'],
   ],
   globalSetup: require.resolve('./global-setup'),

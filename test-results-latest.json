@@ -1,0 +1,1175 @@
+{
+  "config": {
+    "configFile": "C:\\AutoTest\\playwright.config.ts",
+    "rootDir": "C:/AutoTest/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": "C:\\AutoTest\\global-setup.ts",
+    "globalTeardown": "C:\\AutoTest\\global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/AutoTest/test-results/run-2026-07-23_18-08-15-pid3160",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/AutoTest/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts",
+          "**/*_spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/AutoTest/test-results/run-2026-07-23_18-08-15-pid3160",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/AutoTest/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts",
+          "**/*_spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/AutoTest/test-results/run-2026-07-23_18-08-15-pid3160",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/AutoTest/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts",
+          "**/*_spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "01_Mainlogin_test.spec.ts",
+      "file": "01_Mainlogin_test.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Login - Page Title",
+          "file": "01_Mainlogin_test.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should have the correct browser tab title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2262,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:08:41.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-3f31eb7124759f7a3e65",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 20,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Login - Field Visibility",
+          "file": "01_Mainlogin_test.spec.ts",
+          "line": 28,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display Welcome and Login headings",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1879,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:08:44.198Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-b9208b2d5ae7a162325a",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "should display the application logo",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1797,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:08:46.118Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-e0eb7ac7f5a189859383",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "should display the Username label and input field",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2387,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:08:47.941Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-c9cad25ed2f80c483555",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "should display the Password label and input field",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2925,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Password text count: 2\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:08:50.352Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-d8132f62781f1c108d3d",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 48,
+              "column": 7
+            },
+            {
+              "title": "should display the Forgot password link",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3688,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:08:53.303Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-807f96fde1c25a646349",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "should display the Log In button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1427,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:08:57.015Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-c176e1092c34bfaab443",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "should display all login form elements together",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1603,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:08:58.464Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-b45de6d60453850ec072",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 77,
+              "column": 7
+            },
+            {
+              "title": "Username and Password fields should be empty on page load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1886,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:00.092Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-0bf5be14957e086aaa29",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 88,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Login - Successful Authentication",
+          "file": "01_Mainlogin_test.spec.ts",
+          "line": 97,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should log in with valid admin credentials and land on dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3559,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:02.002Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-d0694c3877d2b5bc374c",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 99,
+              "column": 7
+            },
+            {
+              "title": "should redirect to dashboard URL after successful login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2923,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:05.587Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-68de42ab82c7d255518a",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 107,
+              "column": 7
+            },
+            {
+              "title": "should display dashboard heading after login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2896,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:08.534Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-134a110dd5f369edff82",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 112,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Login - Invalid Credentials and Edge Cases",
+          "file": "01_Mainlogin_test.spec.ts",
+          "line": 121,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show error or stay on login page with invalid username and password",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1713,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:11.453Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-d70952c42983e6244cd2",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 123,
+              "column": 7
+            },
+            {
+              "title": "should stay on login page when submitting with empty username and password",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1419,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:13.189Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-66344ee31f6fc76673cc",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 136,
+              "column": 7
+            },
+            {
+              "title": "should stay on login page with valid username but wrong password",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1661,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:14.630Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-6648baeaa57faca117ae",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 143,
+              "column": 7
+            },
+            {
+              "title": "should stay on login page with wrong username but valid password",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1768,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:16.312Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-a22fa5b7ec5bfaffb406",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 150,
+              "column": 7
+            },
+            {
+              "title": "should stay on login page when only username is provided",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1302,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:18.102Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-2c2a2a44dfce79e6e577",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 157,
+              "column": 7
+            },
+            {
+              "title": "should stay on login page when only password is provided",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2103,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:19.424Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-0ec6da844a4ffd09add1",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 165,
+              "column": 7
+            },
+            {
+              "title": "should not accept SQL injection as valid credentials",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1558,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:21.548Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-aa5e2d29863a0fea596a",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 173,
+              "column": 7
+            },
+            {
+              "title": "should not accept whitespace-only username",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1657,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:23.128Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-c6b236b9ea6c1f9a2d2f",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 180,
+              "column": 7
+            },
+            {
+              "title": "should not accept an excessively long username",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1878,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        },
+                        {
+                          "text": "Submitting login form\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:24.805Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-2d5dc3dbecf1abdf8f28",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 187,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Login - Field Interaction",
+          "file": "01_Mainlogin_test.spec.ts",
+          "line": 198,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should accept typed text in the Username field",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1375,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:26.704Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-48a08f18b84c4f223241",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 200,
+              "column": 7
+            },
+            {
+              "title": "should accept typed text in the Password field",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1654,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:28.101Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-f83ecf9d36a428c38d51",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 205,
+              "column": 7
+            },
+            {
+              "title": "should clear Username field when content is deleted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1336,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:29.775Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-f845311a29b94d461dac",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 210,
+              "column": 7
+            },
+            {
+              "title": "Username field should be focusable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1317,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:31.134Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-af8943a3319f688312a7",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 216,
+              "column": 7
+            },
+            {
+              "title": "Password field should be focusable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1360,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Navigating to admin login page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-07-23T18:09:32.471Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f120054518debe4bf5f-2d448ef0e33396fa67f0",
+              "file": "01_Mainlogin_test.spec.ts",
+              "line": 221,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-07-23T18:08:15.957Z",
+    "duration": 78599.61,
+    "expected": 26,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

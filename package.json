@@ -14,7 +14,8 @@
     "report:merge:today": "node scripts/merge-today-report.js",
     "report:show:today": "node scripts/show-today-report.js",
     "cleanup": "node scripts/cleanup-old-artifacts.js",
-    "email:test": "node scripts/send-mock-report.js"
+    "email:test": "node scripts/send-mock-report.js",
+    "report:daily": "node scripts/generate-daily-report.js"
   },
   "keywords": [],
   "author": "",
