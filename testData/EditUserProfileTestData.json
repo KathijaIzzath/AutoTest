@@ -1,0 +1,62 @@
+{
+  "labels": {
+    "users": "Users",
+    "applyFilter": "Apply Filter",
+    "editUserInfo": "Edit User Info",
+    "editUser": "Edit User",
+    "editUserInformation": "Edit User Information",
+    "requiredFields": "* Fields are required",
+    "saveAndClose": "Save & Close",
+    "search": "Search",
+    "addVendors": "Add Vendors"
+  },
+  "placeholders": {
+    "firstNameFilter": "Enter First Name",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name",
+    "phone": "Enter Phone",
+    "cellPhone": "Enter Cell Phone",
+    "pin": "Pin",
+    "vendorName": "Name"
+  },
+  "requiredFieldLabels": {
+    "login": "* Login",
+    "firstName": "* First Name",
+    "lastName": "* Last Name",
+    "phone": "* Phone",
+    "pin": "* Pin",
+    "vendors": "* Vendors"
+  },
+  "values": {
+    "targetUsername": "qasecureconnect@gmail.com",
+    "targetFilterFirstName": "qa",
+    "targetVendorName": "ACPM",
+    "targetVendorRowRegex": "ACPM\\s+A",
+    "invalidFirstNameFilter": "NO_MATCH_EDIT_USER_99999"
+  },
+  "suffixStrategy": {
+    "candidates": [
+      "7777",
+      "7861",
+      "7913",
+      "8042",
+      "8156",
+      "8269",
+      "8394"
+    ],
+    "fallbackMin": 1000,
+    "fallbackMax": 9999
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "userForm": "user-form",
+    "rowActionBlankLinks": "a.standart-link-action",
+    "vendorRemoveLinksInRow": "a"
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "saveMs": 2000,
+    "searchMs": 20000
+  }
+}

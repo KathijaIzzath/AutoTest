@@ -1,0 +1,34 @@
+{
+  "labels": {
+    "usersTitle": "Users",
+    "applyFilter": "Apply Filter",
+    "disableUser": "Disable User",
+    "enableUser": "Enable User",
+    "editUserInfo": "Edit User Info"
+  },
+  "placeholders": {
+    "firstNameFilter": "Enter First Name",
+    "loginFilterPrimary": "Enter Login",
+    "loginFilterFallback": "Enter Username"
+  },
+  "values": {
+    "targetUsername": "qasecureconnect@gmail.com",
+    "targetFilterFirstName": "qa",
+    "invalidFirstNameFilter": "NO_MATCH_ACTIVATE_99999",
+    "emptyValue": ""
+  },
+  "status": {
+    "notActiveTextRegex": "not active|deactivated|inactive",
+    "notActiveTitleRegex": "not active|deactivated|inactive",
+    "activeTextRegex": "active",
+    "activeTitleRegex": "active"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i"
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "stateChangeMs": 1800
+  }
+}

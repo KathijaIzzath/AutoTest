@@ -1,0 +1,45 @@
+{
+  "labels": {
+    "usersTitle": "Users",
+    "applyFilter": "Apply Filter",
+    "disableUser": "Disable User",
+    "enableUser": "Enable User",
+    "editUserInfo": "Edit User Info",
+    "logout": "Logout",
+    "loginButton": "Log In"
+  },
+  "placeholders": {
+    "firstNameFilter": "Enter First Name",
+    "loginFilterPrimary": "Enter Login",
+    "loginFilterFallback": "Enter Username",
+    "usernameInput": "Enter Username",
+    "passwordInput": "Enter Password"
+  },
+  "values": {
+    "targetUsername": "qasecureconnect@gmail.com",
+    "targetFilterFirstName": "qa",
+    "invalidFirstNameFilter": "NO_MATCH_DEACTIVATE_99999",
+    "emptyValue": ""
+  },
+  "messages": {
+    "deactivatedLoginBlockedRegex": "deactivated|cannot be logged in|cannot login|disabled"
+  },
+  "status": {
+    "deactivatedTextRegex": "deactivated|inactive",
+    "deactivatedTitleRegex": "deactivated|inactive"
+  },
+  "token": {
+    "endpointContains": "token"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "stateChangeMs": 1800,
+    "loginResponseMs": 3000
+  }
+}

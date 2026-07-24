@@ -111,6 +111,21 @@ export async function navigateToClaimsDashboard(page: Page): Promise<void> {
   await expect(page.getByRole('button', { name: 'Claims', exact: true })).toBeVisible();
 }
 
+/** Navigates to the Users dashboard module. */
+export async function navigateToUsers(page: Page): Promise<void> {
+  const byHref = page.locator('a[href$="/dashboard/users"]').first();
+  const byText = page.getByRole('link', { name: /Users/i }).first();
+
+  if (await byHref.isVisible().catch(() => false)) {
+    await byHref.click();
+  } else {
+    await expect(byText).toBeVisible();
+    await byText.click();
+  }
+
+  await expect(page.locator('app-users').getByText('Users', { exact: true })).toBeVisible();
+}
+
 /** Navigates to the Claims Archive dashboard from the Claims module. */
 export async function navigateToClaimsArchiveDashboard(page: Page): Promise<void> {
   await navigateToClaimsDashboard(page);

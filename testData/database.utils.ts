@@ -1834,3 +1834,164 @@ export async function fetchNPIAndTaxIDForGroupId(groupId?: string): Promise<Map<
     return new Map<string, string>();
   }
 }
+
+export type UsersClientRow = {
+  username: string;
+  firstName: string;
+  lastName: string;
+  groupId: string;
+  userType: string;
+  isActive: boolean;
+  phone: string;
+  cellPhone: string;
+  pin: string;
+};
+
+function toUsersClientRow(row: any): UsersClientRow {
+  const firstName = String(row.firstname ?? row.first_name ?? '').trim();
+  const lastName = String(row.lastname ?? row.last_name ?? '').trim();
+
+  const groupId = String(
+    row.groupid ?? row.group_id ?? row.groupnumber ?? row.group_number ?? ''
+  ).trim();
+
+  const userType = String(row.usertype ?? row.user_type ?? row.role ?? '').trim();
+  const username = String(row.username ?? row.login ?? '').trim();
+  const phone = String(row.phone ?? row.phonenumber ?? '').trim();
+  const cellPhone = String(row.cellphone ?? row.cell_phone ?? '').trim();
+  const pin = String(row.pin ?? row.userpin ?? '').trim();
+
+  const rawActive = row.isactive ?? row.active ?? row.recordstatus ?? row.status;
+  const normalized = String(rawActive ?? '').trim().toLowerCase();
+  const isActive =
+    rawActive === true ||
+    normalized === 'true' ||
+    normalized === '1' ||
+    normalized === 'a' ||
+    normalized === 'active';
+
+  return {
+    username,
+    firstName,
+    lastName,
+    groupId,
+    userType,
+    isActive,
+    phone,
+    cellPhone,
+    pin,
+  };
+}
+
+/**
+ * Fetch one usersclients row by username for Search User dashboard validation.
+ */
+export async function fetchUserClientByUsername(username: string): Promise<UsersClientRow | null> {
+  const trimmedUsername = (username ?? '').trim();
+  if (!trimmedUsername) {
+    console.warn('[fetchUserClientByUsername] Empty username provided.');
+    return null;
+  }
+
+  const query = `
+    select *
+    from usersclients
+    where lower(btrim(username)) = lower($1)
+    limit 1
+  `;
+
+  try {
+    const rows = await executeQuery(query, [trimmedUsername]);
+    if (!rows || rows.length === 0) {
+      return null;
+    }
+    return toUsersClientRow(rows[0]);
+  } catch (err) {
+    console.warn('[fetchUserClientByUsername] Query failed:', err);
+    return null;
+  }
+}
+
+/**
+ * Fetch usersclients rows with optional filters for Search User cross-validation.
+ */
+export async function fetchUserClientsByFilters(filters: {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  groupId?: string;
+  userType?: string;
+  isActive?: boolean;
+}): Promise<UsersClientRow[]> {
+  const clauses: string[] = [];
+  const params: any[] = [];
+
+  const addClause = (sql: string, value: any): void => {
+    params.push(value);
+    clauses.push(sql.replace('?', `$${params.length}`));
+  };
+
+  const username = (filters.username ?? '').trim();
+  const firstName = (filters.firstName ?? '').trim();
+  const lastName = (filters.lastName ?? '').trim();
+  const groupId = (filters.groupId ?? '').trim();
+  const userType = (filters.userType ?? '').trim();
+
+  if (username) {
+    addClause('lower(btrim(username)) like lower(?)', `%${username}%`);
+  }
+  if (firstName) {
+    addClause('lower(coalesce(firstname, \'\')) like lower(?)', `%${firstName}%`);
+  }
+  if (lastName) {
+    addClause('lower(coalesce(lastname, \'\')) like lower(?)', `%${lastName}%`);
+  }
+  if (groupId) {
+    addClause('lower(coalesce(groupid, \'\')) like lower(?)', `%${groupId}%`);
+  }
+  if (userType) {
+    addClause('upper(coalesce(usertype, \'\')) = upper(?)', userType);
+  }
+  if (typeof filters.isActive === 'boolean') {
+    addClause('coalesce(active, false) = ?', filters.isActive);
+  }
+
+  const where = clauses.length > 0 ? `where ${clauses.join(' and ')}` : '';
+  const query = `
+    select *
+    from usersclients
+    ${where}
+    limit 200
+  `;
+
+  try {
+    const rows = await executeQuery(query, params);
+    return (rows ?? []).map((row: any) => toUsersClientRow(row));
+  } catch (err) {
+    console.warn('[fetchUserClientsByFilters] Query failed:', err);
+    return [];
+  }
+}
+
+/**
+ * Fetch one inactive user from usersclients for edit-restriction validation.
+ */
+export async function fetchAnyInactiveUserClient(): Promise<UsersClientRow | null> {
+  const query = `
+    select *
+    from usersclients
+    where coalesce(active, false) = false
+    limit 1
+  `;
+
+  try {
+    const rows = await executeQuery(query);
+    if (!rows || rows.length === 0) {
+      return null;
+    }
+    return toUsersClientRow(rows[0]);
+  } catch (err) {
+    console.warn('[fetchAnyInactiveUserClient] Query failed:', err);
+    return null;
+  }
+}

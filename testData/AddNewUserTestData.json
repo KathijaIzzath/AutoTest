@@ -1,0 +1,95 @@
+{
+  "labels": {
+    "users": "Users",
+    "addUsers": "Add Users",
+    "createNewUser": "Create New User",
+    "newUserInfo": "Enter New User Information",
+    "requiredFields": "Fields are required",
+    "saveAndClose": "Save & Close",
+    "applyFilter": "Apply Filter",
+    "active": "Active",
+    "userPermission": "User Permission",
+    "copyPermissions": "Copy Permissions from",
+    "copyPermissionsButton": "Copy user permissions",
+    "userSearch": "User Search",
+    "search": "Search",
+    "vendors": "Vendors",
+    "accounts": "Accounts",
+    "groups": "Groups",
+    "addVendors": "Add Vendors",
+    "addAccounts": "Add Accounts",
+    "apply": "Apply"
+  },
+  "requiredFieldLabels": {
+    "login": "* Login",
+    "phone": "* Phone",
+    "firstName": "* First Name",
+    "lastName": "* Last Name",
+    "userType": "* User Type",
+    "pin": "* Pin",
+    "userPermission": "* User Permission"
+  },
+  "placeholders": {
+    "login": "Enter Email",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name",
+    "caseNumber": "Enter Case Number",
+    "phone": "Enter Phone",
+    "cellPhone": "Enter Cell Phone",
+    "pin": "Pin",
+    "copyPermissionUserName": "Enter User Name",
+    "vendorName": "Name",
+    "accountName": "Name",
+    "accountNumber": "Enter Account Number"
+  },
+  "sections": {
+    "copyPermissionSearchUser": "qa",
+    "vendorSearchName": "caretracker"
+  },
+  "defaults": {
+    "firstName": "Automation",
+    "lastNamePrefix": "TestUser",
+    "emailPrefix": "automationtest",
+    "emailDomain": "secureconnect.com",
+    "sequenceStart": 1,
+    "sequencePadEmail": 4,
+    "sequencePadLastName": 2,
+    "casePrefix": "CAS",
+    "pin": "1111",
+    "phoneArea": "844",
+    "phonePrefix": "888",
+    "cellArea": "833",
+    "cellPrefix": "888"
+  },
+  "dropdownValues": {
+    "userTypeVendor": "2: VENDOR",
+    "userTypeAccount": "3: ACCOUNT",
+    "userTypeBillingGroup": "4: BILLING_GROUP"
+  },
+  "expectedUserTypeOptions": [
+    "Select User Type",
+    "Secure Connect",
+    "Vendor",
+    "Account",
+    "BillingGroup"
+  ],
+  "edgeCases": {
+    "invalidEmail": "automation-invalid-email",
+    "invalidPhone": "123",
+    "invalidPin": "12",
+    "whitespace": "   ",
+    "invalidFirstNameFilter": "NO_MATCH_AUTOMATION_USER"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "userTypeSelect": "user-form select",
+    "userForm": "user-form",
+    "dialog": "[role='dialog']"
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "saveMs": 2000,
+    "searchMs": 20000
+  }
+}

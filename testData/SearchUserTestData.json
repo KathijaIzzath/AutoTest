@@ -1,0 +1,55 @@
+{
+  "labels": {
+    "usersTitle": "Users",
+    "addUsers": "Add Users",
+    "applyFilter": "Apply Filter",
+    "login": "Login",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "groupId": "Group Id",
+    "vendor": "Vendor",
+    "status": "Status",
+    "userType": "User Type"
+  },
+  "placeholders": {
+    "login": "Enter Login",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name",
+    "groupId": "Enter Group ID"
+  },
+  "tableHeaders": {
+    "user": "User",
+    "loginSorted": "Login",
+    "userType": "User Type",
+    "status": "Status"
+  },
+  "selectors": {
+    "vendorDropdownContainerText": "Vendor Select Vendor 1 HSS",
+    "statusDropdownContainerText": "Status Select Status Active",
+    "userTypeDropdownContainerText": "User Type Select Status",
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i"
+  },
+  "values": {
+    "knownUsername": "qasecureconnect@gmail.com",
+    "knownFirstName": "qa",
+    "knownLastName": "tester",
+    "knownGroupIdLower": "g00014",
+    "knownGroupIdUpper": "G00014",
+    "vendorOption": "78: T",
+    "statusActiveOption": "1: 1",
+    "userTypeVendorOption": "2: VENDOR",
+    "userTypeAccountOption": "3: ACCOUNT",
+    "userTypeBillingGroupOption": "4: BILLING_GROUP"
+  },
+  "edgeCases": {
+    "empty": "",
+    "whitespace": "   ",
+    "invalidLogin": "no-user-99999@invalid.test",
+    "invalidGroupId": "Z99999"
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "searchMs": 20000
+  }
+}
