@@ -1,0 +1,83 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "editUserInfo": "Edit User Info",
+    "save": "Save",
+    "logout": "Logout",
+    "login": "Log In",
+    "addAccountRegex": "add account"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "placeholders": {
+    "loginPrimary": "Enter Login",
+    "loginFallback": "Enter Username",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name"
+  },
+  "accountLabels": {
+    "showInactiveOnly": "Show Inactive Only"
+  },
+  "accountPlaceholders": {
+    "accountName": "Enter Account Name"
+  },
+  "claimsPlaceholders": {
+    "claimId": "Enter Claim ID"
+  },
+  "enrollmentPlaceholders": {
+    "groupId": "Enter Group ID"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1
+  },
+  "users": {
+    "accountLevelRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "vendorLevelRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "billingGroupRestricted": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "accounts": {
+    "allowedAccountA": "VMCTEST",
+    "allowedAccountB": "000VMTEST",
+    "disallowedAccountC": "E2ETESTACCOUNT01"
+  },
+  "groups": {
+    "allowedGroup": "G00014",
+    "disallowedGroup": "G99999"
+  },
+  "moduleLabels": {
+    "groupEnrollmentsNav": "Group Enrollments",
+    "processPaymentsNav": "Process Payments",
+    "viewPaymentsNav": "View Payments",
+    "paymentAnalyticsNav": "Payment Analytics"
+  },
+  "messages": {
+    "duplicateAccountRegex": "already exists|duplicate|already assigned|already added",
+    "accountGuidanceRegex": "account name|account number"
+  },
+  "values": {
+    "targetUsername": "qasecureconnect@gmail.com",
+    "partialAccountSearch": "VM",
+    "accountNameFilterToken": "Mante",
+    "allowedClaimId": "",
+    "disallowedClaimId": "",
+    "maxRowsToInspect": 30
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "saveMs": 1800,
+    "retryMs": 500
+  }
+}

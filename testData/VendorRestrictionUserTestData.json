@@ -1,0 +1,89 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "editUserInfo": "Edit User Info",
+    "save": "Save",
+    "logout": "Logout",
+    "login": "Log In",
+    "addVendorRegex": "add vendor"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "placeholders": {
+    "loginPrimary": "Enter Login",
+    "loginFallback": "Enter Username",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name"
+  },
+  "accountLabels": {
+    "showInactiveOnly": "Show Inactive Only"
+  },
+  "accountPlaceholders": {
+    "accountName": "Enter Account Name"
+  },
+  "claimsPlaceholders": {
+    "claimId": "Enter Claim ID"
+  },
+  "enrollmentPlaceholders": {
+    "groupId": "Enter Group ID"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1,
+    "vendorDropdownContainerText": "Vendor",
+    "apiCaptureUrlRegex": "claims|accounts|analytics|payments|provider|enrollment"
+  },
+  "users": {
+    "vendorRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "accountRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "billingGroupRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "deactivatedRestricted": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "vendors": {
+    "allowedVendorA": "VENDORA",
+    "allowedVendorB": "VENDORB",
+    "disallowedVendor": "VENDORZ"
+  },
+  "groups": {
+    "allowedGroup": "G00014",
+    "disallowedGroup": "G99999"
+  },
+  "moduleLabels": {
+    "groupEnrollmentsNav": "Group Enrollments",
+    "viewPaymentsNav": "View Payments",
+    "paymentAnalyticsNav": "Payment Analytics"
+  },
+  "messages": {
+    "duplicateVendorRegex": "already exists|duplicate|already assigned|already added"
+  },
+  "values": {
+    "targetUsername": "qasecureconnect@gmail.com",
+    "accountNameFilterToken": "Mante",
+    "allowedClaimId": "",
+    "disallowedClaimId": "",
+    "maxRowsToInspect": 30,
+    "maxApiBodyCaptureLength": 6000
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "saveMs": 1800,
+    "retryMs": 500,
+    "stateChangeMs": 1800,
+    "apiCaptureMs": 1200
+  }
+}

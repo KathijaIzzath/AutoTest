@@ -1,0 +1,111 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "editUserInfo": "Edit User Info",
+    "save": "Save",
+    "logout": "Logout",
+    "login": "Log In",
+    "disableUser": "Disable User",
+    "enableUser": "Enable User",
+    "vendorScopeRegex": "vendor",
+    "accountScopeRegex": "account",
+    "groupScopeRegex": "group",
+    "claimsCorrectLabel": "Claims Correct",
+    "analyticsLabel": "Analytics"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "placeholders": {
+    "loginPrimary": "Enter Login",
+    "loginFallback": "Enter Username",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name",
+    "groupId": "Enter Group ID"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1,
+    "vendorDropdownContainerText": "Vendor",
+    "userTypeDropdownContainerText": "User Type",
+    "apiCaptureUrlRegex": "claims|accounts|payments|analytics|enrollment|provider|financial"
+  },
+  "users": {
+    "secureConnectActive": {
+      "username": "",
+      "password": ""
+    },
+    "secureConnectRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "restrictedAccount": {
+      "username": "",
+      "password": ""
+    },
+    "restrictedVendor": {
+      "username": "",
+      "password": ""
+    },
+    "billingGroup": {
+      "username": "",
+      "password": ""
+    },
+    "inactiveUser": {
+      "username": "",
+      "password": ""
+    },
+    "claimsCorrectUser": {
+      "username": "",
+      "password": ""
+    },
+    "noClaimsCorrect": {
+      "username": "",
+      "password": ""
+    },
+    "withAnalytics": {
+      "username": "",
+      "password": ""
+    },
+    "noAnalytics": {
+      "username": "",
+      "password": ""
+    },
+    "noAchPermission": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "scopes": {
+    "allowedVendor": "VENDORA",
+    "disallowedVendor": "VENDORZ",
+    "allowedAccount": "VMCTEST",
+    "disallowedAccount": "E2ETESTACCOUNT01",
+    "allowedGroup": "G00014",
+    "disallowedGroup": "G99999",
+    "removableAccount": "000VMTEST"
+  },
+  "moduleLabels": {
+    "groupEnrollmentsNav": "Group Enrollments",
+    "viewPaymentsNav": "View Payments",
+    "paymentAnalyticsNav": "Payment Analytics"
+  },
+  "messages": {
+    "duplicateTokenRegex": "already exists|duplicate|already assigned|already added",
+    "accountGuidanceRegex": "account name|account number"
+  },
+  "values": {
+    "targetUsername": "qasecureconnect@gmail.com",
+    "maxRowsToInspect": 30,
+    "maxApiBodyCaptureLength": 7000
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "saveMs": 1800,
+    "retryMs": 500,
+    "stateChangeMs": 1800,
+    "apiCaptureMs": 1200
+  }
+}

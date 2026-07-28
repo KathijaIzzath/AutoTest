@@ -25,6 +25,60 @@ interface ModuleEntry {
   durationMs: number;
 }
 
+interface ReporterEmailConfig {
+  sender: string;
+  recipients: string[];
+  subject: string;
+  reportOutputDir?: string;
+}
+
+function defaultEmailConfig(baseDir: string): ReporterEmailConfig {
+  return {
+    sender: 'noreply@localhost',
+    recipients: [],
+    subject: 'AutoTest Summary - {date}',
+    reportOutputDir: path.join(baseDir, 'playwright-report'),
+  };
+}
+
+function resolveEmailConfigPath(rootDir: string): string | null {
+  const candidates = [
+    path.join(rootDir, 'scripts', 'email-config.json'),
+    path.join(rootDir, '..', 'scripts', 'email-config.json'),
+    path.join(process.cwd(), 'scripts', 'email-config.json'),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return path.resolve(candidate);
+    }
+  }
+
+  return null;
+}
+
+function loadEmailConfig(rootDir: string): ReporterEmailConfig {
+  const configPath = resolveEmailConfigPath(rootDir);
+  if (!configPath) {
+    console.warn('[summary-reporter] email-config.json not found. Falling back to defaults and skipping email delivery.');
+    return defaultEmailConfig(process.cwd());
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as Partial<ReporterEmailConfig>;
+    const fallback = defaultEmailConfig(path.dirname(path.dirname(configPath)));
+    return {
+      sender: parsed.sender ?? fallback.sender,
+      recipients: Array.isArray(parsed.recipients) ? parsed.recipients : fallback.recipients,
+      subject: parsed.subject ?? fallback.subject,
+      reportOutputDir: parsed.reportOutputDir ?? fallback.reportOutputDir,
+    };
+  } catch (error) {
+    console.warn('[summary-reporter] Failed to parse email-config.json. Falling back to defaults and skipping email delivery.', error);
+    return defaultEmailConfig(process.cwd());
+  }
+}
+
 function msToHuman(ms: number): string {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
@@ -201,14 +255,13 @@ class SummaryEmailReporter implements Reporter {
     const modules = Array.from(this.modules.values()).sort((a, b) => a.name.localeCompare(b.name));
     const html = buildHtml(modules, result.status, runDate);
 
-    // Load email config
-    const configPath = path.join(this.rootDir, 'scripts', 'email-config.json');
-    const emailConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    // Load email config with resilient path lookup so missing config never fails test runs.
+    const emailConfig = loadEmailConfig(this.rootDir);
 
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10);
     const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '-');
-    const subject = (emailConfig.subject as string).replace('{date}', dateStr);
+    const subject = emailConfig.subject.replace('{date}', dateStr);
 
     // Always save HTML report to the configured output folder
     const reportDir: string = emailConfig.reportOutputDir ?? this.rootDir;
@@ -227,6 +280,11 @@ class SummaryEmailReporter implements Reporter {
 
     if (!smtpHost) {
       console.warn('[summary-reporter] SMTP_HOST not set — skipping email. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS environment variables.');
+      return;
+    }
+
+    if (!emailConfig.recipients.length) {
+      console.warn('[summary-reporter] No recipients configured — skipping email delivery.');
       return;
     }
 
@@ -252,11 +310,11 @@ class SummaryEmailReporter implements Reporter {
     try {
       await transporter.sendMail({
         from: emailConfig.sender,
-        to: (emailConfig.recipients as string[]).join(', '),
+        to: emailConfig.recipients.join(', '),
         subject,
         html,
       });
-      console.log(`[summary-reporter] Email sent to: ${(emailConfig.recipients as string[]).join(', ')}`);
+      console.log(`[summary-reporter] Email sent to: ${emailConfig.recipients.join(', ')}`);
     } catch (err) {
       console.error('[summary-reporter] Failed to send email:', err);
       console.log(`[summary-reporter] Report is still available at: ${reportPath}`);

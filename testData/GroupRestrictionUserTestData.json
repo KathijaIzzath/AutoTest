@@ -1,0 +1,92 @@
+{
+  "labels": {
+    "usersTitle": "Users",
+    "applyFilter": "Apply Filter",
+    "disableUser": "Disable User",
+    "enableUser": "Enable User",
+    "editUserInfo": "Edit User Info",
+    "save": "Save",
+    "logout": "Logout",
+    "login": "Log In"
+  },
+  "placeholders": {
+    "loginPrimary": "Enter Login",
+    "loginFallback": "Enter Username",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name",
+    "groupId": "Enter Group ID"
+  },
+  "selectors": {
+    "vendorDropdownContainerText": "Vendor",
+    "statusDropdownContainerText": "Status",
+    "userTypeDropdownContainerText": "User Type",
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "dashboardGroupSelect": "select",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1
+  },
+  "values": {
+    "targetUsername": "qasecureconnect@gmail.com",
+    "targetFirstNameFilter": "qa",
+    "knownGroupIdLower": "g00014",
+    "knownGroupIdUpper": "G00014",
+    "statusActiveOption": "1: 1",
+    "statusInactiveOption": "2: 0"
+  },
+  "users": {
+    "singleGroupUser": {
+      "username": "",
+      "password": ""
+    },
+    "multiGroupUser": {
+      "username": "",
+      "password": ""
+    },
+    "billingGroupUser": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "groups": {
+    "allowedGroup1": "G00014",
+    "allowedGroup2": "G00017",
+    "blockedGroup": "G99999",
+    "deactivatedGroup": "G99998"
+  },
+  "moduleLabels": {
+    "groupEnrollmentsNav": "Group Enrollments",
+    "processPaymentsNav": "Process Payments",
+    "viewPaymentsNav": "View Payments",
+    "claimsHeader": "Claims",
+    "accountsHeader": "Accounts",
+    "providerGroupsHeader": "Provider Groups"
+  },
+  "messages": {
+    "duplicateGroupRegex": "already exists|duplicate|already assigned|already added"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "edgeCases": {
+    "empty": "",
+    "whitespace": "   ",
+    "invalidLogin": "no-user-99999@invalid.test",
+    "invalidGroupId": "Z99999"
+  },
+  "status": {
+    "inactiveTextRegex": "not active|deactivated|inactive|disabled",
+    "inactiveTitleRegex": "not active|deactivated|inactive|disabled",
+    "activeTextRegex": "active",
+    "activeTitleRegex": "active",
+    "colorDeltaThreshold": 20
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "stateChangeMs": 1800,
+    "retryMs": 500,
+    "saveMs": 1800,
+    "searchMs": 12000
+  }
+}
