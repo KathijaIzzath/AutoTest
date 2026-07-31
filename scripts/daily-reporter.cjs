@@ -12,6 +12,22 @@
 const fs   = require('fs');
 const path = require('path');
 
+const LOCAL_DESKTOP_OUTPUT_DIR = 'C:\\Users\\kmohamed\\Desktop\\Daily Test Execution Summary';
+
+function sanitizeTag(value, fallback) {
+  const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  return normalized || fallback;
+}
+
+function resolveOutputDir(rootDir) {
+  const configured = process.env.DAILY_REPORT_DIR?.trim();
+  if (configured) {
+    return path.isAbsolute(configured) ? configured : path.resolve(rootDir, configured);
+  }
+
+  return LOCAL_DESKTOP_OUTPUT_DIR;
+}
+
 // ── helpers ────────────────────────────────────────────────────────────────
 
 function msToHuman(ms) {
@@ -178,14 +194,24 @@ class DailyReporter {
     if (this._modules.size === 0) return;
 
     try {
-      const OUTPUT_DIR = 'C:\\Users\\kmohamed\\Desktop\\Daily Test Execution Summary';
+      const OUTPUT_DIR = resolveOutputDir(this._rootDir);
       fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-      // One file per day – overwrite if same day
+      const scopeTag = sanitizeTag(process.env.AUTOTEST_SCOPE, 'adhoc');
       const dateStr  = new Date().toISOString().slice(0, 10);
-      const outPath  = path.join(OUTPUT_DIR, `test-summary-${dateStr}.html`);
+      const timeStr  = new Date().toTimeString().slice(0, 8).replace(/:/g, '-');
       const html     = buildHtml(this._modules, result.status);
-      fs.writeFileSync(outPath, html, 'utf-8');
+
+      // Always preserve an immutable per-run report.
+      const scopedPath = path.join(OUTPUT_DIR, `test-summary-${dateStr}_${timeStr}-${scopeTag}.html`);
+      fs.writeFileSync(scopedPath, html, 'utf-8');
+
+      // Write the stable date-only rollup only for explicit daily full-suite runs.
+      const shouldWriteDailyRollup = process.env.AUTOTEST_DAILY_ROLLUP === '1';
+      const dailyRollupPath = path.join(OUTPUT_DIR, `test-summary-${dateStr}.html`);
+      if (shouldWriteDailyRollup) {
+        fs.writeFileSync(dailyRollupPath, html, 'utf-8');
+      }
 
       // Count totals for console log
       let passed = 0, failed = 0, skipped = 0, total = 0;
@@ -198,7 +224,12 @@ class DailyReporter {
         }
       }
 
-      console.log(`[daily-report] ✓ Report saved: ${outPath}`);
+      console.log(`[daily-report] ✓ Scoped report saved: ${scopedPath}`);
+      if (shouldWriteDailyRollup) {
+        console.log(`[daily-report] ✓ Daily rollup saved: ${dailyRollupPath}`);
+      } else {
+        console.log('[daily-report] ℹ Daily rollup not written (AUTOTEST_DAILY_ROLLUP != 1).');
+      }
       console.log(`[daily-report]   ${total} tests — ${passed} passed | ${failed} failed | ${skipped} skipped`);
     } catch (err) {
       console.warn('[daily-report] Failed to write Desktop report:', err.message);

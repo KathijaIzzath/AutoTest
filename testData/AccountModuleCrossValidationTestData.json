@@ -1,0 +1,87 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "addAccount": "Add Account",
+    "createNewAccount": "Create New Account",
+    "editAccount": "Edit Account",
+    "deactivateAccount": "Deactivate Account",
+    "activateAccount": "Activate Account",
+    "showInactiveOnly": "Show Inactive Only",
+    "save": "Save",
+    "logout": "Logout",
+    "login": "Log In"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "placeholders": {
+    "accountNumber": "Enter Account Number",
+    "accountName": "Enter Account Name",
+    "city": "Enter City",
+    "npi": "Enter NPI",
+    "providerGroupId": "Enter Provider Group ID",
+    "providerId": "Enter Provider ID",
+    "loginPrimary": "Enter Login",
+    "loginFallback": "Enter Username",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name",
+    "groupId": "Enter Group ID"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1,
+    "vendorFilterContainerText": "Vendor",
+    "stateFilterContainer": "states"
+  },
+  "users": {
+    "targetUser": {
+      "username": "qasecureconnect@gmail.com"
+    },
+    "accountRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "vendorRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "billingGroupRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "inactiveUser": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "scopes": {
+    "allowedVendor": "PULSE",
+    "allowedAccountA": "VMCTEST",
+    "allowedAccountB": "000VMTEST",
+    "disallowedSiblingAccount": "ACPM-4414",
+    "allowedGroup": "G00014",
+    "disallowedGroup": "G31192"
+  },
+  "modules": {
+    "claims": "Claims",
+    "users": "Users",
+    "providerGroups": "Providers Group",
+    "groupEnrollments": "Group Enrollments",
+    "era": "ERA",
+    "dashboard": "Dashboard"
+  },
+  "values": {
+    "accountSearchName": "LOUDOUN MEDICAL GROUP",
+    "accountSearchNumber": "LOU001",
+    "partialAccountSearch": "LOU",
+    "maxRowsToInspect": 30,
+    "allowStateMutation": false
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "saveMs": 1600,
+    "retryMs": 500
+  }
+}

@@ -13,6 +13,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DAILY_REPORT_DIR: playwright-report/daily-summary
 
     steps:
       - name: Checkout
@@ -33,8 +35,21 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Run Playwright tests (scheduled daily full suite)
+        if: github.event_name == 'schedule'
+        run: npm run test:daily:full
+
       - name: Run Playwright tests (full suite)
-        run: npm test
+        if: github.event_name != 'schedule'
+        run: npm run test:full
+
+      - name: Upload daily summary HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-test-summary
+          path: playwright-report/daily-summary/
+          if-no-files-found: ignore
 
       - name: Upload Playwright report
         if: always()

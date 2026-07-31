@@ -17,6 +17,7 @@ const runTime = isoNow.slice(11, 19).replace(/:/g, '-');
 const runId = `${runDate}_${runTime}-pid${process.pid}`;
 const runOutputDir = `test-results/run-${runId}`;
 const blobOutputFile = `blob-report/${runDate}/report-${runId}.zip`;
+const includeSummaryEmailReporter = process.env.AUTOTEST_ENABLE_SUMMARY_EMAIL === '1';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -42,7 +43,7 @@ export default defineConfig({
     ['list'],
     // Generates the Desktop daily summary HTML after every run
     ['./scripts/daily-reporter.cjs'],
-    ['./scripts/summary-reporter.ts'],
+    ...(includeSummaryEmailReporter ? [['./scripts/summary-reporter.ts'] as const] : []),
   ],
   globalSetup: require.resolve('./global-setup'),
   globalTeardown: require.resolve('./global-teardown'),
