@@ -22,6 +22,7 @@ const blobOutputFile = `blob-report/${runDate}/report-${runId}.zip`;
  */
 export default defineConfig({
   timeout: testConfig.globalTimeoutMs,
+  globalTimeout: 55 * 60 * 1000, // 55 minutes — keeps suite within the 60-min CI job limit
   expect: { timeout: 15000 },
   testDir: './tests',
   testMatch: ['**/*.spec.ts', '**/*_spec.ts'],
@@ -33,8 +34,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Run up to 4 workers in parallel on CI to speed up the suite */
+  workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
