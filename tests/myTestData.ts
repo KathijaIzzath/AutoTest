@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import * as userData from '../testData/UserInfo.json';
+import userData from '../testData/user-info';
 import LoginPage from '../testData/LoginPage';
 
 async function isDashboardReady(page: any): Promise<boolean> {

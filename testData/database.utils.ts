@@ -519,17 +519,14 @@ export async function fetchEraSummaryTotals(
 import { Client, QueryResult, Pool } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
-import userData from '../testData/UserInfo.json';
+import userData from './user-info';
+import { getDbConfig, getTestEnv } from './env-config';
 import { AccountRecord } from './AccountIntf';
 import { BillingIdsRecord } from './BillingIdsIntf';
 
-const dbConfig = {
-  user: 'sc_app',
-  host: 'Qnk1scltdb02.ict.pulseinc.com',
-  database: 'scltdb2',
-  password: 'xyP,xii78',
-  port: 5432,
-};
+function activeDbConfig() {
+  return getDbConfig();
+}
 
 /**
  * Execute a database query with optional parameters
@@ -538,14 +535,14 @@ const dbConfig = {
  * @returns Array of query results
  */
 export async function executeQuery(querys: string, params?: any[]) {
-  const client = new Client(dbConfig);
+  const client = new Client(activeDbConfig());
   try {
     await client.connect();
     const result = await client.query(querys, params);
     await client.end();
     return result.rows;
   } catch (error) {
-    console.error('Database query error:', error);
+    console.error(`[database] Query failed (TEST_ENV=${getTestEnv()}):`, error);
     await client.end();
     throw error;
   }
@@ -555,10 +552,10 @@ export async function executeQuery(querys: string, params?: any[]) {
  * Query and store account information from database
  */
 async function queryAndStoreAccount() {
-  const client = new Client(dbConfig);
+  const client = new Client(activeDbConfig());
   try {
     await client.connect();
-    console.log('Connected to the database.');
+    console.log(`Connected to the database (TEST_ENV=${getTestEnv()}).`);
 
     const userDataMap = new Map<number, AccountRecord>();
 

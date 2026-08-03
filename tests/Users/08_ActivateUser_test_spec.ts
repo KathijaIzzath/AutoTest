@@ -5,7 +5,7 @@ import {
   fetchAnyInactiveUserClient,
   fetchUserClientByUsername,
 } from '../../testData/database.utils';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/ActivateUserTestData.json';
 
 let pageErrors: string[] = [];

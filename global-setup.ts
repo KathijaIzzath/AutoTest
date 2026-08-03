@@ -1,7 +1,9 @@
 import { chromium, type Page } from '@playwright/test';
 import * as fs from 'fs';
-import * as userData from './testData/UserInfo.json';
+import userData from './testData/user-info';
 import { executeQuery } from './testData/database.utils';
+import { getDbConfig, getLoginUrl, getTestEnv, logActiveEnvironment } from './testData/env-config';
+import { Client } from 'pg';
 
 const INFRA_STATUS_PATH = 'test-results/infra-status.json';
 
@@ -216,8 +218,37 @@ async function verifyAuthHealth(page: Page, url: string): Promise<{ healthy: boo
   return { healthy: false, checks, lastError };
 }
 
+async function verifyDbConnectivity(): Promise<{ ok: boolean; message: string }> {
+  const env = getTestEnv();
+  const cfg = getDbConfig(env);
+  const client = new Client(cfg);
+  try {
+    await client.connect();
+    const result = await client.query('SELECT current_database() AS db, NOW() AS now');
+    await client.end();
+    const row = result.rows[0] ?? {};
+    return {
+      ok: true,
+      message: `Connected to ${cfg.user}@${cfg.host}:${cfg.port}/${row.db ?? cfg.database} at ${row.now ?? 'unknown time'}`,
+    };
+  } catch (error) {
+    try { await client.end(); } catch { /* ignore */ }
+    const reason = (error as Error).message;
+    let hint = '';
+    if (env === 'staging') {
+      hint = ' Staging DB host is pnk1scstgaio.ict.pulseinc.com:5432 — verify VPN/network access to the staging database, then retry.';
+    }
+    return {
+      ok: false,
+      message: `DB connectivity failed for TEST_ENV=${env} (${cfg.host}:${cfg.port}/${cfg.database}): ${reason}.${hint}`,
+    };
+  }
+}
+
 async function globalSetup() {
+  logActiveEnvironment();
   const failOnAuthUnavailable = process.env.FAIL_ON_AUTH_UNAVAILABLE === 'true';
+  const loginUrl = getLoginUrl();
   const infraStatus: InfraStatus = {
     generatedAt: new Date().toISOString(),
     failOnAuthUnavailable,
@@ -235,6 +266,18 @@ async function globalSetup() {
     warnings: [],
   };
 
+  // ── Step 0: Verify DB connectivity for the active environment ───────────────
+  const dbConnectivity = await verifyDbConnectivity();
+  if (!dbConnectivity.ok) {
+    infraStatus.db.status = 'warning';
+    infraStatus.db.warnings.push(dbConnectivity.message);
+    infraStatus.warnings.push(`DB: ${dbConnectivity.message}`);
+    persistInfraStatus(infraStatus);
+    console.error(`[global-setup] ${dbConnectivity.message}`);
+    throw new Error(dbConnectivity.message);
+  }
+  console.log(`[global-setup] ✓ ${dbConnectivity.message}`);
+
   // ── Step 1: Run all DB prerequisites first ───────────────────────────────────
   const dbResult = await runDbPrerequisites();
   if (dbResult.warnings.length > 0) {
@@ -246,9 +289,9 @@ async function globalSetup() {
   // ── Step 2: Browser login + storageState ─────────────────────────────────────
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  console.log('Global setup: opening admin login page');
+  console.log(`Global setup: opening admin login page [${getTestEnv()}]: ${loginUrl}`);
 
-  const authHealth = await verifyAuthHealth(page, userData.admin.url);
+  const authHealth = await verifyAuthHealth(page, loginUrl);
   infraStatus.auth.healthChecks = authHealth.checks;
 
   if (!authHealth.healthy) {
@@ -282,7 +325,7 @@ async function globalSetup() {
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     infraStatus.auth.attempts = attempt;
     try {
-      await page.goto(userData.admin.url, { waitUntil: 'domcontentloaded' });
+      await page.goto(loginUrl, { waitUntil: 'domcontentloaded' });
       await submitAdminLogin(page);
       ready = await waitForDashboardReady(page);
       if (ready) {
@@ -318,7 +361,7 @@ async function globalSetup() {
   }
 
   infraStatus.auth.status = 'ok';
-  infraStatus.auth.message = `Login succeeded after ${infraStatus.auth.attempts} attempt(s).`;
+  infraStatus.auth.message = `Login succeeded after ${infraStatus.auth.attempts} attempt(s) on ${getTestEnv()}.`;
 
   await page.context().storageState({ path: 'storageState.json' });
 

@@ -12,7 +12,10 @@
     "qadashboardUrl": "https://qnk1scltweb02.pulseinc.com/SecureConnectWeb/dashboard/home"
   },
   "staginguser": {
-    "stagingurl": "https://scdemo.pulseinc.com/SecureConnectWeb/login"
+    "username": "scadmin",
+    "password": "Scadmin123!",
+    "stagingurl": "https://scdemo.pulseinc.com/SecureConnectWeb/login",
+    "stagingDashboardUrl": "https://scdemo.pulseinc.com/SecureConnectWeb/dashboard/home"
   },
   "accountUniqueIncNum": "01",
   "Useraddress": {

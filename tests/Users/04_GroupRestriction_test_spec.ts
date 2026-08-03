@@ -11,7 +11,7 @@ import {
 	fetchUserClientByUsername,
 	fetchUserClientsByFilters,
 } from '../../testData/database.utils';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/GroupRestrictionUserTestData.json';
 
 let pageErrors: string[] = [];

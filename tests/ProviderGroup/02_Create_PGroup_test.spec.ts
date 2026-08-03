@@ -1,6 +1,6 @@
 import { test, expect } from '../myTestData';
 import { Page } from '@playwright/test';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/CreatePGroupTestData.json';
 import { navigateToAccounts } from '../framework/navigation.helper';
 

@@ -2,7 +2,7 @@ import { test, expect } from '../myTestData';
 import type { Page, Response } from '@playwright/test';
 import { navigateToUsers } from '../framework/navigation.helper';
 import { fetchUserClientByUsername } from '../../testData/database.utils';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/DeactivateUserTestData.json';
 
 let pageErrors: string[] = [];

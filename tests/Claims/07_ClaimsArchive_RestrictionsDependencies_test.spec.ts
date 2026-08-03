@@ -6,7 +6,7 @@ import {
   navigateToClaimsDashboard,
   navigateToProviderGroups,
 } from '../framework/navigation.helper';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import LoginPage from '../../testData/LoginPage';
 import * as d from '../../testData/ClaimsArchiveRestrictionsDependenciesTestData.json';
 

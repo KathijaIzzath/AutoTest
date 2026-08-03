@@ -8,14 +8,27 @@ on:
   schedule:
     # Runs daily at 7:30 PM Central (CDT = UTC-5 → 00:30 UTC)
     # Note: during CST (UTC-6) this is 6:30 PM local; adjust cron if needed.
+    # Scheduled runs are always locked to QA (qnk1scltweb02).
     - cron: '30 0 * * *'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (daily cron always uses qa)'
+        required: true
+        default: 'qa'
+        type: choice
+        options:
+          - qa
+          - staging
 
 jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
+      # Schedule/push/PR always QA. Manual workflow_dispatch may select staging.
+      TEST_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'qa' }}
+      FORCE_TEST_ENV: ${{ github.event_name == 'schedule' && 'qa' || '' }}
       REPORT_OUTPUT_DIR: playwright-report/daily-summary
       FAIL_ON_AUTH_UNAVAILABLE: 'false'
       FLAKE_RATE_THRESHOLD: '0.05'

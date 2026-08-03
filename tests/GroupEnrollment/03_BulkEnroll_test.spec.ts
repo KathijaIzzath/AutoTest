@@ -1,6 +1,6 @@
 import { test, expect } from '../myTestData';
 import { Page } from '@playwright/test';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/BulkEnrollTestData.json';
 import { existsBulkGroupEnrollment, fetchNPIAndTaxIDForGroupId, fetchProviderGroupById, getTodaysDateWithFullYear } from '../../testData/database.utils';
 // Adding Bulk Group enrollment for groupid G00016
