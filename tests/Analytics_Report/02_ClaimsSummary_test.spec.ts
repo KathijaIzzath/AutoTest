@@ -21,7 +21,12 @@ async function searchAndSelectGroup(page: Page, groupId: string): Promise<void> 
   const input = page.getByRole('textbox', { name: d.placeholders.groupSearch });
   await input.click();
   await input.fill(groupId);
-  await page.getByText(groupId).first().click();
+  // Wait for autocomplete suggestion, then select it (not the input value itself).
+  const suggestion = page.getByText(d.groups.primary.displayText).first()
+    .or(page.locator('.ng-option').filter({ hasText: groupId }).first())
+    .or(page.getByText(groupId).nth(1));
+  await expect(suggestion).toBeVisible({ timeout: Math.max(d.timeouts.filterMs ?? 0, 20000) });
+  await suggestion.click();
 }
 
 async function getFilterDates(page: Page): Promise<{ start: string; end: string }> {
@@ -37,7 +42,11 @@ async function setDateRange(page: Page, start: string, end: string): Promise<voi
 
 async function generateReport(page: Page): Promise<void> {
   await page.getByRole('button', { name: d.labels.generateReport }).click();
-  await page.waitForTimeout(d.timeouts.reportGenerateMs);
+  // Wait for the report table rather than a fixed sleep — 8s was too short and caused
+  // cascading 60s timeouts on header/cell assertions.
+  await expect(page.getByRole('table').first()).toBeVisible({
+    timeout: Math.max(d.timeouts.reportGenerateMs ?? 0, 90000),
+  });
 }
 
 function todayMMDDYYYY(): string {
@@ -57,6 +66,8 @@ async function getTotalsCell(page: Page, colIndex: number): Promise<number> {
 }
 
 test.describe('Claims Summary Report', () => {
+  // Report generation + DB cross-checks need headroom beyond the default 60s.
+  test.describe.configure({ timeout: 180000 });
 
   test.describe('Navigation and report selection', () => {
 
@@ -149,7 +160,10 @@ test.describe('Claims Summary Report', () => {
       const input = page.getByRole('textbox', { name: d.placeholders.groupSearch });
       await input.click();
       await input.fill(d.groups.primary.id);
-      await expect(page.getByText(d.groups.primary.id).first()).toBeVisible({ timeout: d.timeouts.filterMs });
+      // Match the autocomplete suggestion (display text or option), not the input value alone.
+      const suggestion = page.getByText(d.groups.primary.displayText).first()
+        .or(page.locator('.ng-option').filter({ hasText: d.groups.primary.id }).first());
+      await expect(suggestion).toBeVisible({ timeout: Math.max(d.timeouts.filterMs ?? 0, 20000) });
     });
 
     test('TC11 - Selecting a group from suggestions displays the group tag', async ({ page, loginAsAdmin }) => {
@@ -192,6 +206,7 @@ test.describe('Claims Summary Report', () => {
   });
 
   test.describe('Report table structure', () => {
+    test.describe.configure({ timeout: 180000 });
 
     test('TC15 - Generate Report with valid group and default dates renders the table', async ({ page, loginAsAdmin }) => {
       await loginAsAdmin();

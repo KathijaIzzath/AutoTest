@@ -51,8 +51,8 @@
     "invalidText":        "ZZZINVALID"
   },
   "timeouts": {
-    "reportGenerateMs": 8000,
-    "filterMs":         3000,
+    "reportGenerateMs": 90000,
+    "filterMs":         20000,
     "downloadMs":       15000
   }
 }

@@ -2,7 +2,7 @@
  * generate-daily-report.js
  *
  * Reads Playwright's test-results-latest.json and writes a daily HTML summary
- * to C:\Users\kmohamed\Desktop\Daily Test Execution Summary\
+ * to REPORT_OUTPUT_DIR/daily-rollup.
  *
  * Columns: Module | Test Name | Status | Duration
  * One file per day (date-only filename) — re-run overwrites the same day's file.
@@ -15,7 +15,65 @@ const path = require('path');
 
 const ROOT        = path.resolve(__dirname, '..');
 const JSON_SOURCE = path.join(ROOT, 'test-results-latest.json');
-const OUTPUT_DIR  = 'C:\\Users\\kmohamed\\Desktop\\Daily Test Execution Summary';
+
+function readConfiguredOutputDir() {
+  try {
+    const configPath = path.join(ROOT, 'scripts', 'email-config.json');
+    if (!fs.existsSync(configPath)) return '';
+    const parsed = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    return String(parsed.reportOutputDir || '').trim();
+  } catch (err) {
+    console.warn('[daily-report] Failed to read email-config.json reportOutputDir:', err.message);
+    return '';
+  }
+}
+
+function resolveOutputDir() {
+  // Priority: REPORT_OUTPUT_DIR env (CI) → email-config.json → local default
+  const fromEnv = (process.env.REPORT_OUTPUT_DIR || '').trim();
+  const fromConfig = readConfiguredOutputDir();
+  const chosen = fromEnv || fromConfig;
+  const base = chosen
+    ? (path.isAbsolute(chosen) ? chosen : path.resolve(ROOT, chosen))
+    : path.join(ROOT, 'playwright-report', 'daily-summary');
+  return path.join(base, 'daily-rollup');
+}
+
+const OUTPUT_DIR = resolveOutputDir();
+
+function readInfraStatus() {
+  const infraPath = path.join(ROOT, 'test-results', 'infra-status.json');
+  if (!fs.existsSync(infraPath)) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(fs.readFileSync(infraPath, 'utf-8'));
+  } catch (err) {
+    console.warn('[daily-report] Failed to read infra-status.json:', err.message);
+    return {};
+  }
+}
+
+function buildInfraBanner(infraStatus) {
+  const authStatus = infraStatus?.auth?.status || 'unknown';
+  const dbStatus = infraStatus?.db?.status || 'unknown';
+  const warnings = Array.isArray(infraStatus?.warnings) ? infraStatus.warnings : [];
+  const authColor = authStatus === 'ok' ? '#22c55e' : authStatus === 'degraded' ? '#f59e0b' : '#ef4444';
+  const dbColor = dbStatus === 'ok' ? '#22c55e' : dbStatus === 'warning' ? '#f59e0b' : '#6b7280';
+  const authMessage = (infraStatus?.auth?.message || 'No auth status was captured.').replace(/</g, '&lt;');
+  const warningsHtml = warnings.length > 0
+    ? `<div style="margin-top:8px;color:#991b1b;font-size:12px">Infra warnings: ${warnings.map(w => String(w).replace(/</g, '&lt;')).join(' | ')}</div>`
+    : '<div style="margin-top:8px;color:#166534;font-size:12px">No infrastructure warnings reported.</div>';
+
+  return `
+    <div style="padding:12px 32px;background:#f8fafc;border-bottom:1px solid #e2e8f0">
+      <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${authColor};color:#fff;font-size:12px;font-weight:700">Auth: ${String(authStatus).toUpperCase()}</span>
+      <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${dbColor};color:#fff;font-size:12px;font-weight:700;margin-left:8px">DB: ${String(dbStatus).toUpperCase()}</span>
+      <div style="margin-top:8px;color:#334155;font-size:12px">${authMessage}</div>
+      ${warningsHtml}
+    </div>`;
+}
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -100,7 +158,7 @@ function loadResults() {
 
 // ── build HTML ─────────────────────────────────────────────────────────────
 
-function buildHtml(tests, stats) {
+function buildHtml(tests, stats, infraStatus) {
   const now      = new Date();
   const runDate  = now.toLocaleString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -163,9 +221,11 @@ function buildHtml(tests, stats) {
   <div style="max-width:900px;margin:32px auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden">
 
     <div style="background:#1e293b;padding:24px 32px">
-      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest Daily Execution Summary</h1>
+      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest Daily Rollup Summary</h1>
       <p style="margin:4px 0 0;color:#94a3b8;font-size:14px">${runDate}</p>
     </div>
+
+    ${buildInfraBanner(infraStatus)}
 
     <div style="background:${headerBg};padding:14px 32px">
       <span style="color:#fff;font-size:16px;font-weight:700">Overall Result: ${overall}</span>
@@ -212,10 +272,11 @@ function run() {
 
   // One file per calendar day – re-run on the same day overwrites it
   const dateStr   = new Date().toISOString().slice(0, 10);
-  const fileName  = `test-summary-${dateStr}.html`;
+  const fileName  = `daily-rollup-${dateStr}.html`;
   const outPath   = path.join(OUTPUT_DIR, fileName);
 
-  const html = buildHtml(data.tests, data.stats);
+  const infraStatus = readInfraStatus();
+  const html = buildHtml(data.tests, data.stats, infraStatus);
   fs.writeFileSync(outPath, html, 'utf-8');
 
   const { passed, failed, skipped } = data.tests.reduce((acc, t) => {

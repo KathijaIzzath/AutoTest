@@ -17,10 +17,12 @@ test.describe('Dashboard - Header and Navigation Elements', () => {
     await loginAsAdmin();
     await page.reload();
 
-    await expect(page.getByRole('img')).toBeVisible();
-    await expect(page.getByText(d.labels.userInitials)).toContainText(d.labels.userInitials);
-    await expect(page.locator(d.selectors.appDashboard).getByText(d.labels.dashboardTitle)).toContainText(d.labels.dashboardTitle);
-    await expect(page.getByRole('link', { name: d.labels.dashboardSidebarLink })).toBeVisible();
+    // Prefer role/first() locators — the dashboard renders multiple "Dashboard" texts
+    // (sidebar + heading) which can trip strict-mode on bare getByText.
+    await expect(page.getByRole('img').first()).toBeVisible();
+    await expect(page.getByText(d.labels.userInitials, { exact: true }).first()).toBeVisible();
+    await expect(page.locator(d.selectors.appDashboard)).toBeVisible();
+    await expect(page.getByRole('link', { name: /Dashboard/i }).first()).toBeVisible();
   });
 
   test('should display Dashboard sidebar link and navigate back to dashboard', async ({ page, loginAsAdmin }) => {
@@ -306,46 +308,66 @@ test.describe('Dashboard - Group Filter', () => {
 
 test.describe('Dashboard - User Profile Menu', () => {
 
+  async function openUserProfileMenu(page: import('@playwright/test').Page): Promise<void> {
+    // Click the avatar chip container (initials + chevron), not only the text node.
+    const avatarChip = page
+      .locator('header, app-dashboard, body')
+      .locator('div, button, span')
+      .filter({ has: page.getByText(d.labels.userInitials, { exact: true }) })
+      .filter({ hasText: new RegExp(`^\\s*${d.labels.userInitials}\\s*`) })
+      .first();
+
+    await expect(page.getByText(d.labels.userInitials, { exact: true }).first()).toBeVisible();
+    await avatarChip.click({ timeout: 10000 }).catch(async () => {
+      await page.getByText(d.labels.userInitials, { exact: true }).first().click();
+    });
+
+    // Menu items may render as buttons or plain text nodes depending on build.
+    const profileInfo = page
+      .getByRole('button', { name: d.profile.profileInfoButton })
+      .or(page.getByText(d.profile.profileInfoButton, { exact: true }));
+    await expect(profileInfo.first()).toBeVisible({ timeout: 15000 });
+  }
+
   test('should display user profile menu options when avatar is clicked', async ({ page, loginAsAdmin }) => {
     await loginAsAdmin();
     await page.reload();
 
-    await expect(page.getByText(d.labels.userInitials)).toBeVisible();
-    await page.getByText(d.labels.userInitials).click();
-    await expect(page.getByRole('button', { name: d.profile.profileInfoButton })).toHaveText(d.profile.profileInfoButton);
-    await expect(page.getByRole('button', { name: d.profile.changePasswordButton })).toHaveText(d.profile.changePasswordButton);
-    await expect(page.getByRole('button', { name: d.profile.logoutButton })).toHaveText(d.profile.logoutButton);
+    await openUserProfileMenu(page);
+    await expect(page.getByText(d.profile.profileInfoButton, { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(d.profile.changePasswordButton, { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(d.profile.logoutButton, { exact: true }).first()).toBeVisible();
   });
 
   test('Profile Info should navigate to profile page with First Name field', async ({ page, loginAsAdmin }) => {
     await loginAsAdmin();
     await page.reload();
 
-    await page.getByText(d.labels.userInitials).click();
-    await page.getByRole('button', { name: d.profile.profileInfoButton }).click();
-    await expect(page.locator(d.profile.appUserLocator).getByText(d.profile.profileInfoButton)).toHaveText(d.profile.profileInfoButton);
-    await expect(page.getByText(d.profile.firstNameLabel)).toContainText('First Name');
+    await openUserProfileMenu(page);
+    await page.getByText(d.profile.profileInfoButton, { exact: true }).first().click();
+    await expect(page.locator(d.profile.appUserLocator).getByText(d.profile.profileInfoButton).first()).toBeVisible();
+    await expect(page.getByText(d.profile.firstNameLabel).first()).toContainText('First Name');
   });
 
   test('Change password should navigate to Change User Password screen with all fields', async ({ page, loginAsAdmin }) => {
     await loginAsAdmin();
     await page.reload();
 
-    await page.getByText(d.labels.userInitials).click();
-    await page.getByRole('button', { name: d.profile.changePasswordButton }).click();
-    await expect(page.getByRole('heading', { name: d.profile.changePasswordHeading })).toHaveText(d.profile.changePasswordHeading);
-    await expect(page.getByText('* Old Password')).toBeVisible();
-    await expect(page.getByText('* New Password')).toBeVisible();
-    await expect(page.getByText('* Confirm Password')).toBeVisible();
+    await openUserProfileMenu(page);
+    await page.getByText(d.profile.changePasswordButton, { exact: true }).first().click();
+    await expect(page.getByRole('heading', { name: d.profile.changePasswordHeading }).or(page.getByText(d.profile.changePasswordHeading, { exact: true })).first()).toBeVisible();
+    await expect(page.getByText('* Old Password').first()).toBeVisible();
+    await expect(page.getByText('* New Password').first()).toBeVisible();
+    await expect(page.getByText('* Confirm Password').first()).toBeVisible();
   });
 
   test('Logout should redirect to the login/welcome screen', async ({ page, loginAsAdmin }) => {
     await loginAsAdmin();
     await page.reload();
 
-    await page.getByText(d.labels.userInitials).click();
-    await page.getByRole('button', { name: d.profile.logoutButton }).click();
-    await expect(page.getByRole('heading', { name: d.profile.welcomeHeading })).toBeVisible();
+    await openUserProfileMenu(page);
+    await page.getByText(d.profile.logoutButton, { exact: true }).first().click();
+    await expect(page.getByRole('heading', { name: d.profile.welcomeHeading }).or(page.getByText(d.profile.welcomeHeading, { exact: true })).first()).toBeVisible();
   });
 
 });

@@ -22,7 +22,8 @@ const blobOutputFile = `blob-report/${runDate}/report-${runId}.zip`;
  */
 export default defineConfig({
   timeout: testConfig.globalTimeoutMs,
-  globalTimeout: 55 * 60 * 1000, // 55 minutes — keeps suite within the 60-min CI job limit
+  // Local full-suite runs must finish every module; CI stays within the 60-min job limit.
+  globalTimeout: process.env.CI ? 55 * 60 * 1000 : 0,
   expect: { timeout: 15000 },
   testDir: './tests',
   testMatch: ['**/*.spec.ts', '**/*_spec.ts'],
@@ -32,10 +33,15 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Run up to 4 workers in parallel on CI to speed up the suite */
-  workers: process.env.CI ? 4 : undefined,
+  /* Never abort early — finish every module even when tests fail/time out */
+  maxFailures: 0,
+  /**
+   * Retry once on failure/timeout. After a second consecutive timeout the result
+   * stays failed (Playwright has no "convert to skipped"), but the suite continues.
+   */
+  retries: process.env.CI ? 2 : 1,
+  /* Run up to 4 workers in parallel to keep full-suite runtime practical */
+  workers: process.env.CI ? 4 : 4,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],

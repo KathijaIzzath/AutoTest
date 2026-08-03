@@ -1,22 +1,51 @@
-import { chromium } from '@playwright/test';
+import { chromium, type Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as userData from './testData/UserInfo.json';
 import { executeQuery } from './testData/database.utils';
+
+const INFRA_STATUS_PATH = 'test-results/infra-status.json';
+
+type AuthStatus = 'ok' | 'degraded' | 'down';
+
+interface InfraStatus {
+  generatedAt: string;
+  failOnAuthUnavailable: boolean;
+  auth: {
+    status: AuthStatus;
+    attempts: number;
+    healthChecks: number;
+    usedStorageFallback: boolean;
+    message: string;
+  };
+  db: {
+    status: 'ok' | 'warning';
+    warnings: string[];
+  };
+  warnings: string[];
+}
+
+function persistInfraStatus(status: InfraStatus): void {
+  fs.mkdirSync('test-results', { recursive: true });
+  fs.writeFileSync(INFRA_STATUS_PATH, JSON.stringify(status, null, 2), 'utf-8');
+}
 
 // ─── DB prerequisite setup ────────────────────────────────────────────────────
 // Runs unconditionally before every test suite execution.
 // Ensures all timestamps, enrollment records and feature data are current.
 
-async function runDbPrerequisites(): Promise<void> {
+async function runDbPrerequisites(): Promise<{ warnings: string[] }> {
   const now = new Date().toISOString();
   console.log('[DB setup] Running prerequisites with timestamp:', now);
+  const warnings: string[] = [];
 
   const run = async (label: string, sql: string, params: any[] = []) => {
     try {
       await executeQuery(sql, params);
       console.log(`[DB setup] ✓ ${label}`);
     } catch (err) {
-      console.warn(`[DB setup] ⚠ ${label} failed (non-fatal):`, (err as Error).message);
+      const message = `${label} failed (non-fatal): ${(err as Error).message}`;
+      console.warn(`[DB setup] ⚠ ${message}`);
+      warnings.push(message);
     }
   };
 
@@ -77,13 +106,16 @@ async function runDbPrerequisites(): Promise<void> {
     );
     const g14count = Number(g14rows?.[0]?.cnt ?? 0);
     if (g14count === 0) {
-      console.warn('[DB setup] ⚠ No enrollment records found for G00014. ' +
-        'Enrollment dashboard tests may fail. Ensure G00014 has active groupenrollment rows.');
+      const message = 'No enrollment records found for G00014. Enrollment dashboard tests may fail.';
+      console.warn('[DB setup] ⚠ ' + message + ' Ensure G00014 has active groupenrollment rows.');
+      warnings.push(message);
     } else {
       console.log(`[DB setup] ✓ G00014 has ${g14count} enrollment record(s)`);
     }
   } catch (err) {
-    console.warn('[DB setup] ⚠ Could not verify G00014 enrollments:', (err as Error).message);
+    const message = `Could not verify G00014 enrollments: ${(err as Error).message}`;
+    console.warn('[DB setup] ⚠ ' + message);
+    warnings.push(message);
   }
 
   // ── 9. Ensure G00017 (bulk enrollment) records have today's dates ─────────────
@@ -100,20 +132,24 @@ async function runDbPrerequisites(): Promise<void> {
     );
     const g17count = Number(g17rows?.[0]?.cnt ?? 0);
     if (g17count === 0) {
-      console.warn('[DB setup] ⚠ No enrollment records found for G00017. ' +
-        'Bulk enrollment dashboard tests may fail. Ensure G00017 has active groupenrollment rows.');
+      const message = 'No enrollment records found for G00017. Bulk enrollment dashboard tests may fail.';
+      console.warn('[DB setup] ⚠ ' + message + ' Ensure G00017 has active groupenrollment rows.');
+      warnings.push(message);
     } else {
       console.log(`[DB setup] ✓ G00017 has ${g17count} enrollment record(s)`);
     }
   } catch (err) {
-    console.warn('[DB setup] ⚠ Could not verify G00017 enrollments:', (err as Error).message);
+    const message = `Could not verify G00017 enrollments: ${(err as Error).message}`;
+    console.warn('[DB setup] ⚠ ' + message);
+    warnings.push(message);
   }
 
   console.log('[DB setup] All prerequisite queries complete.');
+  return { warnings };
 }
 
 
-async function submitAdminLogin(page: any): Promise<void> {
+async function submitAdminLogin(page: Page): Promise<void> {
   await page.getByRole('textbox', { name: 'Enter Username' }).click();
   await page.getByRole('textbox', { name: 'Enter Username' }).fill(userData.admin.username);
   await page.getByRole('textbox', { name: 'Enter Password' }).click();
@@ -121,7 +157,7 @@ async function submitAdminLogin(page: any): Promise<void> {
   await page.getByRole('button', { name: 'Log In' }).click();
 }
 
-async function waitForDashboardReady(page: any): Promise<boolean> {
+async function waitForDashboardReady(page: Page): Promise<boolean> {
   const dashboardUrlPattern = /\/SecureConnectWeb\/dashboard(\/home)?/i;
 
   const urlReady = await page
@@ -150,20 +186,101 @@ async function waitForDashboardReady(page: any): Promise<boolean> {
   return applyFilterReady;
 }
 
+async function verifyAuthHealth(page: Page, url: string): Promise<{ healthy: boolean; checks: number; lastError: string }> {
+  let checks = 0;
+  let lastError = 'unknown error';
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    checks = attempt;
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      const usernameReady = await page
+        .getByRole('textbox', { name: 'Enter Username' })
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
+      const passwordReady = await page
+        .getByRole('textbox', { name: 'Enter Password' })
+        .isVisible({ timeout: 5000 })
+        .catch(() => false);
+
+      if (usernameReady && passwordReady) {
+        return { healthy: true, checks, lastError: '' };
+      }
+
+      lastError = 'login form was not visible';
+    } catch (error) {
+      lastError = (error as Error).message;
+    }
+  }
+
+  return { healthy: false, checks, lastError };
+}
+
 async function globalSetup() {
+  const failOnAuthUnavailable = process.env.FAIL_ON_AUTH_UNAVAILABLE === 'true';
+  const infraStatus: InfraStatus = {
+    generatedAt: new Date().toISOString(),
+    failOnAuthUnavailable,
+    auth: {
+      status: 'ok',
+      attempts: 0,
+      healthChecks: 0,
+      usedStorageFallback: false,
+      message: 'Authentication checks not started.',
+    },
+    db: {
+      status: 'ok',
+      warnings: [],
+    },
+    warnings: [],
+  };
+
   // ── Step 1: Run all DB prerequisites first ───────────────────────────────────
-  await runDbPrerequisites();
+  const dbResult = await runDbPrerequisites();
+  if (dbResult.warnings.length > 0) {
+    infraStatus.db.status = 'warning';
+    infraStatus.db.warnings = dbResult.warnings;
+    infraStatus.warnings.push(...dbResult.warnings.map((message) => `DB: ${message}`));
+  }
 
   // ── Step 2: Browser login + storageState ─────────────────────────────────────
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto(userData.admin.url, { waitUntil: 'domcontentloaded' });
   console.log('Global setup: opening admin login page');
+
+  const authHealth = await verifyAuthHealth(page, userData.admin.url);
+  infraStatus.auth.healthChecks = authHealth.checks;
+
+  if (!authHealth.healthy) {
+    infraStatus.auth.status = 'down';
+    infraStatus.auth.message = `Auth health-check failed after ${authHealth.checks} attempts: ${authHealth.lastError}`;
+    infraStatus.warnings.push(`AUTH: ${infraStatus.auth.message}`);
+
+    const hasExistingStorageState = fs.existsSync('storageState.json');
+    if (hasExistingStorageState && !failOnAuthUnavailable) {
+      infraStatus.auth.usedStorageFallback = true;
+      infraStatus.auth.status = 'degraded';
+      infraStatus.auth.message += ' Fallback to existing storageState.json was used.';
+      persistInfraStatus(infraStatus);
+      console.warn('Global setup: auth health-check failed, reusing existing storageState.json as fallback.');
+      await browser.close();
+      return;
+    }
+
+    persistInfraStatus(infraStatus);
+    await browser.close();
+    throw new Error(
+      failOnAuthUnavailable
+        ? `Infrastructure failure: ${infraStatus.auth.message}`
+        : `Global setup login is unavailable and no fallback storage state is usable: ${infraStatus.auth.message}`
+    );
+  }
 
   let ready = false;
   let lastError: unknown = null;
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
+    infraStatus.auth.attempts = attempt;
     try {
       await page.goto(userData.admin.url, { waitUntil: 'domcontentloaded' });
       await submitAdminLogin(page);
@@ -177,22 +294,37 @@ async function globalSetup() {
   }
 
   if (!ready) {
+    infraStatus.auth.status = 'down';
+    infraStatus.auth.message = `Login failed after ${infraStatus.auth.attempts} attempts. Last error: ${String(lastError ?? 'dashboard did not become ready')}`;
+    infraStatus.warnings.push(`AUTH: ${infraStatus.auth.message}`);
     const hasExistingStorageState = fs.existsSync('storageState.json');
-    if (hasExistingStorageState) {
+    if (hasExistingStorageState && !failOnAuthUnavailable) {
+      infraStatus.auth.usedStorageFallback = true;
+      infraStatus.auth.status = 'degraded';
+      infraStatus.auth.message += ' Fallback to existing storageState.json was used.';
+      persistInfraStatus(infraStatus);
       console.warn('Global setup: login retries failed, reusing existing storageState.json as fallback.');
       await browser.close();
       return;
     }
 
+    persistInfraStatus(infraStatus);
     await browser.close();
-    throw new Error(`Global setup login failed after retries. Last error: ${String(lastError ?? 'dashboard did not become ready')}`);
+    throw new Error(
+      failOnAuthUnavailable
+        ? `Infrastructure failure: ${infraStatus.auth.message}`
+        : `Global setup login failed after retries. Last error: ${String(lastError ?? 'dashboard did not become ready')}`
+    );
   }
+
+  infraStatus.auth.status = 'ok';
+  infraStatus.auth.message = `Login succeeded after ${infraStatus.auth.attempts} attempt(s).`;
 
   await page.context().storageState({ path: 'storageState.json' });
 
   // ── Step 3: Verify Analytics feature is deployed in this environment ─────────
   try {
-    const analyticsLink = page.getByRole('link', { name: / Analytics/i });
+    const analyticsLink = page.getByRole('link', { name: /Analytics/i });
     const analyticsVisible = await analyticsLink.isVisible({ timeout: 5000 }).catch(() => false);
     if (analyticsVisible) {
       console.log('[Feature check] ✓ Analytics menu item is present in the navigation.');
@@ -206,6 +338,8 @@ async function globalSetup() {
   } catch (err) {
     console.warn('[Feature check] ⚠ Analytics check failed:', (err as Error).message);
   }
+
+  persistInfraStatus(infraStatus);
 
   await browser.close();
 }

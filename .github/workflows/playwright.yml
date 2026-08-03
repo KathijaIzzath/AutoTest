@@ -14,6 +14,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      REPORT_OUTPUT_DIR: playwright-report/daily-summary
+      FAIL_ON_AUTH_UNAVAILABLE: 'false'
+      FLAKE_RATE_THRESHOLD: '0.05'
+      FLAKE_RATE_GROWTH_THRESHOLD: '0.02'
+      MAX_TIMEOUT_TESTS: '3'
+      MAX_RETRY_ATTEMPTS: '20'
+      SLOW_SPEC_THRESHOLD_MS: '120000'
+      FAIL_ON_FLAKE_REGRESSION: 'false'
 
     steps:
       - name: Checkout
@@ -51,4 +60,12 @@ jobs:
         with:
           name: test-results
           path: test-results/
+          if-no-files-found: ignore
+
+      - name: Upload daily test summary
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: daily-test-summary
+          path: ${{ env.REPORT_OUTPUT_DIR }}/
           if-no-files-found: ignore

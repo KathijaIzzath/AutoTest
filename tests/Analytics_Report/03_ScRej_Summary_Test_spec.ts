@@ -61,7 +61,10 @@ async function setDateRange(page: Page, start: string, end: string): Promise<voi
 
 async function generateReport(page: Page): Promise<void> {
   await page.getByRole('button', { name: d.labels.generateReport }).click();
-  await page.waitForTimeout(d.timeouts.reportGenerateMs);
+  // Wait for report table instead of fixed sleep to avoid cascading 60s timeouts.
+  await expect(page.getByRole('table').first()).toBeVisible({
+    timeout: Math.max(d.timeouts.reportGenerateMs ?? 0, 90000),
+  });
 }
 
 function todayMMDDYYYY(): string {
@@ -260,6 +263,7 @@ test.describe('SC Rejection Summary Report', () => {
   // ── 4. Report table structure ─────────────────────────────────────────────
 
   test.describe('Report table structure', () => {
+    test.describe.configure({ timeout: 180000 });
 
     test('TC14 - Generate Report renders the data table',
       async ({ page, loginAsAdmin }) => {
