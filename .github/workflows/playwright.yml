@@ -6,8 +6,9 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # Runs daily at 19:30 UTC (after 7 PM UTC)
-    - cron: '30 19 * * *'
+    # Runs daily at 7:30 PM Central (CDT = UTC-5 → 00:30 UTC)
+    # Note: during CST (UTC-6) this is 6:30 PM local; adjust cron if needed.
+    - cron: '30 0 * * *'
   workflow_dispatch:
 
 jobs:
