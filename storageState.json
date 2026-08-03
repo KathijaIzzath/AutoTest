@@ -2,10 +2,10 @@
   "cookies": [
     {
       "name": "cf_clearance",
-      "value": "7AFpeVloGDS4Q3o3MIefNNczQNlZPrOhSOaEIxb0mKw-1785276411-1.2.1.1-9qopODMSwKk2VHkiIlzMc2wxX7AxYO3tA4MrY1.zL5IazCte60A7jdvAf56R3AmmXJRmLLCVxKDslE8ZYcMJLA4B3S_d8CkN_3qW59TVhnpjM0k3T_bnMynt451X2sDG9J_gxJcXu1alw_XiNjneD2JUELs6dyvAdUgiTtY_kMOnboojAapLiM8A0kLQzWpBwXGHB7Dk.mBH0xEpnoiWnv8bXoM9_7qNDHMTZsOZWRvH66MalZGFxiRUFgsqUPobMyHO3yOGw97OImlXq0GfnYPWcqS5JEok9.CzvgympYFwdnXXDkRynmSXRi41Czils7FqmoZPgPjDfZto5NFJ4U.1ktVPKfzr4mipWLaYw44",
+      "value": ".fktK7JdFgBhIz3aiC7K5e4sE_Ev40txxZryjqDum2Y-1785780917-1.2.1.1-rzXnfFd2tpLEc_cKB9D9VmQLB8FqfbWYlQAix1wAAAlhbuWm4nmiJku75Iohs5tTGweeRYjRPRfAujfL4Ocer.SICEEfd_g6FYdHG7L5f8WGQEL_DX0_4e9J6Tn6W23.pJgxQV06EgxVvPE1bgIPLhiTHwXSIooYJVO35yLF00Jzp0OzHtmbXxm0CEqJYKXG5.Vzmy5Y85IC1JMoqOaSK0hzPERgXC5VZyz7nUQWq1cp.HUYEuoL0DEYzmO.e1aiwPHRLtisQXmck3gQxaaxr8FIrKvOxGePZhwnP9CvRfSwULNkKRNp3CGfbSZ3QQXd2_YznJNngnQZuNCQlecDaRzGAfeCNqU7rhbBV7fIAEk",
       "domain": ".pulseinc.com",
       "path": "/",
-      "expires": 1816812411.128505,
+      "expires": 1817316917.54685,
       "httpOnly": true,
       "secure": true,
       "sameSite": "None",
@@ -14,10 +14,10 @@
     },
     {
       "name": "__cf_bm",
-      "value": "s6Ks.mCElYsOwt00uHPYvl5pWQoce6ef5hbPfNyDvKU-1785276411.1305325-1.0.1.1-1YfoDmi3iVLlN.m5Gz7HBvnk0c.VM2tD3_QzD9BjJPi4FbaiLjjGQuno_GiAuOOCQO6JqawjxfUDJ.K4dgTdJrQHWerTg7pCRUQySRA._lSgs9RPkf0_Lap.uBW9GgnC",
+      "value": "7SHnCglbr2rVZwwy_QOs4p7rTgKIh6gte081SY9gN4s-1785780917.5088742-1.0.1.1-yJxqvgigl2436HABhYaIBXRPW72VT37P8ub5H8D1PY8Acs6g_qqDJtsZv074UPtuoeq6JePxltIOLk5nZcSBq9qbevpQojIlHRxsYYaqWoIz62gt0jh9W6pD1xHZk6EY",
       "domain": ".pulseinc.com",
       "path": "/",
-      "expires": 1785278211.128647,
+      "expires": 1785782717.547117,
       "httpOnly": true,
       "secure": true,
       "sameSite": "None"
@@ -29,19 +29,19 @@
       "localStorage": [
         {
           "name": "token",
-          "value": "{\"access_token\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IkEwMzU4RjMwNUFDMDE3QjAxQzYzMzIyODM5MkQzODQ0MTNFREE1NkUiLCJ4NXQiOiJvRFdQTUZyQUY3QWNZeklvT1MwNFJCUHRwVzQiLCJ0eXAiOiJhdCtqd3QifQ.eyJzdWIiOiI5ZTliNjIzNS1kZDZkLTQwNjktYjNlMy0wYjkyMmQzMTI4NTAiLCJuYW1lIjoic2NhZG1pbiIsInJvbGUiOlsiSGFnT2lkY0FkbWluaXN0cmF0b3IiLCJTQ0FETUlOIl0sIm9pX3Byc3QiOiJTZWN1cmVDb25uZWN0V2ViQXBwIiwiY2xpZW50X2lkIjoiU2VjdXJlQ29ubmVjdFdlYkFwcCIsIm9pX3Rrbl9pZCI6ImQ1YmQzYmJiLWVmNTUtNGYwYy04MjFlLWY0MTRkOGU3NmZlMSIsImF1ZCI6InJlc291cmNlX3NlcnZlcl9zZWN1cmVjb25uZWN0Iiwic2NvcGUiOiJvcGVuaWQgZW1haWwgcHJvZmlsZSByb2xlcyIsImV4cCI6MTc4NTI4MDAxMSwiaXNzIjoiaHR0cHM6Ly9xbmsxcHQ1MDAwcnQwMS5wdWxzZWluYy5jb20vaGFnaWRlbnRpdHlzZXJ2ZXIiLCJpYXQiOjE3ODUyNzY0MTF9.ZkV9WUW8hHQQZx2hNw_pZWrPvldr0rAuPYMw1h1Z8A9l1VuS5vh1YToENCNzyAqEBLJHnxr03maaZCsYadxcf-uDMWfDrlZOl1ubHzyUjwCmb_NEy0FWvG7omD9Q6SzI-y-JuwdKhIyNniibKFnLrtwC8OoBytLe7ZvmEjEppszekDd20vp-c9rMsxbBN2kxu8fNhoDpHtMCEHuaQIHXnQpxhnwK1rMAv63rQX023tA52NDIcB0LhrpS63t18_te-YKaXxMqsIDgpQN7dDLohlSZ0Wkbv5zD9NP6bsXlr9PNbb_-2GlPgmoau4chC34r3iuprItFrfrGIh0H5BYUTQ\",\"expires_in\":3600,\"token_type\":\"Bearer\",\"active\":true,\"error\":null,\"error_description\":null}"
+          "value": "{\"access_token\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IkEwMzU4RjMwNUFDMDE3QjAxQzYzMzIyODM5MkQzODQ0MTNFREE1NkUiLCJ4NXQiOiJvRFdQTUZyQUY3QWNZeklvT1MwNFJCUHRwVzQiLCJ0eXAiOiJhdCtqd3QifQ.eyJzdWIiOiI5ZTliNjIzNS1kZDZkLTQwNjktYjNlMy0wYjkyMmQzMTI4NTAiLCJuYW1lIjoic2NhZG1pbiIsInJvbGUiOlsiSGFnT2lkY0FkbWluaXN0cmF0b3IiLCJTQ0FETUlOIl0sIm9pX3Byc3QiOiJTZWN1cmVDb25uZWN0V2ViQXBwIiwiY2xpZW50X2lkIjoiU2VjdXJlQ29ubmVjdFdlYkFwcCIsIm9pX3Rrbl9pZCI6IjFkZGFmMmVmLTc5OWQtNGJlNS1iNWNiLTYwZTU5NTRkNmRkMSIsImF1ZCI6InJlc291cmNlX3NlcnZlcl9zZWN1cmVjb25uZWN0Iiwic2NvcGUiOiJvcGVuaWQgZW1haWwgcHJvZmlsZSByb2xlcyIsImV4cCI6MTc4NTc4NDUxNywiaXNzIjoiaHR0cHM6Ly9xbmsxcHQ1MDAwcnQwMS5wdWxzZWluYy5jb20vaGFnaWRlbnRpdHlzZXJ2ZXIiLCJpYXQiOjE3ODU3ODA5MTd9.J7gZlLEk4wzKkLF87mNFKIRA1FGoI7VY9GuyRWfugY-zsrP8U44WcRC3YmgP-JnmI8rPdCoiyD7nRUjEqKI6SObj4rmoWbSRbKReWhauO3kogU4gjdjhmMUHklMaN1lj9NljMzqKruf4eDfvncu_1z6IASnDe9YApuUF9ALANAF6XX8areO-rBCJXEAWKIzC2I6JsX4AxXMnrDFTNftqiIePfHORi8FG4fLEXRJGavmbrADhoEgicAf2k03R1tMSEqI4bC0-zoiiCl9EjFhAdm4-u6QXHFW3XZBWt2qqBoXStlP3o_m7wvs3cdrD9JyIkIhVliaOmjbjPpETpteGiA\",\"expires_in\":3599,\"token_type\":\"Bearer\",\"error\":null,\"error_description\":null}"
         },
         {
           "name": "permissions",
-          "value": "[\"Claims\",\"Users\",\"ERA\",\"Group Enrollments\",\"Payer\",\"Insurance\",\"Eligibility Routing\",\"Claim Status Routing\",\"Read-Only Accounts\",\"Accounts\",\"Client Admin - Accounts\",\"Utilities\",\"Financial Module\",\"Read Only - Financial Module\",\"Financial Module - ACH\",\"Claims Correct Admin\",\"Claims Correct User\"]"
+          "value": "[\"Users\",\"Accounts\",\"Claims\",\"ERA\",\"Group Enrollments\",\"Payer\",\"Insurance\",\"Eligibility Routing\",\"Claim Status Routing\",\"Read-Only Accounts\",\"Client Admin - Accounts\",\"Financial Module\",\"Utilities\",\"Read Only - Financial Module\",\"Financial Module - ACH\",\"Claims Correct Admin\",\"Claims Correct User\"]"
         },
         {
           "name": "user",
-          "value": "{\"id\":1,\"userName\":\"scadmin\",\"firstName\":\"SECURECONNECT\",\"lastName\":\"ADMIN\",\"caseNumber\":null,\"passwordResetAllowed\":true,\"passwordLastUpdated\":\"2021-05-24T14:10:10.112-05:00\",\"active\":true,\"createdBy\":1,\"createdAt\":\"2021-05-24T14:10:10.112-05:00\",\"updatedBy\":20,\"updatedAt\":\"2022-10-25T13:17:23.539-05:00\",\"identityUserId\":\"9e9b6235-dd6d-4069-b3e3-0b922d312850\",\"isUser\":true,\"role\":\"SCADMIN\",\"groupId\":null,\"accessLevel\":\"SECURE_CONNECT\",\"phone\":\"8889999399\",\"ext\":null,\"pin\":\"1234\",\"cellPhone\":null,\"accounts\":[],\"applications\":[],\"groups\":[],\"permissions\":[{\"permissionId\":3,\"name\":\"Claims\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":1,\"name\":\"Users\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":4,\"name\":\"ERA\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":5,\"name\":\"Group Enrollments\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":6,\"name\":\"Payer\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":7,\"name\":\"Insurance\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":8,\"name\":\"Eligibility Routing\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":9,\"name\":\"Claim Status Routing\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":10,\"name\":\"Read-Only Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":2,\"name\":\"Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":11,\"name\":\"Client Admin - Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":28,\"name\":\"Utilities\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":27,\"name\":\"Financial Module\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":30,\"name\":\"Read Only - Financial Module\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":31,\"name\":\"Financial Module - ACH\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":32,\"name\":\"Claims Correct Admin\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":33,\"name\":\"Claims Correct User\",\"__typename\":\"UsersClientsPermissions\"}],\"__typename\":\"UsersClients\"}"
+          "value": "{\"id\":1,\"userName\":\"scadmin\",\"firstName\":\"SECURECONNECT\",\"lastName\":\"ADMIN\",\"caseNumber\":null,\"passwordResetAllowed\":true,\"passwordLastUpdated\":\"2021-05-24T14:10:10.112-05:00\",\"active\":true,\"createdBy\":1,\"createdAt\":\"2021-05-24T14:10:10.112-05:00\",\"updatedBy\":20,\"updatedAt\":\"2022-10-25T13:17:23.539-05:00\",\"identityUserId\":\"9e9b6235-dd6d-4069-b3e3-0b922d312850\",\"isUser\":true,\"role\":\"SCADMIN\",\"groupId\":null,\"accessLevel\":\"SECURE_CONNECT\",\"phone\":\"8889999399\",\"ext\":null,\"pin\":\"1234\",\"cellPhone\":null,\"accounts\":[],\"applications\":[],\"groups\":[],\"permissions\":[{\"permissionId\":1,\"name\":\"Users\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":2,\"name\":\"Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":3,\"name\":\"Claims\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":4,\"name\":\"ERA\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":5,\"name\":\"Group Enrollments\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":6,\"name\":\"Payer\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":7,\"name\":\"Insurance\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":8,\"name\":\"Eligibility Routing\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":9,\"name\":\"Claim Status Routing\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":10,\"name\":\"Read-Only Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":11,\"name\":\"Client Admin - Accounts\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":27,\"name\":\"Financial Module\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":28,\"name\":\"Utilities\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":30,\"name\":\"Read Only - Financial Module\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":31,\"name\":\"Financial Module - ACH\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":32,\"name\":\"Claims Correct Admin\",\"__typename\":\"UsersClientsPermissions\"},{\"permissionId\":33,\"name\":\"Claims Correct User\",\"__typename\":\"UsersClientsPermissions\"}],\"__typename\":\"UsersClients\"}"
         },
         {
           "name": "initialMessageTime",
-          "value": "1785276412085"
+          "value": "1785780919045"
         },
         {
           "name": "credentials",
