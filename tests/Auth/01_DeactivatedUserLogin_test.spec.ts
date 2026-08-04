@@ -7,7 +7,7 @@
  *  SC-856 – Deactivated users are still able to log in to the SC Portal
  *    TC-856-01: Block login for inactive user
  *    TC-856-02: Active user can still log in (regression)
- *    TC-856-03: Existing token invalidation after deactivation (skip-safe)
+ *    TC-856-03: Existing token invalidation after mid-session DB deactivation
  *    TC-856-04: Logged-in user endpoint respects active flag (skip-safe)
  *
  *  SC-868 – Misconfiguration in appsettings for apiURL in TokenController.cs
@@ -21,6 +21,7 @@ import type { Page } from '@playwright/test';
 import LoginPage from '../../testData/LoginPage';
 import userData from '../../testData/user-info';
 import * as d from '../../testData/DeactivatedUserLoginTestData.json';
+import { setUsersClientActive, fetchUserClientByUsername } from '../../testData/database.utils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -98,22 +99,56 @@ test.describe('SC-856 – Deactivated Users Login Security', () => {
   );
 
   test('TC-856-03: Token issued at login becomes invalid after user deactivation (skip-safe)',
-    async ({ page, loginAsAdmin }) => {
-      // This test requires the ability to deactivate a user mid-session via DB or admin UI.
-      // It is marked skip-safe because the deactivation mechanism may not be available in all environments.
-      const canDeactivate = false; // Set to true when a deactivation helper is wired up
-      if (!canDeactivate) {
-        test.skip(true, 'SC-856-03: Mid-session deactivation not automated in this environment – manual verification required');
-        return;
+    async ({ browser }) => {
+      const targetUsername = userData.qauser.username;
+      const targetPassword = userData.qauser.password;
+      test.skip(!targetUsername || !targetPassword, 'QA user credentials not configured for mid-session deactivation.');
+
+      // Ensure user starts active
+      const primed = await setUsersClientActive(targetUsername, true);
+      const before = await fetchUserClientByUsername(targetUsername);
+      test.skip(!primed && !before, `Could not locate/update usersclients row for ${targetUsername}`);
+      if (!before) return;
+      test.skip(!before.isActive && !primed, 'Target user could not be activated before mid-session test.');
+
+      const userContext = await browser.newContext();
+      const userPage = await userContext.newPage();
+
+      try {
+        await navigateToLogin(userPage);
+        await attemptLogin(userPage, targetUsername, targetPassword);
+        const loggedIn = await isDashboardReady(userPage);
+        test.skip(!loggedIn, 'QA user could not log in before deactivation – skipping TC-856-03.');
+        if (!loggedIn) return;
+
+        const deactivated = await setUsersClientActive(targetUsername, false);
+        test.skip(!deactivated, 'DB deactivation helper failed – skipping TC-856-03.');
+        if (!deactivated) return;
+
+        const after = await fetchUserClientByUsername(targetUsername);
+        expect(after?.isActive, 'usersclients.active must be false after deactivation').toBeFalsy();
+
+        // Existing session token must not continue to authorize protected UI
+        await userPage.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
+        await userPage.waitForTimeout(d.timeouts.retryMs);
+
+        const stillOnDashboard = await isDashboardReady(userPage);
+        const onLogin = /\/login/i.test(userPage.url())
+          || (await userPage.getByRole('button', { name: d.labels.logInButton }).isVisible().catch(() => false));
+        const accessDenied = await userPage
+          .getByText(new RegExp(`${d.errorMessages.accessDenied}|${d.errorMessages.unauthorized}|deactivated|disabled`, 'i'))
+          .first()
+          .isVisible()
+          .catch(() => false);
+
+        expect(
+          !stillOnDashboard || onLogin || accessDenied,
+          'Session must be invalidated (or access denied) after mid-session deactivation',
+        ).toBe(true);
+      } finally {
+        await setUsersClientActive(targetUsername, true).catch(() => false);
+        await userContext.close();
       }
-
-      await loginAsAdmin();
-      expect(await isDashboardReady(page)).toBe(true);
-
-      // After deactivation, a page reload or protected API call should be denied
-      await page.reload();
-      const stillOnDashboard = await isDashboardReady(page);
-      expect(stillOnDashboard, 'Session must be invalidated after account deactivation').toBe(false);
     },
   );
 

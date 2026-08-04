@@ -69,6 +69,14 @@
     "futureDateEnd":   "12/31/2030",
     "sameDateRange":   "01/01/2024"
   },
+  "security": {
+    "unauthorizedGroupId": "G99999",
+    "restrictedUser": {
+      "username": "",
+      "password": "",
+      "note": "Optional non-admin user with limited group access; leave blank to use admin request-craft path"
+    }
+  },
   "timeouts": {
     "filterMs":     3000,
     "navigationMs": 15000

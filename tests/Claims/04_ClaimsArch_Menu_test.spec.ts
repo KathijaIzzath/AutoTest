@@ -45,6 +45,27 @@ function toMmDdToken(value: string): string {
 	return raw;
 }
 
+/**
+ * SC-493: Timely Filing printed DOS is derived from the input-filename date prefix
+ * (leading YYYYMMDD or MMDDYYYY), not only from claims.dateofservice.
+ */
+function toMmDdTokenFromInputFilename(filename: string): string {
+	const base = (filename ?? '').trim().replace(/^.*[\\/]/, '');
+	if (!base) return '';
+
+	const ymd = /^(\d{4})(\d{2})(\d{2})/.exec(base);
+	if (ymd) {
+		return `${ymd[2]}/${ymd[3]}/`;
+	}
+
+	const mdy = /^(\d{2})(\d{2})(\d{4})/.exec(base);
+	if (mdy) {
+		return `${mdy[1]}/${mdy[2]}/`;
+	}
+
+	return '';
+}
+
 function getTodayMmDdToken(): string {
 	const now = new Date();
 	const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -311,6 +332,30 @@ test.describe('Claim Archive Menu on Dashboard search results - Timely Filing Re
 		if (!dbRow) return;
 
 		await assertTimelyFilingCoreValuesMatchDb(page, dbRow);
+		await page.locator(d.selectors.closeModalButton).first().click();
+	});
+
+	test('SC-493: Timely Filing Dates of Service uses input-filename date prefix', async ({ page }) => {
+		const dbRow = await fetchClaimArchiveTimelyFilingRowByClaimId(d.values.claimId);
+		test.skip(!dbRow, `No archive row found for claim id ${d.values.claimId}`);
+		if (!dbRow) return;
+
+		const filenameToken = toMmDdTokenFromInputFilename(dbRow.inputfilename);
+		test.skip(
+			!filenameToken,
+			`Could not parse YYYYMMDD/MMDDYYYY prefix from inputfilename "${dbRow.inputfilename}"`,
+		);
+		if (!filenameToken) return;
+
+		await searchArchiveByClaim(page, d.values.claimId, d.values.groupId);
+		await openTimelyFilingReport(page);
+
+		await expect(page.getByText(/Dates of Service:/i).first()).toBeVisible();
+		await expect(
+			page.getByText(new RegExp(escapeForRegex(filenameToken), 'i')).first(),
+			`Printed Dates of Service must reflect input-filename prefix ${filenameToken} (SC-493)`,
+		).toBeVisible();
+
 		await page.locator(d.selectors.closeModalButton).first().click();
 	});
 

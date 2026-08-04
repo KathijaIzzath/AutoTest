@@ -194,14 +194,25 @@ async function choosePayerInAddModal(page: Page): Promise<void> {
 	}
 }
 
-async function fillAddForm(page: Page): Promise<void> {
+async function fillAddForm(page: Page, onlineBatch: string = d.values.onlineBatchOnline): Promise<void> {
 	const modal = await getAddModal(page);
 	await choosePayerInAddModal(page);
 	await modal.getByRole('textbox', { name: d.placeholders.scId }).fill(d.values.scId);
 	await modal.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.values.groupId);
 	await modal.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.values.processorId);
 	await modal.getByRole('textbox', { name: d.placeholders.ediId }).fill(d.values.ediId);
-	await selectOnlineBatchOption(page, d.values.onlineBatchOnline);
+	if (onlineBatch) {
+		await selectOnlineBatchOption(page, onlineBatch);
+	}
+}
+
+async function fillAddFormWithoutOnlineBatch(page: Page): Promise<void> {
+	const modal = await getAddModal(page);
+	await choosePayerInAddModal(page);
+	await modal.getByRole('textbox', { name: d.placeholders.scId }).fill(d.values.scId);
+	await modal.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.values.groupId);
+	await modal.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.values.processorId);
+	await modal.getByRole('textbox', { name: d.placeholders.ediId }).fill(d.values.ediId);
 }
 
 async function clickAddInModal(page: Page): Promise<void> {
@@ -375,7 +386,7 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 	test('Add Claim Status with ONLINE value is searchable and matches DB', async ({ page }) => {
 		await prepareDeterministicRecord();
 		await openAddModalFromDashboard(page);
-		await fillAddForm(page);
+		await fillAddForm(page, d.values.onlineBatchOnline);
 		await clickAddInModal(page);
 
 		const successToast = page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first();
@@ -406,6 +417,64 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 		await expect(row).toContainText(dbRow.online_batch);
 		await expect(row).toContainText(dbRow.recordstatus);
 		expect(normalize(dbRow.online_batch)).toContain(normalize(d.values.onlineBatchOnline));
+	});
+
+	test('SC-721: Add Claim Status with BATCH value is searchable and matches DB', async ({ page }) => {
+		await prepareDeterministicRecord();
+		await openAddModalFromDashboard(page);
+		await fillAddForm(page, d.values.onlineBatchBatch);
+		await clickAddInModal(page);
+
+		const successToast = page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first();
+		await expect(successToast).toBeVisible({ timeout: d.timeouts.saveMs });
+
+		await closeAddModalIfOpen(page);
+		await dismissAnyVisibleModal(page);
+		await searchByCompositeValues(page, d.values.scId, d.values.groupId, d.values.processorId, d.values.ediId);
+
+		const dbRow = await fetchClaimStatusRoutingByComposite(
+			d.values.scId,
+			d.values.processorId,
+			d.values.ediId,
+			d.values.groupId
+		);
+		expect(dbRow).not.toBeNull();
+		if (!dbRow) return;
+
+		const row = page
+			.locator(d.selectors.tableRows)
+			.filter({ has: page.getByRole('cell', { name: dbRow.scid, exact: true }) })
+			.filter({ hasText: dbRow.groupid })
+			.filter({ hasText: dbRow.processorid })
+			.filter({ hasText: dbRow.ediid })
+			.first();
+
+		await expect(row).toBeVisible({ timeout: d.timeouts.searchMs });
+		await expect(row).toContainText(dbRow.online_batch);
+		expect(normalize(dbRow.online_batch)).toContain(normalize(d.values.onlineBatchBatch));
+	});
+
+	test('SC-721: Add without Online/Batch selection does not produce successful save', async ({ page }) => {
+		await prepareDeterministicRecord();
+		await openAddModalFromDashboard(page);
+		await fillAddFormWithoutOnlineBatch(page);
+		await clickAddInModal(page);
+
+		const successToastVisible = await page
+			.getByLabel(new RegExp(d.labels.successToastPrefix, 'i'))
+			.first()
+			.isVisible({ timeout: d.timeouts.filterMs })
+			.catch(() => false);
+		expect(successToastVisible).toBeFalsy();
+
+		const modal = await getAddModal(page);
+		const hasValidationOrError = await modal
+			.locator('text=/required|online\\s*\\/\\s*batch|select online/i')
+			.first()
+			.isVisible()
+			.catch(() => false);
+		expect(hasValidationOrError || (await modal.isVisible().catch(() => false))).toBeTruthy();
+		await expect(modal.getByRole('button', { name: d.labels.add })).toBeVisible();
 	});
 
 	test('Add Claim Status from search result header attempts save and keeps app stable', async ({ page }) => {

@@ -35,6 +35,11 @@
     "onlineBatchOnline": "ONLINE",
     "onlineBatchBatch": "BATCH"
   },
+  "skmo0": {
+    "scId": "SKMO0",
+    "editedGroupId": "G00012",
+    "onlineBatchBatch": "BATCH"
+  },
   "crossValidation": {
     "scId": "SKNC0"
   },

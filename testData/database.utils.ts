@@ -1992,3 +1992,85 @@ export async function fetchAnyInactiveUserClient(): Promise<UsersClientRow | nul
     return null;
   }
 }
+
+/**
+ * Set usersclients.active for mid-session deactivation / restoration (SC-856-03).
+ * Returns true when at least one row was updated.
+ */
+export async function setUsersClientActive(username: string, isActive: boolean): Promise<boolean> {
+  const trimmedUsername = (username ?? '').trim();
+  if (!trimmedUsername) {
+    console.warn('[setUsersClientActive] Empty username provided.');
+    return false;
+  }
+
+  const query = `
+    update usersclients
+    set active = $2
+    where lower(btrim(username)) = lower($1)
+    returning username
+  `;
+
+  try {
+    const rows = await executeQuery(query, [trimmedUsername, isActive]);
+    return Array.isArray(rows) && rows.length > 0;
+  } catch (err) {
+    console.warn('[setUsersClientActive] Update failed:', err);
+    return false;
+  }
+}
+
+/**
+ * Check whether an account is active by account number (SC-465).
+ */
+export async function isAccountActiveByNumber(accountNumber: string): Promise<boolean | null> {
+  const trimmed = (accountNumber ?? '').trim();
+  if (!trimmed) return null;
+
+  const query = 'SELECT isactive FROM account WHERE accountnumber = $1 LIMIT 1';
+  try {
+    const rows = await executeQuery(query, [trimmed]);
+    if (!rows || rows.length === 0) return null;
+    const raw = rows[0].isactive;
+    if (typeof raw === 'boolean') return raw;
+    const normalized = String(raw ?? '').trim().toLowerCase();
+    return normalized === 'true' || normalized === '1' || normalized === 't' || normalized === 'active';
+  } catch (err) {
+    console.warn('[isAccountActiveByNumber] Query failed:', err);
+    return null;
+  }
+}
+
+/**
+ * Check whether a provider group is active (SC-465). Tries common column names.
+ */
+export async function isProviderGroupActive(groupId: string): Promise<boolean | null> {
+  const trimmed = (groupId ?? '').trim();
+  if (!trimmed) return null;
+
+  const queries = [
+    'SELECT isactive AS active_flag FROM providergroup WHERE id = $1 LIMIT 1',
+    'SELECT active AS active_flag FROM providergroup WHERE id = $1 LIMIT 1',
+    'SELECT status AS active_flag FROM providergroup WHERE id = $1 LIMIT 1',
+  ];
+
+  for (const query of queries) {
+    try {
+      const rows = await executeQuery(query, [trimmed]);
+      if (!rows || rows.length === 0) continue;
+      const raw = rows[0].active_flag;
+      if (typeof raw === 'boolean') return raw;
+      const normalized = String(raw ?? '').trim().toLowerCase();
+      if (normalized === 'true' || normalized === '1' || normalized === 't' || normalized === 'a' || normalized === 'active') {
+        return true;
+      }
+      if (normalized === 'false' || normalized === '0' || normalized === 'f' || normalized === 'i' || normalized === 'inactive' || normalized === 'deactivated') {
+        return false;
+      }
+    } catch {
+      // try next column shape
+    }
+  }
+
+  return null;
+}

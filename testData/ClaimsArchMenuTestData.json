@@ -30,7 +30,8 @@
     "insuredId": "732841503",
     "patientControlNumber": "C245519150",
     "dateOfServiceToken": "12/05/",
-    "payerId": "BHOVO"
+    "payerId": "BHOVO",
+    "sc493Note": "Dates of Service on Timely Filing must match the date prefix of inputfilename"
   },
   "timelyFiling": {
     "requiredLabels": [

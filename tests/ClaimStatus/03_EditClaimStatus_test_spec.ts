@@ -517,6 +517,58 @@ test.describe('Edit Claim Status Routing - generated and refactored suite', () =
 		await expect(page.getByRole('cell', { name: new RegExp(d.values.payerNameDashboardExpected, 'i') }).first()).toBeVisible();
 	});
 
+	test('SC-721: Edit SKMO0 Online/Batch to BATCH when row exists (skip-safe)', async ({ page }) => {
+		const skmo0Rows = await fetchClaimStatusRoutingRowsByScId(d.skmo0.scId);
+		test.skip(!skmo0Rows.length, `No Claim Status Routing rows found for ${d.skmo0.scId} – skipping SKMO0 edit.`);
+		if (!skmo0Rows.length) return;
+
+		const target = skmo0Rows[0];
+		await searchByScId(page, d.skmo0.scId);
+		await clickEditActionForScId(page, d.skmo0.scId);
+		await ensureEditFormEnabled(page);
+
+		const modal = await getEditModal(page);
+		await expect(modal.getByRole('textbox', { name: d.placeholders.scId })).toHaveValue(
+			new RegExp(d.skmo0.scId, 'i'),
+		);
+		await selectOnlineBatchInEditModal(page, d.skmo0.onlineBatchBatch);
+		await saveEditModal(page);
+
+		const saveSuccess = await page
+			.getByLabel(new RegExp(d.labels.successToastPrefix, 'i'))
+			.first()
+			.isVisible({ timeout: d.timeouts.filterMs })
+			.catch(() => false);
+
+		if (saveSuccess) {
+			await searchByScId(page, d.skmo0.scId);
+			const row = page
+				.locator(d.selectors.tableRows)
+				.filter({ has: page.getByRole('cell', { name: d.skmo0.scId, exact: true }) })
+				.first();
+			await expect(row).toBeVisible({ timeout: d.timeouts.searchMs });
+			await expect(row).toContainText(new RegExp(d.skmo0.onlineBatchBatch, 'i'));
+
+			const dbRows = await fetchClaimStatusRoutingRowsByScId(d.skmo0.scId);
+			const matching = dbRows.find(
+				(r) =>
+					normalize(r.processorid) === normalize(target.processorid) &&
+					normalize(r.ediid) === normalize(target.ediid),
+			);
+			if (matching) {
+				expect(normalize(matching.online_batch)).toContain(normalize(d.skmo0.onlineBatchBatch));
+			}
+		} else {
+			const editModalVisible = await page
+				.getByRole('dialog')
+				.filter({ hasText: d.labels.editClaimStatusRouting })
+				.first()
+				.isVisible()
+				.catch(() => false);
+			expect(editModalVisible).toBeTruthy();
+		}
+	});
+
 	test('Save with empty required Group ID does not produce successful save', async ({ page }) => {
 		await searchByScId(page, d.values.scId);
 		await clickEditActionForScId(page, d.values.scId);

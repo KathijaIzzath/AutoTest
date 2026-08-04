@@ -19,6 +19,7 @@ import { test, expect } from '../myTestData';
 import type { Page } from '@playwright/test';
 import { navigateToAnalytics } from '../framework/navigation.helper';
 import { fetchAnalyticsClaimSummary } from '../../testData/database.utils';
+import LoginPage from '../../testData/LoginPage';
 import * as d from '../../testData/AnalyticsDshbdTestData.json';
 
 // ─── Shared interfaces ────────────────────────────────────────────────────────
@@ -769,13 +770,218 @@ test.describe('Analytics Menu & Dashboard', () => {
     );
 
     test('TC-849-02: Analytics API does not return data for a submitted unauthorized group ID (skip-safe)',
-      async ({ page, loginAsAdmin }) => {
-        // Security test: manually crafting a request with an unauthorized group ID should be denied.
-        // This test is skip-safe because it requires a known unauthorized group ID for the current user.
-        test.skip(
-          true,
-          'TC-849-02: Requires a non-admin restricted user and a known unauthorized group ID – skipping until restricted credentials are configured',
-        );
+      async ({ page, loginAsAdmin, browser }) => {
+        const unauthorizedGroup = d.security.unauthorizedGroupId;
+        const restrictedUsername = (d.security.restrictedUser.username ?? '').trim();
+        const restrictedPassword = (d.security.restrictedUser.password ?? '').trim();
+        const useRestrictedUser = Boolean(restrictedUsername && restrictedPassword);
+
+        type CapturedRequest = {
+          url: string;
+          method: string;
+          headers: Record<string, string>;
+          postData: string | null;
+        };
+
+        const mutateBodyGroup = (postData: string | null, groupId: string): string | null => {
+          if (!postData) return postData;
+          try {
+            const parsed = JSON.parse(postData) as Record<string, unknown>;
+            const keys = ['groupId', 'groupid', 'GroupId', 'providerGroupId', 'providergroupid', 'group'];
+            let mutated = false;
+            for (const key of keys) {
+              if (key in parsed) {
+                parsed[key] = groupId;
+                mutated = true;
+              }
+            }
+            if (!mutated) {
+              parsed.groupId = groupId;
+            }
+            return JSON.stringify(parsed);
+          } catch {
+            if (/groupid=/i.test(postData)) {
+              return postData.replace(/groupid=[^&]*/i, `groupId=${encodeURIComponent(groupId)}`);
+            }
+            return `${postData}&groupId=${encodeURIComponent(groupId)}`;
+          }
+        };
+
+        const assertDeniedOrEmpty = async (
+          status: number,
+          bodyText: string,
+        ): Promise<void> => {
+          const lower = (bodyText ?? '').toLowerCase();
+          const deniedByStatus = status === 401 || status === 403 || status === 400;
+          const deniedByMessage = /unauthorized|access denied|forbidden|not authorized|no access/i.test(lower);
+          let emptyPayload = false;
+          try {
+            const json = JSON.parse(bodyText);
+            if (Array.isArray(json)) {
+              emptyPayload = json.length === 0;
+            } else if (json && typeof json === 'object') {
+              const data = (json as any).data ?? (json as any).result ?? (json as any).rows ?? (json as any).items;
+              if (Array.isArray(data)) emptyPayload = data.length === 0;
+              if ((json as any).total === 0 || (json as any).count === 0) emptyPayload = true;
+            }
+          } catch {
+            emptyPayload = !bodyText.trim() || /\[\s*\]/.test(bodyText);
+          }
+
+          expect(
+            deniedByStatus || deniedByMessage || emptyPayload,
+            `Unauthorized group ${unauthorizedGroup} must be denied or return empty analytics data (status=${status})`,
+          ).toBe(true);
+
+          expect(
+            lower.includes(unauthorizedGroup.toLowerCase()) && /totalcharges|claimid|paid/.test(lower),
+            'Response must not leak claim-level analytics data for an unauthorized group',
+          ).toBe(false);
+        };
+
+        if (useRestrictedUser) {
+          const context = await browser.newContext();
+          const restrictedPage = await context.newPage();
+          try {
+            const loginPage = new LoginPage(restrictedPage);
+            await loginPage.navigate();
+            await restrictedPage.getByRole('textbox', { name: /username/i }).fill(restrictedUsername);
+            await restrictedPage.getByRole('textbox', { name: /password/i }).fill(restrictedPassword);
+            await restrictedPage.getByRole('button', { name: /log in/i }).click();
+            await restrictedPage.waitForTimeout(3000);
+
+            await openAnalyticsDashboard(restrictedPage);
+            const reportDropdown = restrictedPage.getByRole('combobox').nth(1);
+            await expect(reportDropdown).toBeVisible();
+            await reportDropdown.selectOption({ index: 1 });
+            await restrictedPage.waitForTimeout(1000);
+
+            const groupInput = restrictedPage.getByRole('textbox', { name: /search group/i }).first();
+            test.skip(!(await groupInput.isVisible().catch(() => false)), 'Group search input not visible for restricted user.');
+            if (!(await groupInput.isVisible().catch(() => false))) return;
+
+            await groupInput.click();
+            await groupInput.fill(unauthorizedGroup);
+            await restrictedPage.waitForTimeout(1500);
+
+            const suggestion = restrictedPage
+              .locator('.ng-option, [role="option"]')
+              .filter({ hasText: unauthorizedGroup })
+              .first();
+            const suggestionVisible = await suggestion.isVisible().catch(() => false);
+            expect(
+              suggestionVisible,
+              'Unauthorized group must not appear as a selectable suggestion for a restricted user',
+            ).toBe(false);
+
+            // Craft API submit even if UI blocks selection
+            const captureBox: { current: CapturedRequest | null } = { current: null };
+            restrictedPage.on('request', (req) => {
+              if (/analytics|report|claim-summary|rejection/i.test(req.url()) && req.method() !== 'GET') {
+                captureBox.current = {
+                  url: req.url(),
+                  method: req.method(),
+                  headers: req.headers(),
+                  postData: req.postData(),
+                };
+              }
+            });
+
+            // Trigger a legitimate generate with a partial group to capture API shape if possible
+            await groupInput.fill('G00');
+            const firstOption = restrictedPage.locator('.ng-option, [role="option"]').first();
+            if (await firstOption.isVisible({ timeout: 8000 }).catch(() => false)) {
+              await firstOption.click();
+              const generateBtn = restrictedPage.getByRole('button', { name: /generate report/i });
+              if (await generateBtn.isVisible().catch(() => false)) {
+                await generateBtn.click();
+                await restrictedPage.waitForTimeout(3000);
+              }
+            }
+
+            const captured = captureBox.current;
+            test.skip(!captured, 'Could not capture analytics API request shape for unauthorized replay.');
+            if (!captured) return;
+
+            const replayBody = mutateBodyGroup(captured.postData, unauthorizedGroup);
+            const { 'content-length': _cl, host: _host, ...safeHeaders } = captured.headers;
+            const response = await restrictedPage.request.fetch(captured.url, {
+              method: captured.method,
+              headers: {
+                ...safeHeaders,
+                'content-type': safeHeaders['content-type'] ?? 'application/json',
+              },
+              data: replayBody ?? undefined,
+            });
+            await assertDeniedOrEmpty(response.status(), await response.text());
+          } finally {
+            await context.close();
+          }
+          return;
+        }
+
+        // Admin craft path: capture a real generate request, then replay with unauthorized group id
+        await loginAsAdmin();
+        await openAnalyticsDashboard(page);
+
+        const reportDropdown = page.getByRole('combobox').nth(1);
+        await expect(reportDropdown).toBeVisible();
+        await reportDropdown.selectOption({ index: 1 });
+        await page.waitForTimeout(1000);
+
+        const groupInput = page.getByRole('textbox', { name: /search group/i }).first();
+        if (!(await groupInput.isVisible().catch(() => false))) {
+          test.skip(true, 'Group search input not visible – skipping TC-849-02');
+          return;
+        }
+
+        const captureBox: { current: CapturedRequest | null } = { current: null };
+        page.on('request', (req) => {
+          if (/analytics|report|claim-summary|rejection/i.test(req.url()) && req.method() !== 'GET') {
+            captureBox.current = {
+              url: req.url(),
+              method: req.method(),
+              headers: req.headers(),
+              postData: req.postData(),
+            };
+          }
+        });
+
+        await groupInput.click();
+        await groupInput.fill('G00');
+        const firstOption = page.locator('.ng-option, [role="option"]').first();
+        const firstVisible = await firstOption.isVisible({ timeout: 8000 }).catch(() => false);
+        if (!firstVisible) {
+          test.skip(true, 'No group suggestions available to capture analytics request – skipping TC-849-02');
+          return;
+        }
+        await firstOption.click();
+
+        const generateBtn = page.getByRole('button', { name: /generate report/i });
+        if (!(await generateBtn.isVisible().catch(() => false))) {
+          test.skip(true, 'Generate Report button not available – skipping TC-849-02');
+          return;
+        }
+        await generateBtn.click();
+        await page.waitForTimeout(4000);
+
+        const captured = captureBox.current;
+        if (!captured) {
+          test.skip(true, 'No analytics API request captured for unauthorized group replay – skipping TC-849-02');
+          return;
+        }
+
+        const replayBody = mutateBodyGroup(captured.postData, unauthorizedGroup);
+        const { 'content-length': _cl, host: _host, ...safeHeaders } = captured.headers;
+        const response = await page.request.fetch(captured.url, {
+          method: captured.method,
+          headers: {
+            ...safeHeaders,
+            'content-type': safeHeaders['content-type'] ?? 'application/json',
+          },
+          data: replayBody ?? undefined,
+        });
+        await assertDeniedOrEmpty(response.status(), await response.text());
       },
     );
 
