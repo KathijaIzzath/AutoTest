@@ -46,21 +46,61 @@ function toMmDdToken(value: string): string {
 }
 
 /**
- * SC-493: Timely Filing printed DOS is derived from the input-filename date prefix
- * (leading YYYYMMDD or MMDDYYYY), not only from claims.dateofservice.
+ * SC-493: Timely Filing printed DOS is derived from the input-filename date prefix.
+ * Supports leading YYYYMMDD or MMDDYYYY (validated month/day) and embedded 8-digit dates.
  */
+function isValidMonthDay(month: number, day: number): boolean {
+	return month >= 1 && month <= 12 && day >= 1 && day <= 31;
+}
+
 function toMmDdTokenFromInputFilename(filename: string): string {
 	const base = (filename ?? '').trim().replace(/^.*[\\/]/, '');
 	if (!base) return '';
 
-	const ymd = /^(\d{4})(\d{2})(\d{2})/.exec(base);
-	if (ymd) {
-		return `${ymd[2]}/${ymd[3]}/`;
+	const tryYmd = (digits: string): string => {
+		const m = /^(\d{4})(\d{2})(\d{2})/.exec(digits);
+		if (!m) return '';
+		const month = Number(m[2]);
+		const day = Number(m[3]);
+		if (!isValidMonthDay(month, day)) return '';
+		return `${m[2]}/${m[3]}/`;
+	};
+
+	const tryMdy = (digits: string): string => {
+		const m = /^(\d{2})(\d{2})(\d{4})/.exec(digits);
+		if (!m) return '';
+		const month = Number(m[1]);
+		const day = Number(m[2]);
+		if (!isValidMonthDay(month, day)) return '';
+		return `${m[1]}/${m[2]}/`;
+	};
+
+	// Prefer a leading digit run so prefixes like 12102025... (MMDDYYYY) are not
+	// misread as YYYYMMDD year=1210 month=20.
+	const leadingDigits = /^(\d{8,})/.exec(base)?.[1] ?? '';
+	if (leadingDigits) {
+		const mdyFirst = tryMdy(leadingDigits);
+		const ymdFirst = tryYmd(leadingDigits);
+		// When both could match 8 digits, prefer the one with a sensible year (>= 1990)
+		if (mdyFirst && ymdFirst) {
+			const ymdYear = Number(leadingDigits.slice(0, 4));
+			const mdyYear = Number(leadingDigits.slice(4, 8));
+			if (mdyYear >= 1990 && mdyYear <= 2100 && (ymdYear < 1990 || ymdYear > 2100)) {
+				return mdyFirst;
+			}
+			if (ymdYear >= 1990 && ymdYear <= 2100) {
+				return ymdFirst;
+			}
+			return mdyFirst;
+		}
+		if (mdyFirst) return mdyFirst;
+		if (ymdFirst) return ymdFirst;
 	}
 
-	const mdy = /^(\d{2})(\d{2})(\d{4})/.exec(base);
-	if (mdy) {
-		return `${mdy[1]}/${mdy[2]}/`;
+	// Embedded date anywhere in the filename (e.g. claim_12102025_in.x12)
+	const embedded = /(\d{8})/.exec(base)?.[1];
+	if (embedded) {
+		return tryMdy(embedded) || tryYmd(embedded) || '';
 	}
 
 	return '';
@@ -343,7 +383,7 @@ test.describe('Claim Archive Menu on Dashboard search results - Timely Filing Re
 		const filenameToken = toMmDdTokenFromInputFilename(dbRow.inputfilename);
 		test.skip(
 			!filenameToken,
-			`Could not parse YYYYMMDD/MMDDYYYY prefix from inputfilename "${dbRow.inputfilename}"`,
+			`Could not parse a valid MMDDYYYY/YYYYMMDD prefix from inputfilename "${dbRow.inputfilename}"`,
 		);
 		if (!filenameToken) return;
 
@@ -353,7 +393,7 @@ test.describe('Claim Archive Menu on Dashboard search results - Timely Filing Re
 		await expect(page.getByText(/Dates of Service:/i).first()).toBeVisible();
 		await expect(
 			page.getByText(new RegExp(escapeForRegex(filenameToken), 'i')).first(),
-			`Printed Dates of Service must reflect input-filename prefix ${filenameToken} (SC-493)`,
+			`Printed Dates of Service must reflect input-filename prefix ${filenameToken} from "${dbRow.inputfilename}" (SC-493)`,
 		).toBeVisible();
 
 		await page.locator(d.selectors.closeModalButton).first().click();

@@ -126,6 +126,15 @@ async function prepareDeterministicRecord(): Promise<void> {
 	);
 }
 
+async function prepareDeterministicBatchRecord(): Promise<void> {
+	await deleteClaimStatusRoutingByComposite(
+		d.batchValues.scId,
+		d.batchValues.processorId,
+		d.batchValues.ediId,
+		d.batchValues.groupId
+	);
+}
+
 function getAddLinks(page: Page): Locator {
 	return page.getByRole('link', { name: /Add Claim Status Routing/i });
 }
@@ -204,6 +213,16 @@ async function fillAddForm(page: Page, onlineBatch: string = d.values.onlineBatc
 	if (onlineBatch) {
 		await selectOnlineBatchOption(page, onlineBatch);
 	}
+}
+
+async function fillBatchAddForm(page: Page): Promise<void> {
+	const modal = await getAddModal(page);
+	await choosePayerInAddModal(page);
+	await modal.getByRole('textbox', { name: d.placeholders.scId }).fill(d.batchValues.scId);
+	await modal.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.batchValues.groupId);
+	await modal.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.batchValues.processorId);
+	await modal.getByRole('textbox', { name: d.placeholders.ediId }).fill(d.batchValues.ediId);
+	await selectOnlineBatchOption(page, d.batchValues.onlineBatchBatch);
 }
 
 async function fillAddFormWithoutOnlineBatch(page: Page): Promise<void> {
@@ -292,6 +311,8 @@ async function assertSkNc0GridMatchesDb(page: Page): Promise<void> {
 }
 
 test.describe('Add Claim Status Routing - generated and refactored suite', () => {
+	test.describe.configure({ mode: 'serial' });
+
 	test.beforeEach(async ({ page, loginAsAdmin }) => {
 		pageErrors = [];
 		page.on('pageerror', (err) => pageErrors.push(err.message));
@@ -420,9 +441,9 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 	});
 
 	test('SC-721: Add Claim Status with BATCH value is searchable and matches DB', async ({ page }) => {
-		await prepareDeterministicRecord();
+		await prepareDeterministicBatchRecord();
 		await openAddModalFromDashboard(page);
-		await fillAddForm(page, d.values.onlineBatchBatch);
+		await fillBatchAddForm(page);
 		await clickAddInModal(page);
 
 		const successToast = page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first();
@@ -430,13 +451,19 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 
 		await closeAddModalIfOpen(page);
 		await dismissAnyVisibleModal(page);
-		await searchByCompositeValues(page, d.values.scId, d.values.groupId, d.values.processorId, d.values.ediId);
+		await searchByCompositeValues(
+			page,
+			d.batchValues.scId,
+			d.batchValues.groupId,
+			d.batchValues.processorId,
+			d.batchValues.ediId
+		);
 
 		const dbRow = await fetchClaimStatusRoutingByComposite(
-			d.values.scId,
-			d.values.processorId,
-			d.values.ediId,
-			d.values.groupId
+			d.batchValues.scId,
+			d.batchValues.processorId,
+			d.batchValues.ediId,
+			d.batchValues.groupId
 		);
 		expect(dbRow).not.toBeNull();
 		if (!dbRow) return;
@@ -451,7 +478,7 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 
 		await expect(row).toBeVisible({ timeout: d.timeouts.searchMs });
 		await expect(row).toContainText(dbRow.online_batch);
-		expect(normalize(dbRow.online_batch)).toContain(normalize(d.values.onlineBatchBatch));
+		expect(normalize(dbRow.online_batch)).toContain(normalize(d.batchValues.onlineBatchBatch));
 	});
 
 	test('SC-721: Add without Online/Batch selection does not produce successful save', async ({ page }) => {
