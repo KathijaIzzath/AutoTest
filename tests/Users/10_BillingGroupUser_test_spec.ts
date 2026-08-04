@@ -9,6 +9,12 @@ import {
 } from '../framework/navigation.helper';
 import { fetchUserClientByUsername } from '../../testData/database.utils';
 import * as d from '../../testData/BillingGroupUserTestData.json';
+import {
+	acceptNonElevatedPersona,
+	elevatedAclSkipReason,
+	loginWithPersonaFallback,
+	type PersonaLoginResult,
+} from '../framework/persona-credentials.helper';
 
 let pageErrors: string[] = [];
 
@@ -18,10 +24,6 @@ function normalizeSpaces(value: string): string {
 
 function escapeForRegex(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function hasCredentialPair(username: string, password: string): boolean {
-	return username.trim().length > 0 && password.trim().length > 0;
 }
 
 async function applyFilterAndWait(page: Page): Promise<void> {
@@ -238,6 +240,33 @@ async function loginWithCredentials(page: Page, username: string, password: stri
 	await page.waitForTimeout(d.timeouts.saveMs);
 }
 
+/** configured → scadmin → qasecureconnect → secureconnect50; rejects elevated for ACL suites. */
+async function loginAsRestrictedPersona(
+	page: Page,
+	configured: { username: string; password: string },
+	label: string,
+): Promise<PersonaLoginResult | null> {
+	const persona = await loginWithPersonaFallback(page, {
+		configured,
+		logout: logoutCurrentUser,
+		acceptPersona: acceptNonElevatedPersona,
+	});
+	test.skip(
+		!persona,
+		`Could not login with configured ${label}, scadmin, qasecureconnect, or secureconnect50.`,
+	);
+	if (!persona) return null;
+	if (persona.isElevatedFallback) {
+		test.skip(true, elevatedAclSkipReason(label, persona.source));
+		return null;
+	}
+	return persona;
+}
+
+async function loginAsBillingGroupUser(page: Page): Promise<PersonaLoginResult | null> {
+	return loginAsRestrictedPersona(page, d.users.billingGroupUser, 'Billing Group');
+}
+
 async function countRows(page: Page): Promise<number> {
 	return page.locator(d.selectors.tableRows).count();
 }
@@ -417,11 +446,8 @@ test.describe('Users - Billing Group user type suite', () => {
 	});
 
 	test('BG-005/006/007/008: Header and dashboard DDL context stays scoped for billing group user', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password), 'Billing Group user credentials are not configured.');
-		if (!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.billingGroupUser.username, d.users.billingGroupUser.password);
+		const persona = await loginAsBillingGroupUser(page);
+		if (!persona) return;
 
 		const options = await collectSelectorOptions(page);
 		test.skip(options.length === 0, 'No selector options are visible in current environment state.');
@@ -433,11 +459,8 @@ test.describe('Users - Billing Group user type suite', () => {
 	});
 
 	test('BG-009/010/011: Accounts module enforces account and group visibility boundaries', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password), 'Billing Group user credentials are not configured.');
-		if (!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.billingGroupUser.username, d.users.billingGroupUser.password);
+		const persona = await loginAsBillingGroupUser(page);
+		if (!persona) return;
 		await navigateToAccounts(page);
 
 		await applyFilterAndWait(page);
@@ -446,11 +469,8 @@ test.describe('Users - Billing Group user type suite', () => {
 	});
 
 	test('BG-012/013/014/015: Claims searches, pagination path, and context switching do not leak disallowed groups', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password), 'Billing Group user credentials are not configured.');
-		if (!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.billingGroupUser.username, d.users.billingGroupUser.password);
+		const persona = await loginAsBillingGroupUser(page);
+		if (!persona) return;
 		await navigateToClaimsDashboard(page);
 
 		await applyFilterAndWait(page);
@@ -465,11 +485,8 @@ test.describe('Users - Billing Group user type suite', () => {
 	});
 
 	test('BG-016/017/018: ERA and Group Enrollment respect assigned billing-group scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password), 'Billing Group user credentials are not configured.');
-		if (!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.billingGroupUser.username, d.users.billingGroupUser.password);
+		const persona = await loginAsBillingGroupUser(page);
+		if (!persona) return;
 
 		const eraOpened = await openEraModule(page);
 		if (eraOpened) {
@@ -483,11 +500,8 @@ test.describe('Users - Billing Group user type suite', () => {
 	});
 
 	test('BG-019/020/021/022: Financial View Payments and Payment Analytics stay within active-site/group scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password), 'Billing Group user credentials are not configured.');
-		if (!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.billingGroupUser.username, d.users.billingGroupUser.password);
+		const persona = await loginAsBillingGroupUser(page);
+		if (!persona) return;
 
 		const viewPaymentsOpened = await openViewPaymentsModule(page);
 		test.skip(!viewPaymentsOpened, 'View Payments module unavailable in current environment state.');
@@ -502,11 +516,8 @@ test.describe('Users - Billing Group user type suite', () => {
 	});
 
 	test('BG-023/024: Users module group filter supports allowed groups and blocks privilege escalation', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password), 'Billing Group user credentials are not configured.');
-		if (!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.billingGroupUser.username, d.users.billingGroupUser.password);
+		const persona = await loginAsBillingGroupUser(page);
+		if (!persona) return;
 		await ensureUsersPageReady(page);
 
 		await clearUserFilters(page);
@@ -516,21 +527,23 @@ test.describe('Users - Billing Group user type suite', () => {
 			await applyFilterAndWait(page);
 		}
 
-		await filterByLogin(page, d.users.billingGroupUser.username);
-		const ownCell = page.getByRole('cell', { name: d.users.billingGroupUser.username }).first();
+		await filterByLogin(page, persona.username);
+		const ownCell = page.getByRole('cell', { name: persona.username }).first();
 		const visible = await ownCell.isVisible().catch(() => false);
 		test.skip(!visible, 'Self-profile row not visible in Users results for billing group user in current environment state.');
 		if (!visible) return;
 
-		await openActionMenuForUser(page, d.users.billingGroupUser.username);
+		await openActionMenuForUser(page, persona.username);
 		await expect(page.getByRole('button', { name: /deactivate|disable/i })).toHaveCount(0);
 	});
 
 	test('BG-025/026/027: Analytics module access and provider-group report scope follow permissions and restrictions', async ({ page }) => {
-		if (hasCredentialPair(d.users.billingGroupWithAnalytics.username, d.users.billingGroupWithAnalytics.password)) {
-			await logoutCurrentUser(page);
-			await loginWithCredentials(page, d.users.billingGroupWithAnalytics.username, d.users.billingGroupWithAnalytics.password);
-
+		const withAnalytics = await loginWithPersonaFallback(page, {
+			configured: d.users.billingGroupWithAnalytics,
+			logout: logoutCurrentUser,
+			acceptPersona: acceptNonElevatedPersona,
+		});
+		if (withAnalytics && !withAnalytics.isElevatedFallback) {
 			const apiPayloads = await captureApiPayloads(page, async () => {
 				await navigateToAnalytics(page).catch(async () => {
 					const opened = await openPaymentAnalyticsModule(page);
@@ -544,9 +557,12 @@ test.describe('Users - Billing Group user type suite', () => {
 			}
 		}
 
-		if (hasCredentialPair(d.users.billingGroupNoAnalytics.username, d.users.billingGroupNoAnalytics.password)) {
-			await logoutCurrentUser(page);
-			await loginWithCredentials(page, d.users.billingGroupNoAnalytics.username, d.users.billingGroupNoAnalytics.password);
+		const noAnalytics = await loginWithPersonaFallback(page, {
+			configured: d.users.billingGroupNoAnalytics,
+			logout: logoutCurrentUser,
+			acceptPersona: acceptNonElevatedPersona,
+		});
+		if (noAnalytics && !noAnalytics.isElevatedFallback) {
 			const analyticsLink = page.getByRole('link', { name: new RegExp(d.labels.analyticsLabel, 'i') }).first();
 			const visible = await analyticsLink.isVisible().catch(() => false);
 			expect(visible).toBeFalsy();
@@ -554,11 +570,8 @@ test.describe('Users - Billing Group user type suite', () => {
 	});
 
 	test('BG-028/029/030: Realtime token ACL dependency and denied group behavior are enforced', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.billingGroupRealtime.username, d.users.billingGroupRealtime.password), 'Realtime Billing Group credentials are not configured.');
-		if (!hasCredentialPair(d.users.billingGroupRealtime.username, d.users.billingGroupRealtime.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.billingGroupRealtime.username, d.users.billingGroupRealtime.password);
+		const persona = await loginAsRestrictedPersona(page, d.users.billingGroupRealtime, 'Billing Group Realtime');
+		if (!persona) return;
 		await navigateToClaimsDashboard(page);
 
 		const payloads = await captureApiPayloads(page, async () => {
@@ -574,11 +587,8 @@ test.describe('Users - Billing Group user type suite', () => {
 	});
 
 	test('BG-031/032/033: Negative/edge flows (blank search, refresh, pagination) never broaden scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password), 'Billing Group user credentials are not configured.');
-		if (!hasCredentialPair(d.users.billingGroupUser.username, d.users.billingGroupUser.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.billingGroupUser.username, d.users.billingGroupUser.password);
+		const persona = await loginAsBillingGroupUser(page);
+		if (!persona) return;
 		await navigateToClaimsDashboard(page);
 
 		await applyFilterAndWait(page);

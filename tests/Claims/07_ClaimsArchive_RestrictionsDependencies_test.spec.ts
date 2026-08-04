@@ -9,6 +9,12 @@ import {
 import userData from '../../testData/user-info';
 import LoginPage from '../../testData/LoginPage';
 import * as d from '../../testData/ClaimsArchiveRestrictionsDependenciesTestData.json';
+import {
+  acceptNonElevatedPersona,
+  elevatedAclSkipReason,
+  loginWithPersonaFallback,
+  type PersonaLoginResult,
+} from '../framework/persona-credentials.helper';
 
 let pageErrors: string[] = [];
 
@@ -20,18 +26,44 @@ function hasCredentialPair(username: string, password: string): boolean {
   return username.trim().length > 0 && password.trim().length > 0;
 }
 
-/** Restricted personas must not reuse SecureConnect/admin logins (false ACL positives). */
-function isUsableRestrictedPersona(persona: { username: string; password: string }): boolean {
-  if (!hasCredentialPair(persona.username, persona.password)) return false;
-  const user = persona.username.trim().toLowerCase();
-  const elevated = [
-    d.personas.secureConnectUser.username,
-    String(userData.admin.username),
-    String(userData.qauser?.username ?? ''),
-  ]
-    .map((v) => v.trim().toLowerCase())
-    .filter(Boolean);
-  return !elevated.includes(user);
+/** configured → scadmin → qasecureconnect → secureconnect50; rejects elevated for ACL suites. */
+async function loginAsRestrictedPersona(
+  page: Page,
+  configured: { username: string; password: string },
+  label: string,
+): Promise<PersonaLoginResult | null> {
+  const persona = await loginWithPersonaFallback(page, {
+    configured,
+    logout: logoutCurrentUser,
+    acceptPersona: acceptNonElevatedPersona,
+  });
+  test.skip(
+    !persona,
+    `Could not login with configured ${label}, scadmin, qasecureconnect, or secureconnect50.`,
+  );
+  if (!persona) return null;
+  if (persona.isElevatedFallback) {
+    test.skip(true, elevatedAclSkipReason(label, persona.source));
+    return null;
+  }
+  return persona;
+}
+
+/** Fallback chain without rejecting elevated logins (secureConnectUser). */
+async function loginAsPersonaAllowElevated(
+  page: Page,
+  configured: { username: string; password: string },
+  label: string,
+): Promise<PersonaLoginResult | null> {
+  const persona = await loginWithPersonaFallback(page, {
+    configured,
+    logout: logoutCurrentUser,
+  });
+  test.skip(
+    !persona,
+    `Could not login with configured ${label}, scadmin, qasecureconnect, or secureconnect50.`,
+  );
+  return persona;
 }
 
 async function runWithSoftTimeout<T>(work: () => Promise<T>, timeoutMs: number): Promise<T> {
@@ -292,25 +324,21 @@ test.describe('Claims Archive - restrictions, rules, and dependencies suite', ()
   });
 
   test('CA-009/010/011/012/013/014: Account, vendor, and billing-group restrictions prevent leakage and preserve SCAdmin baseline', async ({ page }) => {
-    const personas = [d.personas.accountUser, d.personas.vendorUser, d.personas.billingGroupUser].filter((p) =>
-      isUsableRestrictedPersona(p)
-    );
-
-    test.skip(
-      personas.length === 0,
-      'Distinct restricted personas (account/vendor/billing) are not configured – do not reuse qasecureconnect/scadmin.',
-    );
-    if (personas.length === 0) return;
+    const restrictedConfigs: Array<{ persona: typeof d.personas.accountUser; label: string }> = [
+      { persona: d.personas.accountUser, label: 'Account-restricted' },
+      { persona: d.personas.vendorUser, label: 'Vendor-restricted' },
+      { persona: d.personas.billingGroupUser, label: 'Billing-group' },
+    ];
 
     await searchArchiveByClaim(page, d.values.groupId, d.values.claimId);
     const adminCount = await page.locator(d.selectors.tableRows).count();
     expect(adminCount).toBeGreaterThanOrEqual(0);
 
-    for (const persona of personas) {
-      await logoutCurrentUser(page);
-      const loggedIn = await loginWithCredentials(page, persona.username, persona.password);
-      test.skip(!loggedIn, `Could not login persona ${persona.username}.`);
-      if (!loggedIn) return;
+    let restrictedExecuted = 0;
+    for (const { persona, label } of restrictedConfigs) {
+      const login = await loginAsRestrictedPersona(page, persona, label);
+      if (!login) return;
+      restrictedExecuted += 1;
 
       await openClaimsArchive(page);
       await searchArchiveByClaim(page, d.values.groupId, d.values.claimId);
@@ -320,6 +348,11 @@ test.describe('Claims Archive - restrictions, rules, and dependencies suite', ()
       await searchArchiveByClaim(page, d.values.groupId, d.values.disallowedClaimId);
       await assertNoTokenInVisibleRows(page, d.values.disallowedClaimId);
     }
+
+    test.skip(
+      restrictedExecuted === 0,
+      'Distinct restricted personas (account/vendor/billing) could not be logged in via fallback chain.',
+    );
 
     await logoutCurrentUser(page);
     const adminReloginOk = await tryLoginAsAdmin(page);
@@ -385,15 +418,10 @@ test.describe('Claims Archive - restrictions, rules, and dependencies suite', ()
   });
 
   test('CA-024: Fresh session user does not inherit prior archive scope', async ({ page }) => {
+    const login = await loginAsPersonaAllowElevated(page, d.personas.secureConnectUser, 'SecureConnect');
+    if (!login) return;
+
     const restricted = d.personas.secureConnectUser;
-    test.skip(!hasCredentialPair(restricted.username, restricted.password), 'Restricted user credentials are not configured.');
-    if (!hasCredentialPair(restricted.username, restricted.password)) return;
-
-    await logoutCurrentUser(page);
-    const loggedIn = await loginWithCredentials(page, restricted.username, restricted.password);
-    test.skip(!loggedIn, 'Restricted user login unavailable in current environment.');
-    if (!loggedIn) return;
-
     await openClaimsArchive(page);
     await searchArchiveByClaim(page, d.values.groupId, d.values.claimId);
     await assertNoTokenInVisibleRows(page, restricted.disallowedToken);

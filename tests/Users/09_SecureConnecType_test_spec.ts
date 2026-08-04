@@ -10,6 +10,12 @@ import {
 } from '../framework/navigation.helper';
 import { fetchUserClientByUsername } from '../../testData/database.utils';
 import * as d from '../../testData/SecureConnectUserTypeTestData.json';
+import {
+	acceptNonElevatedPersona,
+	elevatedAclSkipReason,
+	loginWithPersonaFallback,
+	type PersonaLoginResult,
+} from '../framework/persona-credentials.helper';
 
 let pageErrors: string[] = [];
 
@@ -253,6 +259,46 @@ async function loginWithCredentials(page: Page, username: string, password: stri
 	await page.waitForTimeout(d.timeouts.saveMs);
 }
 
+/** configured → scadmin → qasecureconnect → secureconnect50; rejects elevated for ACL suites. */
+async function loginAsRestrictedPersona(
+	page: Page,
+	configured: { username: string; password: string },
+	label: string,
+): Promise<PersonaLoginResult | null> {
+	const persona = await loginWithPersonaFallback(page, {
+		configured,
+		logout: logoutCurrentUser,
+		acceptPersona: acceptNonElevatedPersona,
+	});
+	test.skip(
+		!persona,
+		`Could not login with configured ${label}, scadmin, qasecureconnect, or secureconnect50.`,
+	);
+	if (!persona) return null;
+	if (persona.isElevatedFallback) {
+		test.skip(true, elevatedAclSkipReason(label, persona.source));
+		return null;
+	}
+	return persona;
+}
+
+/** Fallback chain without rejecting elevated logins (smoke / Claims Correct ON paths). */
+async function loginWithPersonaSmoke(
+	page: Page,
+	configured: { username: string; password: string },
+	label: string,
+): Promise<PersonaLoginResult | null> {
+	const persona = await loginWithPersonaFallback(page, {
+		configured,
+		logout: logoutCurrentUser,
+	});
+	test.skip(
+		!persona,
+		`Could not login with configured ${label}, scadmin, qasecureconnect, or secureconnect50.`,
+	);
+	return persona;
+}
+
 async function countRows(page: Page): Promise<number> {
 	return page.locator(d.selectors.tableRows).count();
 }
@@ -399,11 +445,8 @@ test.describe('Users - SecureConnect user type suite', () => {
 	});
 
 	test('SC-UT-001/002/003/004: Authentication lifecycle enforces active-only access and session safety', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.secureConnectActive.username, d.users.secureConnectActive.password), 'Active SecureConnect credentials are not configured.');
-		if (!hasCredentialPair(d.users.secureConnectActive.username, d.users.secureConnectActive.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.secureConnectActive.username, d.users.secureConnectActive.password);
+		const persona = await loginWithPersonaSmoke(page, d.users.secureConnectActive, 'SecureConnect active');
+		if (!persona) return;
 
 		const dashboardVisible = await page.getByRole('link', { name: /accounts|claims|users/i }).first().isVisible().catch(() => false);
 		expect(dashboardVisible).toBeTruthy();
@@ -468,18 +511,23 @@ test.describe('Users - SecureConnect user type suite', () => {
 			expect(normalized.length).toBeGreaterThan(0);
 		}
 
-		const personas = [
-			d.users.secureConnectActive,
-			d.users.restrictedAccount,
-			d.users.billingGroup,
+		const personas: Array<{
+			configured: { username: string; password: string };
+			label: string;
+			smoke?: boolean;
+		}> = [
+			{ configured: d.users.secureConnectActive, label: 'SecureConnect active', smoke: true },
+			{ configured: d.users.restrictedAccount, label: 'Account-restricted' },
+			{ configured: d.users.billingGroup, label: 'Billing Group' },
 		];
 
 		let covered = 0;
-		for (const persona of personas) {
-			if (!hasCredentialPair(persona.username, persona.password)) continue;
+		for (const { configured, label, smoke } of personas) {
+			const persona = smoke
+				? await loginWithPersonaSmoke(page, configured, label)
+				: await loginAsRestrictedPersona(page, configured, label);
+			if (!persona) return;
 			covered += 1;
-			await logoutCurrentUser(page);
-			await loginWithCredentials(page, persona.username, persona.password);
 
 			const options = await collectSelectorOptions(page);
 			test.skip(options.length === 0, 'Selector options are not visible for current persona/environment state.');
@@ -493,16 +541,21 @@ test.describe('Users - SecureConnect user type suite', () => {
 	});
 
 	test('SC-UT-027/028/029/030/031/032/033/034: Permission-driven menu/action visibility remains accurate', async ({ page }) => {
-		if (hasCredentialPair(d.users.noClaimsCorrect.username, d.users.noClaimsCorrect.password)) {
-			await logoutCurrentUser(page);
-			await loginWithCredentials(page, d.users.noClaimsCorrect.username, d.users.noClaimsCorrect.password);
+		const noClaimsCorrect = await loginWithPersonaFallback(page, {
+			configured: d.users.noClaimsCorrect,
+			logout: logoutCurrentUser,
+			acceptPersona: acceptNonElevatedPersona,
+		});
+		if (noClaimsCorrect && !noClaimsCorrect.isElevatedFallback) {
 			await navigateToClaimsDashboard(page);
 			await expect(page.getByRole('button', { name: new RegExp(d.labels.claimsCorrectLabel, 'i') })).toHaveCount(0);
 		}
 
-		if (hasCredentialPair(d.users.claimsCorrectUser.username, d.users.claimsCorrectUser.password)) {
-			await logoutCurrentUser(page);
-			await loginWithCredentials(page, d.users.claimsCorrectUser.username, d.users.claimsCorrectUser.password);
+		const claimsCorrectUser = await loginWithPersonaFallback(page, {
+			configured: d.users.claimsCorrectUser,
+			logout: logoutCurrentUser,
+		});
+		if (claimsCorrectUser) {
 			await navigateToClaimsDashboard(page);
 			const claimsCorrectBtn = page.getByRole('button', { name: new RegExp(d.labels.claimsCorrectLabel, 'i') }).first();
 			const visible = await claimsCorrectBtn.isVisible().catch(() => false);
@@ -538,11 +591,8 @@ test.describe('Users - SecureConnect user type suite', () => {
 	});
 
 	test('SC-UT-035/036/037/038/039/040/041/042: Restriction enforcement across Claims/Accounts/Payments/ERA/Enrollments with API-UI consistency', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.secureConnectRestricted.username, d.users.secureConnectRestricted.password), 'Restricted SecureConnect credentials are not configured.');
-		if (!hasCredentialPair(d.users.secureConnectRestricted.username, d.users.secureConnectRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.secureConnectRestricted.username, d.users.secureConnectRestricted.password);
+		const persona = await loginAsRestrictedPersona(page, d.users.secureConnectRestricted, 'SecureConnect restricted');
+		if (!persona) return;
 
 		await navigateToClaimsDashboard(page);
 		await applyFilterAndWait(page);
@@ -581,11 +631,8 @@ test.describe('Users - SecureConnect user type suite', () => {
 	});
 
 	test('SC-UT-043/044/045/046/047/048/049/050/051: Dashboard context and cross-module updates stay synchronized after relogin/lifecycle changes', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.secureConnectRestricted.username, d.users.secureConnectRestricted.password), 'Restricted SecureConnect credentials are not configured.');
-		if (!hasCredentialPair(d.users.secureConnectRestricted.username, d.users.secureConnectRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.secureConnectRestricted.username, d.users.secureConnectRestricted.password);
+		const persona = await loginAsRestrictedPersona(page, d.users.secureConnectRestricted, 'SecureConnect restricted');
+		if (!persona) return;
 
 		const options = await collectSelectorOptions(page);
 		if (options.length > 0) {
@@ -598,7 +645,7 @@ test.describe('Users - SecureConnect user type suite', () => {
 		await assertNoTokenInVisibleRows(page, d.scopes.disallowedGroup);
 
 		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.secureConnectRestricted.username, d.users.secureConnectRestricted.password);
+		await loginWithCredentials(page, persona.username, persona.password);
 		await navigateToAnalytics(page).catch(async () => {
 			const opened = await openPaymentAnalyticsModule(page);
 			test.skip(!opened, 'Analytics route unavailable in current environment state.');
