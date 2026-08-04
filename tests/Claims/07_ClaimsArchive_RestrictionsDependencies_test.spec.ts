@@ -20,6 +20,20 @@ function hasCredentialPair(username: string, password: string): boolean {
   return username.trim().length > 0 && password.trim().length > 0;
 }
 
+/** Restricted personas must not reuse SecureConnect/admin logins (false ACL positives). */
+function isUsableRestrictedPersona(persona: { username: string; password: string }): boolean {
+  if (!hasCredentialPair(persona.username, persona.password)) return false;
+  const user = persona.username.trim().toLowerCase();
+  const elevated = [
+    d.personas.secureConnectUser.username,
+    String(userData.admin.username),
+    String(userData.qauser?.username ?? ''),
+  ]
+    .map((v) => v.trim().toLowerCase())
+    .filter(Boolean);
+  return !elevated.includes(user);
+}
+
 async function runWithSoftTimeout<T>(work: () => Promise<T>, timeoutMs: number): Promise<T> {
   return await Promise.race([
     work(),
@@ -279,10 +293,13 @@ test.describe('Claims Archive - restrictions, rules, and dependencies suite', ()
 
   test('CA-009/010/011/012/013/014: Account, vendor, and billing-group restrictions prevent leakage and preserve SCAdmin baseline', async ({ page }) => {
     const personas = [d.personas.accountUser, d.personas.vendorUser, d.personas.billingGroupUser].filter((p) =>
-      hasCredentialPair(p.username, p.password)
+      isUsableRestrictedPersona(p)
     );
 
-    test.skip(personas.length === 0, 'Restriction persona credentials are not configured in archive test data.');
+    test.skip(
+      personas.length === 0,
+      'Distinct restricted personas (account/vendor/billing) are not configured – do not reuse qasecureconnect/scadmin.',
+    );
     if (personas.length === 0) return;
 
     await searchArchiveByClaim(page, d.values.groupId, d.values.claimId);

@@ -31,22 +31,22 @@
   },
   "personas": {
     "accountUser": {
-      "username": "qasecureconnect@gmail.com",
-      "password": "$@H0use@$",
+      "username": "",
+      "password": "",
       "allowedToken": "ACPM-4414",
       "disallowedToken": "G23734",
       "claimsCorrectAllowed": false
     },
     "vendorUser": {
-      "username": "qasecureconnect@gmail.com",
-      "password": "$@H0use@$",
+      "username": "",
+      "password": "",
       "allowedToken": "G23734",
       "disallowedToken": "G00014",
       "claimsCorrectAllowed": false
     },
     "billingGroupUser": {
-      "username": "qasecureconnect@gmail.com",
-      "password": "$@H0use@$",
+      "username": "",
+      "password": "",
       "allowedToken": "G29837",
       "disallowedToken": "G23734",
       "claimsCorrectAllowed": false

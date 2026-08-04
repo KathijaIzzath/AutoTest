@@ -10,11 +10,27 @@ import {
 	fetchAnyInactiveUserClient,
 	fetchUserClientByUsername,
 	fetchUserClientsByFilters,
+	setUsersClientActive,
 } from '../../testData/database.utils';
 import userData from '../../testData/user-info';
 import * as d from '../../testData/GroupRestrictionUserTestData.json';
 
 let pageErrors: string[] = [];
+
+/** Always re-enable qasecureconnect after temporary deactivate cases in this suite. */
+async function restoreTargetUserActive(page?: Page): Promise<void> {
+	const username = d.values.targetUsername;
+	if (page) {
+		try {
+			await ensureUsersPageReady(page);
+			await filterByLogin(page, username);
+			await setUserActiveState(page, username, true);
+		} catch {
+			// Fall through to DB restore.
+		}
+	}
+	await setUsersClientActive(username, true);
+}
 
 function escapeForRegex(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -41,7 +57,7 @@ async function ensureUsersPageReady(page: Page): Promise<void> {
 		await page.waitForTimeout(d.timeouts.retryMs);
 	}
 
-	throw new Error('Users dashboard filter input was not visible after retries.');
+	test.skip(true, 'Users dashboard was not ready after retries.');
 }
 
 async function clearAndFillTextbox(page: Page, name: string, value: string): Promise<void> {
@@ -489,16 +505,16 @@ test.describe('Users - Group Restriction suite', () => {
 		page.on('pageerror', (err) => pageErrors.push(err.message));
 
 		await loginAsAdmin();
-		try {
-			await ensureUsersPageReady(page);
-		} catch {
-			test.skip(true, 'Users dashboard did not become ready in current environment/session.');
-			return;
-		}
+		await ensureUsersPageReady(page);
 	});
 
 	test.afterEach(async () => {
-		expect(pageErrors, 'Unexpected browser runtime errors were thrown.').toEqual([]);
+		// Soft: console pageerrors must not abort the rest of this serial suite.
+		expect.soft(pageErrors, 'Unexpected browser runtime errors were thrown.').toEqual([]);
+	});
+
+	test.afterAll(async () => {
+		await restoreTargetUserActive();
 	});
 
 	test('Group Restriction filter controls are visible and available', async ({ page }) => {
@@ -601,75 +617,90 @@ test.describe('Users - Group Restriction suite', () => {
 	});
 
 	test('After enabling deactivated user, status becomes active and shows green semantic indicator', async ({ page }) => {
+		let deactivated = false;
 		try {
-			await filterByLogin(page, d.values.targetUsername);
-		} catch {
-			test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
-			return;
-		}
+			try {
+				await filterByLogin(page, d.values.targetUsername);
+			} catch {
+				test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
+				return;
+			}
 
-		const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
-		test.skip(setInactive === 'unavailable', 'Deactivate action is unavailable for current environment state.');
-		if (setInactive === 'unavailable') return;
+			const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
+			test.skip(setInactive === 'unavailable', 'Deactivate action is unavailable for current environment state.');
+			if (setInactive === 'unavailable') return;
+			deactivated = true;
 
-		try {
-			await filterByLogin(page, d.values.targetUsername);
-			await assertUserShowsInactiveIndicator(page, d.values.targetUsername);
-		} catch {
-			test.skip(true, 'Users dashboard unavailable after deactivation – skipping green indicator check.');
-			return;
-		}
-		try {
-			await assertStatusSemanticColor(page, d.values.targetUsername, 'red');
-		} catch {
-			// Color semantics can differ; continue to re-enable path.
-		}
+			try {
+				await filterByLogin(page, d.values.targetUsername);
+				await assertUserShowsInactiveIndicator(page, d.values.targetUsername);
+			} catch {
+				test.skip(true, 'Users dashboard unavailable after deactivation – skipping green indicator check.');
+				return;
+			}
+			try {
+				await assertStatusSemanticColor(page, d.values.targetUsername, 'red');
+			} catch {
+				// Color semantics can differ; continue to re-enable path.
+			}
 
-		const setActive = await setUserActiveState(page, d.values.targetUsername, true);
-		test.skip(setActive === 'unavailable', 'Enable action is unavailable for current environment state.');
-		if (setActive === 'unavailable') return;
+			const setActive = await setUserActiveState(page, d.values.targetUsername, true);
+			test.skip(setActive === 'unavailable', 'Enable action is unavailable for current environment state.');
+			if (setActive === 'unavailable') return;
+			deactivated = false;
 
-		try {
-			await filterByLogin(page, d.values.targetUsername);
-			await assertUserShowsActiveIndicator(page, d.values.targetUsername);
-		} catch {
-			test.skip(true, 'Users dashboard unavailable after re-enable – skipping green indicator check.');
-			return;
-		}
-		try {
-			await assertStatusSemanticColor(page, d.values.targetUsername, 'green');
-		} catch {
-			test.skip(true, 'Active status marker is present, but green color semantics differ in this environment.');
-			return;
-		}
+			try {
+				await filterByLogin(page, d.values.targetUsername);
+				await assertUserShowsActiveIndicator(page, d.values.targetUsername);
+			} catch {
+				test.skip(true, 'Users dashboard unavailable after re-enable – skipping green indicator check.');
+				return;
+			}
+			try {
+				await assertStatusSemanticColor(page, d.values.targetUsername, 'green');
+			} catch {
+				test.skip(true, 'Active status marker is present, but green color semantics differ in this environment.');
+				return;
+			}
 
-		const dbRow = await fetchUserClientByUsername(d.values.targetUsername);
-		expect(dbRow).not.toBeNull();
-		if (dbRow) {
-			expect(dbRow.isActive).toBeTruthy();
+			const dbRow = await fetchUserClientByUsername(d.values.targetUsername);
+			expect(dbRow).not.toBeNull();
+			if (dbRow) {
+				expect(dbRow.isActive).toBeTruthy();
+			}
+		} finally {
+			if (deactivated) {
+				await restoreTargetUserActive(page);
+			}
 		}
 	});
 
 	test('Disabled/deactivated users do not expose Edit User Info action when business rules disallow it', async ({ page }) => {
+		let deactivated = false;
 		try {
+			try {
+				await filterByLogin(page, d.values.targetUsername);
+			} catch {
+				test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
+				return;
+			}
+
+			const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
+			test.skip(setInactive === 'unavailable', 'Deactivate action is unavailable for current environment state.');
+			if (setInactive === 'unavailable') return;
+			deactivated = true;
+
 			await filterByLogin(page, d.values.targetUsername);
-		} catch {
-			test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
-			return;
+			const opened = await openActionMenuForUser(page, d.values.targetUsername);
+			test.skip(!opened, 'User action menu is not available in current environment state.');
+			if (!opened) return;
+
+			await expect(page.getByRole('button', { name: d.labels.editUserInfo })).toHaveCount(0);
+		} finally {
+			if (deactivated) {
+				await restoreTargetUserActive(page);
+			}
 		}
-
-		const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
-		test.skip(setInactive === 'unavailable', 'Deactivate action is unavailable for current environment state.');
-		if (setInactive === 'unavailable') return;
-
-		await filterByLogin(page, d.values.targetUsername);
-		const opened = await openActionMenuForUser(page, d.values.targetUsername);
-		test.skip(!opened, 'User action menu is not available in current environment state.');
-		if (!opened) return;
-
-		await expect(page.getByRole('button', { name: d.labels.editUserInfo })).toHaveCount(0);
-
-		await setUserActiveState(page, d.values.targetUsername, true);
 	});
 
 	test('Configured target username remains active in DB and appears in active-filter UI results', async ({ page }) => {

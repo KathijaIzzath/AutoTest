@@ -21,6 +21,21 @@ function hasCredentialPair(username: string, password: string): boolean {
   return username.trim().length > 0 && password.trim().length > 0;
 }
 
+/** Restricted personas must not reuse SecureConnect/admin logins (false ACL positives). */
+function isUsableRestrictedPersona(persona: {
+  username: string;
+  password: string;
+  claimsCorrectAllowed?: boolean;
+}): boolean {
+  if (!hasCredentialPair(persona.username, persona.password)) return false;
+  const sharedWithElevated =
+    persona.username.trim().toLowerCase() === d.personas.secureConnectUser.username.trim().toLowerCase() ||
+    persona.username.trim().toLowerCase() === String(userData.admin.username).trim().toLowerCase() ||
+    persona.username.trim().toLowerCase() === String(userData.qauser?.username ?? '').trim().toLowerCase();
+  if (persona.claimsCorrectAllowed === false && sharedWithElevated) return false;
+  return true;
+}
+
 async function runWithSoftTimeout<T>(work: () => Promise<T>, timeoutMs: number): Promise<T> {
   return await Promise.race([
     work(),
@@ -247,15 +262,21 @@ test.describe('Claims - restrictions, permissions, and dependencies matrix suite
   });
 
   test('TC-CLM-002/003/004/007/008/009/010/011/012: Persona restrictions enforce vendor-account-group scope with no leakage', async ({ page }) => {
-    const personas = [
+    const restricted = [
       d.personas.accountUser,
       d.personas.vendorUser,
       d.personas.billingGroupUser,
-      d.personas.secureConnectUser,
-    ].filter((p) => hasCredentialPair(p.username, p.password));
+    ].filter((p) => isUsableRestrictedPersona(p));
+    const elevated = hasCredentialPair(d.personas.secureConnectUser.username, d.personas.secureConnectUser.password)
+      ? [d.personas.secureConnectUser]
+      : [];
+    const personas = [...restricted, ...elevated];
 
-    test.skip(personas.length === 0, 'Restriction personas are not configured in ClaimsRestrictionsDependenciesTestData.json.');
-    if (personas.length === 0) return;
+    test.skip(
+      restricted.length === 0,
+      'Distinct restricted personas (account/vendor/billing) are not configured – do not reuse qasecureconnect/scadmin.',
+    );
+    if (restricted.length === 0) return;
 
     for (const persona of personas) {
       await logoutCurrentUser(page);
@@ -315,15 +336,21 @@ test.describe('Claims - restrictions, permissions, and dependencies matrix suite
   });
 
   test('TC-CLM-013/016/017/019: Claims Correct action obeys permission and provider-group dependency rules by persona', async ({ page }) => {
-    const personas = [
+    const restricted = [
       d.personas.accountUser,
       d.personas.vendorUser,
       d.personas.billingGroupUser,
-      d.personas.secureConnectUser,
-    ].filter((p) => hasCredentialPair(p.username, p.password));
+    ].filter((p) => isUsableRestrictedPersona(p));
+    const elevated = hasCredentialPair(d.personas.secureConnectUser.username, d.personas.secureConnectUser.password)
+      ? [d.personas.secureConnectUser]
+      : [];
+    const personas = [...restricted, ...elevated];
 
-    test.skip(personas.length === 0, 'Claims Correct persona credentials are not configured.');
-    if (personas.length === 0) return;
+    test.skip(
+      restricted.length === 0,
+      'Distinct restricted personas needed for Claims Correct ACL matrix – configure account/vendor/billing users (not qasecureconnect).',
+    );
+    if (restricted.length === 0) return;
 
     for (const persona of personas) {
       await logoutCurrentUser(page);
