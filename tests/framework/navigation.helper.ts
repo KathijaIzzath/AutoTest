@@ -145,7 +145,7 @@ export async function navigateToClaimsArchiveDashboard(page: Page): Promise<void
  */
 export async function navigateToAnalytics(page: Page): Promise<void> {
   const byHref = page.locator('a[href*="/dashboard/analytics"]').first();
-  const byText = page.getByRole('link', { name: / Analytics/i }).first();
+  const byText = page.getByRole('link', { name: /Analytics/i }).first();
 
   if (await byHref.isVisible().catch(() => false)) {
     await byHref.click();

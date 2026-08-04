@@ -62,7 +62,8 @@
     "analyticsHref":        "a[href*='/dashboard/analytics']"
   },
   "placeholders": {
-    "datePicker": "mm/dd/yyyy"
+    "datePicker": "mm/dd/yyyy",
+    "groupSearch": "Search group..."
   },
   "edgeCases": {
     "futureDateStart": "01/01/2030",
@@ -71,6 +72,20 @@
   },
   "security": {
     "unauthorizedGroupId": "G99999",
+    "knownGroupId": "G23496",
+    "knownGroupPartial": "G23496",
+    "knownGroupDisplay": "G23496 – CUMMERATA INC AND SONS",
+    "knownGroupPartialText": "G23496 – CUMMERATA INC AND",
+    "payerRejectionGroupId": "G00455",
+    "groupSearchSeed": "G23",
+    "claimSummaryLabel": "Group Claim Summary",
+    "claimSummaryValue": "claim-summary",
+    "payerRejectionLabel": "Group Payer Rejection Report",
+    "payerRejectionValue": "payer-rejection",
+    "scRejectionLabel": "Group SC Rejection Report",
+    "scRejectionValue": "sc-rejection",
+    "generateReport": "Generate Report",
+    "groupLabel": "Group",
     "restrictedUser": {
       "username": "",
       "password": "",
@@ -79,6 +94,8 @@
   },
   "timeouts": {
     "filterMs":     3000,
-    "navigationMs": 15000
+    "navigationMs": 15000,
+    "groupSuggestMs": 20000,
+    "reportGenerateMs": 90000
   }
 }

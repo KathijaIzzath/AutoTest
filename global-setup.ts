@@ -367,8 +367,16 @@ async function globalSetup() {
 
   // ── Step 3: Verify Analytics feature is deployed in this environment ─────────
   try {
-    const analyticsLink = page.getByRole('link', { name: /Analytics/i });
-    const analyticsVisible = await analyticsLink.isVisible({ timeout: 5000 }).catch(() => false);
+    // Prefer href (stable across icon/whitespace accessible-name quirks), then role/text.
+    const byHref = page.locator('a[href*="/dashboard/analytics"]').first();
+    const byRole = page.getByRole('link', { name: /Analytics/i }).first();
+    const byText = page.locator('a, button, [role="link"]').filter({ hasText: /^\s*Analytics\s*$/i }).first();
+
+    const analyticsVisible =
+      (await byHref.isVisible({ timeout: 5000 }).catch(() => false)) ||
+      (await byRole.isVisible({ timeout: 2000 }).catch(() => false)) ||
+      (await byText.isVisible({ timeout: 2000 }).catch(() => false));
+
     if (analyticsVisible) {
       console.log('[Feature check] ✓ Analytics menu item is present in the navigation.');
     } else {
