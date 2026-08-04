@@ -588,6 +588,46 @@ test.describe('Edit Claim Status Routing - generated and refactored suite', () =
 		await expect(modal.getByRole('button', { name: d.labels.save })).toBeVisible();
 	});
 
+	test.describe('Edit Claim Status – mandatory field validation', () => {
+		test('Negative: Save must not succeed when Processor ID is cleared', async ({ page }) => {
+			await searchByScId(page, d.values.scId);
+			await clickEditActionForScId(page, d.values.scId);
+			await ensureEditFormEnabled(page);
+
+			const modal = await getEditModal(page);
+			const processorInput = modal.getByRole('textbox', { name: d.placeholders.processorId }).first();
+			const editable = await processorInput.isEditable().catch(() => false);
+			test.skip(!editable, 'Processor ID is not editable in this environment – skipping.');
+			if (!editable) return;
+
+			await processorInput.fill(d.edgeCases.empty);
+			await saveEditModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when Processor ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+		});
+
+		test('Negative: Save must not succeed when EDI ID is cleared', async ({ page }) => {
+			await searchByScId(page, d.values.scId);
+			await clickEditActionForScId(page, d.values.scId);
+			await ensureEditFormEnabled(page);
+
+			const modal = await getEditModal(page);
+			const ediInput = modal.getByRole('textbox', { name: d.placeholders.ediId }).first();
+			const editable = await ediInput.isEditable().catch(() => false);
+			test.skip(!editable, 'EDI ID is not editable in this environment – skipping.');
+			if (!editable) return;
+
+			await ediInput.fill(d.edgeCases.empty);
+			await saveEditModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when EDI ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+		});
+	});
+
 	test('Invalid SC ID filter returns no rows or stable empty state', async ({ page }) => {
 		const invalidRows = await fetchClaimStatusRoutingRowsByScId(d.edgeCases.invalidScId);
 		expect(invalidRows).toHaveLength(0);

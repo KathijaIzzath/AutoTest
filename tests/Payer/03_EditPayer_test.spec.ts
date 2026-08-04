@@ -147,6 +147,28 @@ test.describe('Edit Payer - Refactored and Extended Coverage', () => {
 		await expect(page.locator('tbody')).toBeVisible();
 	});
 
+	test.describe('Edit Payer – mandatory field validation', () => {
+		test('Negative: Save must not succeed when Payer Contact is cleared', async ({ page, loginAsAdmin }) => {
+			await loginAsAdmin();
+			await applyFilter(page, d.values.validPayerFilterId);
+			await openEditFromGrid(page);
+
+			const payerContact = page.getByRole('textbox', { name: d.placeholders.payerContact });
+			await payerContact.clear();
+			const saveBtn = page.getByRole('button', { name: d.labels.save });
+			const disabled = await saveBtn.isDisabled().catch(() => false);
+			if (disabled) {
+				await expect(saveBtn, 'Save must stay disabled when Payer Contact is empty').toBeDisabled();
+			} else {
+				await saveBtn.click();
+				await expect(
+					page.getByLabel(d.labels.payerUpdated).first(),
+					'Success toast must not appear when Payer Contact is empty',
+				).not.toBeVisible({ timeout: 2500 });
+			}
+		});
+	});
+
 	test('Edit payer contact empty value should not show success toast', async ({ page, loginAsAdmin }) => {
 		await loginAsAdmin();
 

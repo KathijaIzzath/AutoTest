@@ -205,6 +205,45 @@ test.describe('Add Payer - Generated Flow Refactor', () => {
     await expect(addButton).toBeVisible();
   });
 
+  test.describe('Add Payer – mandatory field validation', () => {
+    test('Negative: Add Payer button is disabled on a fresh empty form', async ({ page }) => {
+      await openAddPayerModal(page);
+      await expect(
+        page.getByRole('button', { name: d.labels.addPayerButton }),
+        'Add must be disabled when required fields are empty',
+      ).toBeDisabled();
+    });
+
+    test('Negative: Add stays disabled when only Payer Name is filled', async ({ page }) => {
+      await openAddPayerModal(page);
+      await page.getByRole('textbox', { name: d.placeholders.payerName }).fill(d.values.payerName);
+      await expect(
+        page.getByRole('button', { name: d.labels.addPayerButton }),
+        'Add must stay disabled when other required fields are missing',
+      ).toBeDisabled();
+    });
+
+    test('Negative: Add with Payer Name cleared must not leave the Add form', async ({ page }) => {
+      await openAddPayerModal(page);
+      await fillRequiredAddPayerFields(page);
+      await page.getByRole('textbox', { name: d.placeholders.payerName }).fill('');
+
+      const addBtn = page.getByRole('button', { name: d.labels.addPayerButton });
+      const disabled = await addBtn.isDisabled().catch(() => false);
+      if (disabled) {
+        await expect(addBtn, 'Add must stay disabled when Payer Name is empty').toBeDisabled();
+        return;
+      }
+
+      // UI may keep Add enabled after a prior valid fill — click and assert save is blocked
+      await addBtn.click();
+      await expect(
+        page.getByRole('heading', { name: d.labels.addPayerSetup }),
+        'Add Payer Setup must remain open when Payer Name is empty',
+      ).toBeVisible({ timeout: 2500 });
+    });
+  });
+
   test('Duplicate add payer attempt keeps app stable and payer remains searchable', async ({ page }) => {
     test.setTimeout(120000);
     await openAddPayerModal(page);

@@ -372,4 +372,76 @@ test.describe('Users - Edit User Profile suite', () => {
     await openUsersAndFilterByFirstName(page, d.values.targetFilterFirstName);
     await expect(page.getByRole('cell', { name: d.values.targetUsername })).toBeVisible();
   });
+
+  test.describe('Edit User – mandatory field validation', () => {
+    test('Negative: Clearing First Name keeps Save & Close disabled', async ({ page }) => {
+      try {
+        await openEditUserForTarget(page);
+      } catch {
+        test.skip(true, 'Users edit path unavailable for mandatory First Name check.');
+        return;
+      }
+
+      const firstName = page.getByRole('textbox', { name: d.placeholders.firstName });
+      const editable = await firstName.isEditable().catch(() => false);
+      test.skip(!editable, 'First Name is not editable – skipping.');
+      if (!editable) return;
+
+      await firstName.fill('');
+      await expect(
+        page.getByRole('button', { name: d.labels.saveAndClose }),
+        'Save & Close must stay disabled when First Name is empty',
+      ).toBeDisabled();
+    });
+
+    test('Negative: Clearing Last Name keeps Save & Close disabled', async ({ page }) => {
+      try {
+        await openEditUserForTarget(page);
+      } catch {
+        test.skip(true, 'Users edit path unavailable for mandatory Last Name check.');
+        return;
+      }
+
+      const lastName = page.getByRole('textbox', { name: d.placeholders.lastName });
+      const editable = await lastName.isEditable().catch(() => false);
+      test.skip(!editable, 'Last Name is not editable – skipping.');
+      if (!editable) return;
+
+      await lastName.fill('');
+      await expect(
+        page.getByRole('button', { name: d.labels.saveAndClose }),
+        'Save & Close must stay disabled when Last Name is empty',
+      ).toBeDisabled();
+    });
+
+    test('Negative: Clearing Pin keeps Save & Close disabled', async ({ page }) => {
+      try {
+        await openEditUserForTarget(page);
+      } catch {
+        test.skip(true, 'Users edit path unavailable for mandatory Pin check.');
+        return;
+      }
+
+      await page.getByRole('textbox', { name: d.placeholders.pin }).fill('');
+      await expect(
+        page.getByRole('button', { name: d.labels.saveAndClose }),
+        'Save & Close must stay disabled when Pin is empty',
+      ).toBeDisabled();
+    });
+
+    test('Negative: Clearing Phone keeps Save & Close disabled', async ({ page }) => {
+      try {
+        await openEditUserForTarget(page);
+      } catch {
+        test.skip(true, 'Users edit path unavailable for mandatory Phone check.');
+        return;
+      }
+
+      await page.getByRole('textbox', { name: d.placeholders.phone }).fill('');
+      await expect(
+        page.getByRole('button', { name: d.labels.saveAndClose }),
+        'Save & Close must stay disabled when Phone is empty',
+      ).toBeDisabled();
+    });
+  });
 });

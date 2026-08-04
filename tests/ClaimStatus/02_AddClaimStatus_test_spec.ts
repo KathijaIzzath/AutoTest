@@ -542,6 +542,50 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 		await expect(modal.getByRole('button', { name: d.labels.add })).toBeVisible();
 	});
 
+	test.describe('Add Claim Status – mandatory field validation', () => {
+		test('Negative: Add must not succeed when SC ID is empty', async ({ page }) => {
+			await openAddModalFromDashboard(page);
+			await fillAddFormWithoutOnlineBatch(page);
+			const modal = await getAddModal(page);
+			await modal.getByRole('textbox', { name: d.placeholders.scId }).fill(d.edgeCases.empty);
+			await selectOnlineBatchOption(page, d.values.onlineBatchOnline);
+			await clickAddInModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when SC ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect((await getAddModal(page)).getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
+
+		test('Negative: Add must not succeed when Group ID is empty', async ({ page }) => {
+			await openAddModalFromDashboard(page);
+			await fillAddFormWithoutOnlineBatch(page);
+			const modal = await getAddModal(page);
+			await modal.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.edgeCases.empty);
+			await selectOnlineBatchOption(page, d.values.onlineBatchOnline);
+			await clickAddInModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when Group ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect((await getAddModal(page)).getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
+
+		test('Negative: Add must not succeed when Processor ID is empty', async ({ page }) => {
+			await openAddModalFromDashboard(page);
+			await fillAddFormWithoutOnlineBatch(page);
+			const modal = await getAddModal(page);
+			await modal.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.edgeCases.empty);
+			await selectOnlineBatchOption(page, d.values.onlineBatchOnline);
+			await clickAddInModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when Processor ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect((await getAddModal(page)).getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
+	});
+
 	test('Invalid SC ID filter returns no rows or stable empty state', async ({ page }) => {
 		const dbRows = await fetchClaimStatusRoutingRowsByScId(d.edgeCases.invalidScId);
 		expect(dbRows).toHaveLength(0);
