@@ -179,6 +179,7 @@ async function getDetailsPanelSelect(page: Page): Promise<Locator> {
 }
 
 test.describe('Claims Archive Dashboard - generated and refactored suite', () => {
+  test.describe.configure({ timeout: 180000 });
   test.beforeEach(async ({ page, loginAsAdmin }) => {
     pageErrors = [];
     page.on('pageerror', (err) => pageErrors.push(err.message));

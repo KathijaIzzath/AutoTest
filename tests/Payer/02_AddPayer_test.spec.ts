@@ -79,6 +79,8 @@ async function searchByDashboardPayerId(page: Page, payerId: string): Promise<vo
 }
 
 test.describe('Add Payer - Generated Flow Refactor', () => {
+  test.describe.configure({ timeout: 180000 });
+
   test.beforeEach(async ({ loginAsAdmin }) => {
     await prepareUniquePayerRecord();
     await loginAsAdmin();

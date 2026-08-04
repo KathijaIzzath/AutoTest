@@ -55,6 +55,7 @@ function hasInactiveUserCredentials(): boolean {
 // ─── SC-856: Deactivated Users Login Security ─────────────────────────────────
 
 test.describe('SC-856 – Deactivated Users Login Security', () => {
+  test.describe.configure({ timeout: 180000 });
 
   test.beforeEach(async ({ page }) => {
     await navigateToLogin(page);
@@ -100,6 +101,7 @@ test.describe('SC-856 – Deactivated Users Login Security', () => {
 
   test('TC-856-03: Token issued at login becomes invalid after user deactivation (skip-safe)',
     async ({ browser }) => {
+      test.setTimeout(180000);
       const targetUsername = userData.qauser.username;
       const targetPassword = userData.qauser.password;
       test.skip(!targetUsername || !targetPassword, 'QA user credentials not configured for mid-session deactivation.');

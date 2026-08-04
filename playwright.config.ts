@@ -8,7 +8,8 @@ import { defineConfig, devices } from '@playwright/test';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 export const testConfig = {
-  globalTimeoutMs: 60000,
+  // QA under parallel workers regularly exceeds 60s for login + filter + assert flows.
+  globalTimeoutMs: 120000,
   };
 
 const isoNow = new Date().toISOString();

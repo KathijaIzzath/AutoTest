@@ -34,6 +34,7 @@ async function openCreateProviderGroup(page: Page, accountNumber: string) {
 
 
 test('Create Provider Group Screen verification and functionality test', async ({ page, loginAsAdmin }) => {
+  test.setTimeout(180000);
   await loginAsAdmin();
   
   

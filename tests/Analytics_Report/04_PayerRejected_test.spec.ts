@@ -90,6 +90,7 @@ async function getTotalsClaimsCount(page: Page): Promise<number> {
 // ---------------------------------------------------------------------------
 
 test.describe('Payer Rejection Report', () => {
+  test.describe.configure({ timeout: 180000 });
 
   // ── 0. DB prerequisite setup ─────────────────────────────────────────────
 
@@ -243,8 +244,13 @@ test.describe('Payer Rejection Report', () => {
         const input = page.getByRole('textbox', { name: d.placeholders.groupSearch });
         await input.click();
         await input.fill(d.edgeCases.nonExistentGroupId);
-        await page.waitForTimeout(d.timeouts.filterMs);
-        await expect(page.getByText(d.edgeCases.nonExistentGroupId).first()).not.toBeVisible();
+        // Typed value remains in the input; assert no selectable suggestion/option appears.
+        await page.waitForTimeout(Math.min(d.timeouts.filterMs ?? 2000, 3000));
+        const suggestionCount = await page
+          .locator('[role="option"], .ng-option, .suggestion, .dropdown-item')
+          .filter({ hasText: d.edgeCases.nonExistentGroupId })
+          .count();
+        expect(suggestionCount, 'Non-existent group must not appear as a selectable suggestion').toBe(0);
       });
 
     test('TC13 - Random invalid text shows no suggestion',

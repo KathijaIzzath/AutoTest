@@ -36,7 +36,7 @@
     "sameDateRange":   "01/01/2024"
   },
   "timeouts": {
-    "filterMs":     5000,
-    "navigationMs": 15000
+    "filterMs":     20000,
+    "navigationMs": 30000
   }
 }

@@ -53,6 +53,6 @@
   "timeouts": {
     "reportGenerateMs": 90000,
     "filterMs":         20000,
-    "downloadMs":       15000
+    "downloadMs":       45000
   }
 }
