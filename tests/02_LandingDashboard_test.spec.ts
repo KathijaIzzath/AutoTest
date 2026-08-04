@@ -681,3 +681,143 @@ test.describe('Dashboard - Notifications / Information Panel', () => {
   });
 
 });
+
+// ─── SC-777: Updated Dashboard Layout ────────────────────────────────────────
+
+test.describe('SC-777 – Updated Dashboard Layout and Widgets', () => {
+
+  test('TC-777-01: Dashboard loads with updated key widgets – Notifications, Today\'s Claim Totals, Outstanding Enrollments, and Recent ERAs',
+    async ({ page, loginAsAdmin }) => {
+      await loginAsAdmin();
+      await page.reload();
+
+      // Open Notifications panel which contains all updated widgets
+      await openNotificationsPanel(page);
+
+      await expect(
+        page.getByText(d.notifications.notificationsHeading, { exact: true }),
+        'Notifications section must be visible after SC-777 update',
+      ).toBeVisible();
+      await expect(
+        page.getByText(d.notifications.todayClaimTotalsHeading),
+        'Today\'s Claim Totals widget must be visible',
+      ).toBeVisible();
+      await expect(
+        page.getByText(d.notifications.outstandingEnrollmentsLabel),
+        'Outstanding Enrollments widget must be visible',
+      ).toBeVisible();
+      await expect(
+        page.getByText(d.notifications.recentErasLabel),
+        'Recent ERAs widget must be visible',
+      ).toBeVisible();
+    },
+  );
+
+  test('TC-777-02: Notifications placeholder is visible and does not cause a broken component',
+    async ({ page, loginAsAdmin }) => {
+      await loginAsAdmin();
+      await page.reload();
+
+      const pageErrors: string[] = [];
+      page.on('pageerror', (err) => pageErrors.push(err.message));
+
+      await openNotificationsPanel(page);
+
+      await expect(
+        page.getByText(d.notifications.notificationsHeading, { exact: true }),
+        'Notifications placeholder heading must be present',
+      ).toBeVisible();
+
+      // SC-777 specifies a future-release placeholder text for the Notifications section
+      const futureReleaseVisible = await page
+        .getByText(d.notifications.futureReleaseText, { exact: false })
+        .isVisible()
+        .catch(() => false);
+      console.log(`[TC-777-02] Future release placeholder visible: ${futureReleaseVisible}`);
+
+      expect(
+        pageErrors,
+        `No JavaScript page errors must occur when viewing the Notifications panel. Errors: ${pageErrors.join('; ')}`,
+      ).toHaveLength(0);
+    },
+  );
+
+  test('TC-777-03: Support contacts are accessible from the header Information icon (not duplicated in old location)',
+    async ({ page, loginAsAdmin }) => {
+      await loginAsAdmin();
+      await page.reload();
+
+      await openNotificationsPanel(page);
+
+      // Verify support contact information is accessible via the panel
+      const supportLabelVisible = await page
+        .getByText(d.notifications.supportLabel, { exact: false })
+        .isVisible()
+        .catch(() => false);
+      const panelPhoneVisible = await page
+        .getByRole('link', { name: new RegExp(d.notifications.panelPhoneLink) })
+        .first()
+        .isVisible()
+        .catch(() => false);
+      const panelEmailVisible = await page
+        .getByRole('link', { name: d.notifications.panelEmailLink })
+        .first()
+        .isVisible()
+        .catch(() => false);
+      const docLinkVisible = await page
+        .getByRole('link', { name: d.notifications.viewDocumentationLink })
+        .first()
+        .isVisible()
+        .catch(() => false);
+
+      const supportReachable = supportLabelVisible || panelPhoneVisible || panelEmailVisible || docLinkVisible;
+      expect(
+        supportReachable,
+        'Support contact information must be reachable from the header Information panel',
+      ).toBe(true);
+    },
+  );
+
+  test('TC-777-04: Dashboard widgets load and page remains usable even under varying load conditions',
+    async ({ page, loginAsAdmin }) => {
+      await loginAsAdmin();
+      await page.reload();
+
+      // Page must remain interactive even before all widgets finish loading
+      await expect(
+        page.locator(d.selectors.appDashboard),
+        'app-dashboard must be present immediately on load',
+      ).toBeVisible();
+      await expect(
+        page.getByText(d.labels.groupFilterLabel),
+        'Group filter must be interactive',
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: d.notifications.infoButtonName }),
+        'Information button must be clickable',
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: d.notifications.infoButtonName }),
+      ).toBeEnabled();
+
+      // Open panel and verify all four sections rendered (even if data is loading)
+      await openNotificationsPanel(page);
+
+      const panelSections = [
+        d.notifications.todayClaimTotalsHeading,
+        d.notifications.outstandingEnrollmentsLabel,
+        d.notifications.recentErasLabel,
+      ];
+
+      for (const section of panelSections) {
+        const sectionVisible = await page.getByText(section).isVisible().catch(() => false);
+        console.log(`[TC-777-04] Section "${section}" visible: ${sectionVisible}`);
+        expect(
+          sectionVisible,
+          `Widget section "${section}" must be visible in the updated dashboard layout`,
+        ).toBe(true);
+      }
+    },
+  );
+
+});

@@ -1,0 +1,59 @@
+{
+  "accounts": {
+    "active": {
+      "accountNum": "TESTQA0001",
+      "label": "Active test account for SC-799 provider feature date tests"
+    },
+    "deactivated": {
+      "note": "Deactivated account - add/provider actions should be blocked"
+    }
+  },
+  "groups": {
+    "active": {
+      "id": "G31943",
+      "label": "Active group under TESTQA0001"
+    }
+  },
+  "providers": {
+    "existingEdit": {
+      "id": "H61206",
+      "label": "Existing provider used for edit/feature-date verification (SC-799 TC-799-05)"
+    }
+  },
+  "features": {
+    "ecs": "ECS",
+    "era": "ERA",
+    "eligibility": "Eligibility",
+    "claimStatus": "Claim Status",
+    "statements": "Statements"
+  },
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "edit": "Edit",
+    "save": "Save",
+    "addProvider": "Add Provider",
+    "next": "Next",
+    "previous": "Previous",
+    "featureDates": "Feature Dates",
+    "providerIdFilter": "Provider ID"
+  },
+  "placeholders": {
+    "providerId": "Enter Provider ID",
+    "firstName": "Enter First Name",
+    "lastName": "Enter Last Name"
+  },
+  "selectors": {
+    "appProviders": "app-providers",
+    "editProviderHeadingRegex": "EditProvider",
+    "checkboxCheckedClass": ".fa-check-square, [aria-checked='true'], input[type='checkbox']:checked",
+    "featureDateInput": "input[type='date'], input[placeholder*='date'], input[placeholder*='Date']"
+  },
+  "edgeCases": {
+    "empty": ""
+  },
+  "timeouts": {
+    "filterMs": 5000,
+    "saveMs": 10000,
+    "navigationMs": 20000
+  }
+}

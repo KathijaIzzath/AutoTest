@@ -1,0 +1,45 @@
+{
+  "statuses": {
+    "sentToCustomer": "Sent to Customer",
+    "approved": "Approved",
+    "toBeSent": "To be sent",
+    "notApplicable": "Not applicable"
+  },
+  "labels": {
+    "groupId": "Group ID",
+    "groupEnrollmentsNav": " Group Enrollments",
+    "applyFilter": "Apply Filter",
+    "save": "Save",
+    "edit": "Edit",
+    "status": "Status",
+    "processorId": "Processor ID",
+    "confirmSave": "Yes",
+    "cancel": "Cancel"
+  },
+  "placeholders": {
+    "groupId": "Enter Group ID",
+    "npi": "Enter NPI",
+    "taxId": "Enter Tax ID"
+  },
+  "enrollment": {
+    "testGroupId": "G00014",
+    "npi": "0829876198",
+    "taxId": "082954619",
+    "payerId": "00014",
+    "processorId": "RELAY"
+  },
+  "selectors": {
+    "statusDropdown": "ng-select",
+    "tableRows": "tbody tr",
+    "actionLink": "a[title='Action'], a:has-text('Action')"
+  },
+  "errorMessages": {
+    "invalidProcessor": "Invalid Processor Id",
+    "saveError": "Error saving"
+  },
+  "timeouts": {
+    "filterMs": 5000,
+    "saveMs": 10000,
+    "navigationMs": 15000
+  }
+}

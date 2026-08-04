@@ -1,0 +1,41 @@
+{
+  "users": {
+    "inactive": {
+      "username": "qa.inactive.user@secureconnect.test",
+      "password": "QAInactive@2024!",
+      "note": "User with active=false in the database; must be pre-configured before tests run"
+    },
+    "active": {
+      "note": "Active user credentials are sourced from user-info.ts admin entry"
+    }
+  },
+  "environments": {
+    "staging": {
+      "urlPattern": "scdemo",
+      "label": "Staging"
+    },
+    "qa": {
+      "urlPattern": "qnk1scltweb02",
+      "label": "QA"
+    }
+  },
+  "labels": {
+    "logInButton": "Log In",
+    "usernameField": "Enter Username",
+    "passwordField": "Enter Password"
+  },
+  "errorMessages": {
+    "invalidCredentials": "Invalid username or password",
+    "accessDenied": "access denied",
+    "unauthorized": "unauthorized"
+  },
+  "tokenMarkers": {
+    "payloadSeparator": ".",
+    "minTokenLength": 20
+  },
+  "timeouts": {
+    "loginMs": 10000,
+    "retryMs": 1500,
+    "tokenCheckMs": 5000
+  }
+}
