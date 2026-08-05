@@ -1,0 +1,75 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "addAccount": "Add Account",
+    "createNewAccount": "Create New Account",
+    "editAccount": "Edit Account",
+    "deactivateAccount": "Deactivate Account",
+    "activateAccount": "Activate Account",
+    "showInactiveOnly": "Show Inactive Only",
+    "logout": "Logout",
+    "login": "Log In",
+    "claims": "Claims",
+    "era": "ERA",
+    "groupEnrollments": "Group Enrollments",
+    "providerGroups": "Providers Group",
+    "viewPayments": "View Payments",
+    "paymentAnalytics": "Payment Analytics"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "placeholders": {
+    "accountNumber": "Enter Account Number",
+    "accountName": "Enter Account Name",
+    "taxId": "Enter Tax ID",
+    "loginPrimary": "Enter Login",
+    "loginFallback": "Enter Username",
+    "groupId": "Enter Group ID"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1
+  },
+  "accounts": {
+    "deactivationAccount": "QATEST01",
+    "restrictedAccount": "ACPM-4414",
+    "searchName": "LOUDOUN MEDICAL GROUP",
+    "searchNamePartial": "LOUD",
+    "searchNumber": "QATEST01",
+    "disallowedSibling": "ACPM-4414"
+  },
+  "taxId": {
+    "value": "554625978"
+  },
+  "groups": {
+    "allowedGroup": "G00014",
+    "disallowedGroup": "G31192"
+  },
+  "users": {
+    "targetUser": "qasecureconnect@gmail.com",
+    "accountRestricted": {
+      "username": "qasecureconnect@gmail.com",
+      "password": "$@H0use@$"
+    },
+    "vendorRestricted": {
+      "username": "qasecureconnect@gmail.com",
+      "password": "$@H0use@$"
+    },
+    "billingGroupRestricted": {
+      "username": "qasecureconnect@gmail.com",
+      "password": "$@H0use@$"
+    }
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "retryMs": 500,
+    "saveMs": 1500
+  },
+  "limits": {
+    "maxRowsToInspect": 30,
+    "allowStateMutation": true
+  }
+}

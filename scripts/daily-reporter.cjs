@@ -26,15 +26,25 @@ function readConfiguredOutputDir() {
   }
 }
 
-function resolveOutputDir() {
-  // Priority: REPORT_OUTPUT_DIR env (CI) → email-config.json → local default
-  const fromEnv = (process.env.REPORT_OUTPUT_DIR || '').trim();
+function sanitizeTag(value, fallback) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  return normalized || fallback;
+}
+
+function resolveOutputDir(rootDir) {
+  // Priority: REPORT_OUTPUT_DIR / DAILY_REPORT_DIR (CI) ? email-config.json ? local default
+  const fromEnv = (process.env.REPORT_OUTPUT_DIR || process.env.DAILY_REPORT_DIR || '').trim();
   const fromConfig = readConfiguredOutputDir();
   const chosen = fromEnv || fromConfig;
   const base = chosen
-    ? (path.isAbsolute(chosen) ? chosen : path.resolve(ROOT_DIR, chosen))
-    : path.join(ROOT_DIR, 'playwright-report', 'daily-summary');
-  return path.join(base, 'daily-rollup');
+    ? (path.isAbsolute(chosen) ? chosen : path.resolve(rootDir || ROOT_DIR, chosen))
+    : path.join(rootDir || ROOT_DIR, 'playwright-report', 'daily-summary');
+  return base;
 }
 
 function readInfraStatus() {
@@ -239,29 +249,43 @@ class DailyReporter {
     if (this._modules.size === 0) return;
 
     try {
-      const OUTPUT_DIR = resolveOutputDir();
+      const OUTPUT_DIR = resolveOutputDir(this._rootDir);
       fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-      // One file per day – overwrite if same day
-      const dateStr  = new Date().toISOString().slice(0, 10);
-      const outPath  = path.join(OUTPUT_DIR, `daily-rollup-${dateStr}.html`);
+      const scopeTag = sanitizeTag(process.env.AUTOTEST_SCOPE, 'adhoc');
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const timeStr = new Date().toTimeString().slice(0, 8).replace(/:/g, '-');
       const infraStatus = readInfraStatus();
-      const html     = buildHtml(this._modules, result.status, infraStatus);
-      fs.writeFileSync(outPath, html, 'utf-8');
+      const html = buildHtml(this._modules, result.status, infraStatus);
 
-      // Count totals for console log
+      // Always preserve an immutable per-run report.
+      const scopedPath = path.join(OUTPUT_DIR, `test-summary-${dateStr}_${timeStr}-${scopeTag}.html`);
+      fs.writeFileSync(scopedPath, html, 'utf-8');
+
+      // Write the stable date-only rollup only for explicit daily full-suite runs.
+      const shouldWriteDailyRollup = process.env.AUTOTEST_DAILY_ROLLUP === '1';
+      const dailyRollupPath = path.join(OUTPUT_DIR, `test-summary-${dateStr}.html`);
+      if (shouldWriteDailyRollup) {
+        fs.writeFileSync(dailyRollupPath, html, 'utf-8');
+      }
+
       let passed = 0, failed = 0, skipped = 0, total = 0;
       for (const [, tests] of this._modules) {
         for (const t of tests) {
           total++;
-          if      (t.status === 'passed')                             passed++;
+          if (t.status === 'passed') passed++;
           else if (t.status === 'failed' || t.status === 'timedOut') failed++;
-          else if (t.status === 'skipped')                           skipped++;
+          else if (t.status === 'skipped') skipped++;
         }
       }
 
-      console.log(`[daily-report] ✓ Report saved: ${outPath}`);
-      console.log(`[daily-report]   ${total} tests — ${passed} passed | ${failed} failed | ${skipped} skipped`);
+      console.log(`[daily-report] Scoped report saved: ${scopedPath}`);
+      if (shouldWriteDailyRollup) {
+        console.log(`[daily-report] Daily rollup saved: ${dailyRollupPath}`);
+      } else {
+        console.log('[daily-report] Daily rollup not written (AUTOTEST_DAILY_ROLLUP != 1).');
+      }
+      console.log(`[daily-report]   ${total} tests - ${passed} passed | ${failed} failed | ${skipped} skipped`);
     } catch (err) {
       console.warn('[daily-report] Failed to write daily rollup report:', err.message);
     }

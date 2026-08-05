@@ -1,0 +1,83 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "addProviderGroup": "Add Provider Group",
+    "createProviderGroup": "Create Provider Group",
+    "editProviderGroup": "Edit Provider Group",
+    "deactivateProviderGroup": "Deactivate Provider Group",
+    "activateProviderGroup": "Activate Provider Group",
+    "saveAndClose": "Save & Close",
+    "claims": "Claims",
+    "era": "ERA",
+    "analytics": "Analytics",
+    "groupEnrollments": "Group Enrollments",
+    "viewPayments": "View Payments",
+    "paymentAnalytics": "Payment Analytics",
+    "logout": "Logout",
+    "login": "Log In"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "placeholders": {
+    "groupId": "Enter Group ID",
+    "groupName": "Enter Group Name",
+    "accountNumber": "Enter Account Number",
+    "accountName": "Enter Account Name",
+    "city": "Enter City",
+    "loginPrimary": "Enter Login",
+    "loginFallback": "Enter Username"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1,
+    "stateContainer": "states",
+    "vendorFilter": "dropdown-filter-item"
+  },
+  "groups": {
+    "searchGroupId": "G00014",
+    "searchGroupName": "LAKIN-KULAS",
+    "disallowedGroup": "G31192",
+    "idWithWhitespace": "  G23734  "
+  },
+  "accounts": {
+    "activeAccount": "VMCTEST",
+    "deactivatedAccount": "QATEST01",
+    "disallowedAccount": "ACPM-4414"
+  },
+  "identifiers": {
+    "pmIdentifier": "PM-10001",
+    "id1": "ID-ONE-100",
+    "id2": "ID-TWO-100",
+    "id3": "ID-THREE-100"
+  },
+  "users": {
+    "scadminFallback": {
+      "username": "scadmin",
+      "password": "Scadmin123!"
+    },
+    "vendorRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "accountRestricted": {
+      "username": "",
+      "password": ""
+    },
+    "billingGroupRestricted": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "retryMs": 500,
+    "saveMs": 1500
+  },
+  "limits": {
+    "maxRowsToInspect": 30,
+    "allowStateMutation": false
+  }
+}

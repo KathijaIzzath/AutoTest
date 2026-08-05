@@ -17,7 +17,7 @@ export default async function globalTeardown() {
     console.log('[global-teardown] Skipping teardown daily rollup generation (handled by daily-reporter).');
   }
 
-  // ── 2. Clean up old artifacts ─────────────────────────────────────────────
+  // ── Clean up old artifacts ─────────────────────────────────────────────
   try {
     execSync(`node "${path.resolve(__dirname, 'scripts/cleanup-old-artifacts.js')}"`, {
       stdio: 'inherit',

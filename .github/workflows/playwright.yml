@@ -31,6 +31,7 @@ jobs:
       TEST_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'qa' }}
       FORCE_TEST_ENV: ${{ github.event_name == 'schedule' && 'qa' || '' }}
       REPORT_OUTPUT_DIR: playwright-report/daily-summary
+      DAILY_REPORT_DIR: playwright-report/daily-summary
       FAIL_ON_AUTH_UNAVAILABLE: 'false'
       FLAKE_RATE_THRESHOLD: '0.05'
       FLAKE_RATE_GROWTH_THRESHOLD: '0.02'
@@ -58,8 +59,13 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Run Playwright tests (scheduled daily full suite)
+        if: github.event_name == 'schedule'
+        run: npm run test:daily:full
+
       - name: Run Playwright tests (full suite)
-        run: npm test
+        if: github.event_name != 'schedule'
+        run: npm run test:full
 
       - name: Upload Playwright report
         if: always()
