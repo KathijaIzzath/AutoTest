@@ -12,31 +12,13 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { getTestEnv, resolveReportOutputDir } = require('./report-output-dir.cjs');
 
 const ROOT        = path.resolve(__dirname, '..');
 const JSON_SOURCE = path.join(ROOT, 'test-results-latest.json');
 
-function readConfiguredOutputDir() {
-  try {
-    const configPath = path.join(ROOT, 'scripts', 'email-config.json');
-    if (!fs.existsSync(configPath)) return '';
-    const parsed = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    return String(parsed.reportOutputDir || '').trim();
-  } catch (err) {
-    console.warn('[daily-report] Failed to read email-config.json reportOutputDir:', err.message);
-    return '';
-  }
-}
-
 function resolveOutputDir() {
-  // Priority: REPORT_OUTPUT_DIR env (CI) → email-config.json → local default
-  const fromEnv = (process.env.REPORT_OUTPUT_DIR || '').trim();
-  const fromConfig = readConfiguredOutputDir();
-  const chosen = fromEnv || fromConfig;
-  const base = chosen
-    ? (path.isAbsolute(chosen) ? chosen : path.resolve(ROOT, chosen))
-    : path.join(ROOT, 'playwright-report', 'daily-summary');
-  return path.join(base, 'daily-rollup');
+  return path.join(resolveReportOutputDir(ROOT), 'daily-rollup');
 }
 
 const OUTPUT_DIR = resolveOutputDir();
@@ -160,6 +142,7 @@ function loadResults() {
 
 function buildHtml(tests, stats, infraStatus) {
   const now      = new Date();
+  const envLabel = getTestEnv() === 'staging' ? 'Staging' : 'QA';
   const runDate  = now.toLocaleString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
@@ -215,13 +198,13 @@ function buildHtml(tests, stats, infraStatus) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>AutoTest Daily Report – ${now.toISOString().slice(0,10)}</title>
+  <title>AutoTest ${envLabel} Daily Report - ${now.toISOString().slice(0,10)}</title>
 </head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
   <div style="max-width:900px;margin:32px auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden">
 
     <div style="background:#1e293b;padding:24px 32px">
-      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest Daily Rollup Summary</h1>
+      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest ${envLabel} Daily Rollup Summary</h1>
       <p style="margin:4px 0 0;color:#94a3b8;font-size:14px">${runDate}</p>
     </div>
 

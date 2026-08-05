@@ -143,17 +143,15 @@ function defaultEmailConfig(baseDir: string): ReporterEmailConfig {
 }
 
 function resolveReportOutputDir(rootDir: string, configuredOutputDir?: string): string {
-  const fromEnv = (process.env.REPORT_OUTPUT_DIR ?? '').trim();
-  if (fromEnv) {
-    return path.isAbsolute(fromEnv) ? fromEnv : path.resolve(rootDir, fromEnv);
-  }
-
-  const fromConfig = (configuredOutputDir ?? '').trim();
-  if (fromConfig) {
-    return path.isAbsolute(fromConfig) ? fromConfig : path.resolve(rootDir, fromConfig);
-  }
-
-  return path.join(rootDir, 'playwright-report', 'daily-summary');
+  // Lazy-require shared resolver so TEST_ENV=staging writes under DailyExecution/Staging.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { resolveReportOutputDir: resolveShared } = require('./report-output-dir.cjs') as {
+    resolveReportOutputDir: (
+      root: string,
+      options?: { configuredOutputDir?: string; envOverride?: string },
+    ) => string;
+  };
+  return resolveShared(rootDir, { configuredOutputDir });
 }
 
 function resolvePerRunOutputDir(rootDir: string, configuredOutputDir?: string): string {
@@ -458,6 +456,7 @@ function buildStabilityAnalysis(
 }
 
 function buildHtml(modules: ModuleEntry[], overallResult: FullResult['status'], runDate: string, infraStatus: InfraStatus): string {
+  const envLabel = String(process.env.TEST_ENV || 'qa').toLowerCase() === 'staging' ? 'Staging' : 'QA';
   const { totalTests, totalPassed, totalFailed, totalSkipped, totalDuration } = summarizeModules(modules);
 
   const overallColor = overallResult === 'passed' ? '#22c55e' : overallResult === 'failed' ? '#ef4444' : '#f59e0b';
@@ -502,7 +501,7 @@ function buildHtml(modules: ModuleEntry[], overallResult: FullResult['status'], 
 
     <!-- Header -->
     <div style="background:#1e293b;padding:24px 32px">
-      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest Per-Run Execution Summary</h1>
+      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest ${envLabel} Per-Run Execution Summary</h1>
       <p style="margin:4px 0 0;color:#94a3b8;font-size:14px">${runDate}</p>
     </div>
 
@@ -640,7 +639,11 @@ class SummaryEmailReporter implements Reporter {
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10);
     const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '-');
-    const subject = emailConfig.subject.replace('{date}', dateStr);
+    const subjectBase = emailConfig.subject.replace('{date}', dateStr);
+    const subject =
+      (process.env.TEST_ENV || 'qa').toLowerCase() === 'staging'
+        ? subjectBase.replace('AutoTest', 'AutoTest Staging')
+        : subjectBase;
 
     // Always save per-run HTML and compact JSON into the configured output folder.
     const reportDir = resolvePerRunOutputDir(this.rootDir, emailConfig.reportOutputDir);

@@ -1,6 +1,6 @@
 'use strict';
 /**
- * daily-reporter.cjs – Playwright reporter that generates a daily HTML summary
+ * daily-reporter.cjs ? Playwright reporter that generates a daily HTML summary
  * as a daily rollup under REPORT_OUTPUT_DIR/daily-rollup.
  *
  * Registered in playwright.config.ts as ['./scripts/daily-reporter.cjs']
@@ -11,20 +11,9 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { getTestEnv, resolveReportOutputDir } = require('./report-output-dir.cjs');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-
-function readConfiguredOutputDir() {
-  try {
-    const configPath = path.join(ROOT_DIR, 'scripts', 'email-config.json');
-    if (!fs.existsSync(configPath)) return '';
-    const parsed = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    return String(parsed.reportOutputDir || '').trim();
-  } catch (err) {
-    console.warn('[daily-report] Failed to read email-config.json reportOutputDir:', err.message);
-    return '';
-  }
-}
 
 function sanitizeTag(value, fallback) {
   const normalized = String(value || '')
@@ -37,14 +26,7 @@ function sanitizeTag(value, fallback) {
 }
 
 function resolveOutputDir(rootDir) {
-  // Priority: REPORT_OUTPUT_DIR / DAILY_REPORT_DIR (CI) ? email-config.json ? local default
-  const fromEnv = (process.env.REPORT_OUTPUT_DIR || process.env.DAILY_REPORT_DIR || '').trim();
-  const fromConfig = readConfiguredOutputDir();
-  const chosen = fromEnv || fromConfig;
-  const base = chosen
-    ? (path.isAbsolute(chosen) ? chosen : path.resolve(rootDir || ROOT_DIR, chosen))
-    : path.join(rootDir || ROOT_DIR, 'playwright-report', 'daily-summary');
-  return base;
+  return resolveReportOutputDir(rootDir || ROOT_DIR);
 }
 
 function readInfraStatus() {
@@ -82,10 +64,10 @@ function buildInfraBanner(infraStatus) {
     </div>`;
 }
 
-// ── helpers ────────────────────────────────────────────────────────────────
+// ?? helpers ????????????????????????????????????????????????????????????????
 
 function msToHuman(ms) {
-  if (!ms || ms < 0) return '–';
+  if (!ms || ms < 0) return '?';
   if (ms < 1000)  return ms + 'ms';
   if (ms < 60000) return (ms / 1000).toFixed(1) + 's';
   const m = Math.floor(ms / 60000);
@@ -106,6 +88,7 @@ function statusBadge(status) {
 
 function buildHtml(moduleMap, overallStatus, infraStatus) {
   const now     = new Date();
+  const envLabel = getTestEnv() === 'staging' ? 'Staging' : 'QA';
   const runDate = now.toLocaleString('en-US', {
     weekday:'long', year:'numeric', month:'long', day:'numeric',
     hour:'2-digit', minute:'2-digit', timeZoneName:'short',
@@ -133,7 +116,7 @@ function buildHtml(moduleMap, overallStatus, infraStatus) {
 
     tableRows += `<tr style="background:#f1f5f9">
       <td colspan="2" style="padding:10px 12px;font-weight:700;color:#1e293b;border-bottom:1px solid #e2e8f0;font-size:13px">
-        📁 ${modName.replace(/</g,'&lt;')}
+        ?? ${modName.replace(/</g,'&lt;')}
       </td>
       <td style="padding:10px 12px;text-align:center;border-bottom:1px solid #e2e8f0">
         <span style="color:#22c55e;font-weight:600;font-size:12px">${mp} passed</span>
@@ -169,12 +152,12 @@ function buildHtml(moduleMap, overallStatus, infraStatus) {
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>AutoTest Daily Report – ${now.toISOString().slice(0,10)}</title>
+  <title>AutoTest ${envLabel} Daily Report - ${now.toISOString().slice(0,10)}</title>
 </head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
   <div style="max-width:900px;margin:32px auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden">
     <div style="background:#1e293b;padding:24px 32px">
-      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest Daily Rollup Summary</h1>
+      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest ${envLabel} Daily Rollup Summary</h1>
       <p style="margin:4px 0 0;color:#94a3b8;font-size:14px">${runDate}</p>
     </div>
     ${buildInfraBanner(infraStatus)}
@@ -194,14 +177,14 @@ function buildHtml(moduleMap, overallStatus, infraStatus) {
       <tbody>${tableRows}</tbody>
     </table>
     <div style="padding:14px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center">
-      <p style="margin:0;font-size:11px;color:#94a3b8">AutoTest · ${now.toUTCString()}</p>
+      <p style="margin:0;font-size:11px;color:#94a3b8">AutoTest ? ${now.toUTCString()}</p>
     </div>
   </div>
 </body>
 </html>`;
 }
 
-// ── Playwright Reporter class ───────────────────────────────────────────────
+// ?? Playwright Reporter class ???????????????????????????????????????????????
 
 class DailyReporter {
   constructor() {
@@ -227,7 +210,7 @@ class DailyReporter {
       if (!this._modules.has(mod)) this._modules.set(mod, []);
 
       const titlePath = test.titlePath();
-      const title     = titlePath.slice(1).join(' › ') || test.title;
+      const title     = titlePath.slice(1).join(' ? ') || test.title;
 
       let error = '';
       if (result.status === 'failed' || result.status === 'timedOut') {
