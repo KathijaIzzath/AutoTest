@@ -70,8 +70,8 @@ function releaseSleepLock() {
 function main() {
   const { envFlag, forwarded } = parseArgs(process.argv.slice(2));
   process.env.TEST_ENV = envFlag;
-  process.env.CI = process.env.CI || 'true';
   process.env.AUTOTEST_DETACHED = '1';
+  // Keep CI unset so Playwright does not apply the short CI globalTimeout.
 
   console.log(`[detached-worker] Starting suite TEST_ENV=${envFlag} pid=${process.pid}`);
   console.log(`[detached-worker] cwd=${ROOT}`);

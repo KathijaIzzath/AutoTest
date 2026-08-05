@@ -2,7 +2,7 @@
  * Multi-environment config for AutoTest.
  *
  * TEST_ENV=qa      → qnk1scltweb02 (default; daily cron always uses this)
- * TEST_ENV=staging → scdemo.pulseinc.com + staging DB via 127.0.0.1
+ * TEST_ENV=staging → scdemo.pulseinc.com + staging DB (pnk1scstgaio)
  */
 export type TestEnvironment = 'qa' | 'staging';
 

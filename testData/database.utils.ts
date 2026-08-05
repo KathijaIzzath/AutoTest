@@ -536,14 +536,21 @@ function activeDbConfig() {
  */
 export async function executeQuery(querys: string, params?: any[]) {
   const client = new Client(activeDbConfig());
+  // Prevent unbounded hangs on large staging tables (e.g. full-table UPDATEs).
+  const statementTimeoutMs = Number(process.env.DB_STATEMENT_TIMEOUT_MS || 90000);
   try {
     await client.connect();
+    await client.query(`SET statement_timeout TO ${Math.max(1000, statementTimeoutMs)}`);
     const result = await client.query(querys, params);
     await client.end();
     return result.rows;
   } catch (error) {
     console.error(`[database] Query failed (TEST_ENV=${getTestEnv()}):`, error);
-    await client.end();
+    try {
+      await client.end();
+    } catch {
+      // ignore close errors after failure
+    }
     throw error;
   }
 }

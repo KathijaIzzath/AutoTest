@@ -40,9 +40,14 @@ async function runDbPrerequisites(): Promise<{ warnings: string[] }> {
   console.log('[DB setup] Running prerequisites with timestamp:', now);
   const warnings: string[] = [];
 
-  const run = async (label: string, sql: string, params: any[] = []) => {
+  const run = async (label: string, sql: string, params: any[] = [], timeoutMs = 90000) => {
     try {
-      await executeQuery(sql, params);
+      await Promise.race([
+        executeQuery(sql, params),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error(`timed out after ${timeoutMs}ms`)), timeoutMs);
+        }),
+      ]);
       console.log(`[DB setup] ✓ ${label}`);
     } catch (err) {
       const message = `${label} failed (non-fatal): ${(err as Error).message}`;
@@ -51,9 +56,16 @@ async function runDbPrerequisites(): Promise<{ warnings: string[] }> {
     }
   };
 
-  // ── 1. Claims: push all timestamps to today so 90-day report window contains them ──
-  await run('claims hintimestamp + dateofservice → now',
-    'UPDATE claims SET hintimestamp = $1, dateofservice = $2', [now, now]);
+  // ── 1. Claims: push timestamps for a bounded recent set (avoid full-table hang)
+  await run('claims hintimestamp + dateofservice → now (recent rows)',
+    `UPDATE claims
+       SET hintimestamp = $1, dateofservice = $2
+     WHERE ctid IN (
+       SELECT ctid FROM claims
+       ORDER BY hintimestamp DESC NULLS LAST
+       LIMIT 20000
+     )`,
+    [now, now]);
 
   // ── 2. ERA: update effective dates ───────────────────────────────────────────
   await run('eramain effectivedate (G26890/TREST) → now',
@@ -63,8 +75,15 @@ async function runDbPrerequisites(): Promise<{ warnings: string[] }> {
   await run('eramain effectivedate (payerid 61101) → now',
     'UPDATE eramain SET effectivedate = $1 WHERE payerid = $2', [now, '61101']);
 
-  await run('eramain dateadded → now',
-    'UPDATE eramain SET dateadded = $1', [now]);
+  await run('eramain dateadded → now (recent rows)',
+    `UPDATE eramain
+       SET dateadded = $1
+     WHERE ctid IN (
+       SELECT ctid FROM eramain
+       ORDER BY dateadded DESC NULLS LAST
+       LIMIT 10000
+     )`,
+    [now]);
 
   // ── 3. Claims by payer/provider ───────────────────────────────────────────────
   await run('claims hintimestamp (Y00680/P15487) → now',
@@ -82,9 +101,16 @@ async function runDbPrerequisites(): Promise<{ warnings: string[] }> {
      WHERE enrollmentStatus IN ($3, $4, $5, $6, $7)`,
     [now, now, 'C', 'D', 'M', 'P', 'A']);
 
-  // ── 6. Remittance creation date ───────────────────────────────────────────────
-  await run('remittance creationdate → now',
-    'UPDATE remittance SET creationdate = $1', [now]);
+  // ── 6. Remittance creation date (scoped — full-table UPDATE hangs on staging) ─
+  await run('remittance creationdate → now (recent rows)',
+    `UPDATE remittance
+       SET creationdate = $1
+     WHERE ctid IN (
+       SELECT ctid FROM remittance
+       ORDER BY creationdate DESC NULLS LAST
+       LIMIT 5000
+     )`,
+    [now]);
 
   // ── 7. Payer-rejection test claims (A3) ──────────────────────────────────────
   const payerRejClaimIds = ['G234962207071312193U', 'G234962207071241121F'];

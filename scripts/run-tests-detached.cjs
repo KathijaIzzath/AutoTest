@@ -147,27 +147,38 @@ function startDetachedProcess(envFlag, forwarded) {
 
   const id = stamp();
   const logFile = path.join(LOG_DIR, `suite-${id}.log`);
-  const logFd = fs.openSync(logFile, 'a');
+  const logStream = fs.createWriteStream(logFile, { flags: 'a' });
   const { command, args } = buildNodeCommand(envFlag, forwarded);
 
   const child = spawn(command, args, {
     cwd: ROOT,
     detached: true,
     windowsHide: true,
-    stdio: ['ignore', logFd, logFd],
+    stdio: ['ignore', 'pipe', 'pipe'],
     env: {
       ...process.env,
       TEST_ENV: envFlag,
-      // Avoid interactive prompts in background
-      CI: process.env.CI || 'true',
+      // Non-interactive, but do NOT set CI=true — that enables the 55-minute
+      // Playwright globalTimeout and would kill long full-suite runs.
       AUTOTEST_DETACHED: '1',
       AUTOTEST_DETACHED_LOG: logFile,
       AUTOTEST_DETACHED_ID: id,
+      // Reduce stdout buffering so progress appears in the log promptly.
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --trace-uncaught`.trim(),
     },
   });
 
+  child.stdout?.on('data', (chunk) => logStream.write(chunk));
+  child.stderr?.on('data', (chunk) => logStream.write(chunk));
+  child.on('close', () => {
+    try {
+      logStream.end();
+    } catch {
+      // ignore
+    }
+  });
+
   child.unref();
-  fs.closeSync(logFd);
 
   const state = {
     id,
@@ -212,7 +223,7 @@ function startViaWindowsTask(envFlag, forwarded) {
   }`;
 
   // cmd wrapper: cd to repo, append stdout/stderr to log
-  const tr = `cmd /c "cd /d "${ROOT}" && set TEST_ENV=${envFlag}&& set CI=true&& set AUTOTEST_DETACHED=1&& set AUTOTEST_DETACHED_LOG=${logFile}&& set AUTOTEST_DETACHED_ID=${id}&& ${nodeCmd} >> "${logFile}" 2>&1"`;
+  const tr = `cmd /c "cd /d "${ROOT}" && set TEST_ENV=${envFlag}&& set AUTOTEST_DETACHED=1&& set AUTOTEST_DETACHED_LOG=${logFile}&& set AUTOTEST_DETACHED_ID=${id}&& ${nodeCmd} >> "${logFile}" 2>&1"`;
 
   // Schedule one minute ahead, then run immediately — task remains independent of this shell.
   const when = new Date(Date.now() + 60 * 1000);

@@ -24,7 +24,7 @@ const blobOutputFile = `blob-report/${runDate}/report-${runId}.zip`;
 export default defineConfig({
   timeout: testConfig.globalTimeoutMs,
   // Local full-suite runs must finish every module; CI stays within the 60-min job limit.
-  globalTimeout: process.env.CI ? 55 * 60 * 1000 : 0,
+  globalTimeout: process.env.CI && process.env.AUTOTEST_DETACHED !== '1' ? 55 * 60 * 1000 : 0,
   expect: { timeout: 15000 },
   testDir: './tests',
   testMatch: ['**/*.spec.ts', '**/*_spec.ts'],
