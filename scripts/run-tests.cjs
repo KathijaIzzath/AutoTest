@@ -77,9 +77,13 @@ async function resolveEnvironment(envFlag) {
     return normalizeEnv(envFlag) || 'qa';
   }
 
-  // CI never prompts — always QA unless workflow_dispatch sets TEST_ENV
-  if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') {
-    return 'qa';
+  // CI / detached background runs never prompt
+  if (
+    process.env.CI === 'true' ||
+    process.env.GITHUB_ACTIONS === 'true' ||
+    process.env.AUTOTEST_DETACHED === '1'
+  ) {
+    return normalizeEnv(process.env.TEST_ENV) || 'qa';
   }
 
   // Non-interactive shells default to QA

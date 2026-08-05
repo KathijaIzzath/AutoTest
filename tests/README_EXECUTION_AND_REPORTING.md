@@ -52,6 +52,22 @@ You can execute per browser with:
 2. npx playwright test --project=firefox
 3. npx playwright test --project=webkit
 
+### Background / RDP-safe local runs
+
+Foreground `npm test` is tied to the current terminal session and can die if RDP disconnects or the interactive session ends.
+
+To run until completion unless you explicitly stop it:
+
+1. Start detached: `npm run test:detached` (or `npm run test:detached:chromium`)
+2. Check progress: `npm run test:status` (shows PID + log tail under `logs/detached/`)
+3. Stop only when you choose: `npm run test:stop`
+4. Optional stronger isolation via Windows Task Scheduler: `npm run test:detached:task`
+5. Optional daily local schedule (survives RDP): `npm run schedule:install`
+
+Detached runs request a Windows sleep-lock while the suite is active so the machine is less likely to sleep mid-run. Hibernate/power-off still stops everything (hardware limitation).
+
+GitHub Actions `schedule` / `workflow_dispatch` runs on GitHub-hosted runners and are unaffected by your local RDP/network.
+
 ## CI Execution Constraints
 
 From [ playwright.config.ts](../playwright.config.ts):

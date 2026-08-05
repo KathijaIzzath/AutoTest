@@ -24,7 +24,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Full QA suite can exceed 2h; do not cut off scheduled/manual runs early.
+    timeout-minutes: 240
     env:
       # Schedule/push/PR always QA. Manual workflow_dispatch may select staging.
       TEST_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'qa' }}
