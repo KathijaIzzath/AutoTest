@@ -1,0 +1,87 @@
+{
+  "labels": {
+    "title": "Claims Archive",
+    "applyFilter": "Apply Filter",
+    "claimsArchive": "Claims Archive",
+    "timelyFiling": "Timely Filing",
+    "timelyFilingReportHeading": "Timely Filing Report",
+    "login": "Log In",
+    "logout": "Logout",
+    "startDate": "start date",
+    "endDate": "end date"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "placeholders": {
+    "groupId": "Enter Group Id",
+    "claimId": "Enter Claim ID",
+    "patientAccountNumber": "Enter Patient Account Number",
+    "patientName": "Enter Patient Name",
+    "payerId": "Enter payer id"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1,
+    "rowActionFallbackIndex": 2,
+    "closeModalButton": "button:has-text('✖')"
+  },
+  "personas": {
+    "accountUser": {
+      "username": "",
+      "password": "",
+      "allowedToken": "ACPM-4414",
+      "disallowedToken": "G23734"
+    },
+    "vendorUser": {
+      "username": "",
+      "password": "",
+      "allowedToken": "G23734",
+      "disallowedToken": "G00014"
+    },
+    "billingGroupUser": {
+      "username": "",
+      "password": "",
+      "allowedToken": "G29837",
+      "disallowedToken": "G23734"
+    },
+    "secureConnectUser": {
+      "username": "qasecureconnect@gmail.com",
+      "password": "$@H0use@$",
+      "allowedToken": "G29837",
+      "disallowedToken": "G29515"
+    },
+    "inactiveUser": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "values": {
+    "groupId": "G31092",
+    "claimId": "G310922512100853040Y",
+    "patientAccountNumber": "C245519150",
+    "startDate": "2025-12-02",
+    "endDate": "2025-12-26",
+    "beyondMaxStartDate": "2025-01-01",
+    "beyondMaxEndDate": "2025-12-31",
+    "disallowedClaimId": "G2895522060314110500",
+    "timelyFilingClaimId": "G310922512100853040Y",
+    "requiredMessageRegex": "required|enter|must|claim id|patient account|group id",
+    "maxRowsToInspect": 30,
+    "softTimeoutMs": 30000
+  },
+  "edgeCases": {
+    "empty": "",
+    "whitespace": "   ",
+    "invalidClaimId": "NO_MATCH_ARCHIVE_RESTRICT_999999"
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "retryMs": 600,
+    "saveMs": 1500,
+    "searchMs": 20000
+  }
+}

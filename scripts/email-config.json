@@ -7,5 +7,5 @@
     "address": "autotest@harriscomputer.com"
   },
   "subject": "AutoTest Execution Summary – {date}",
-  "reportOutputDir": "C:\\Users\\kmohamed\\Desktop\\Daily Test Execution Summary"
+  "reportOutputDir": "\\\\qnk1scltweb02.ict.pulseinc.com\\SECURECONNECT\\DailyExecution"
 }

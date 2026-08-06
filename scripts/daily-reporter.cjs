@@ -1,7 +1,7 @@
 'use strict';
 /**
- * daily-reporter.cjs – Playwright reporter that generates a daily HTML summary
- * at C:\Users\kmohamed\Desktop\Daily Test Execution Summary\
+ * daily-reporter.cjs ? Playwright reporter that generates a daily HTML summary
+ * as a daily rollup under REPORT_OUTPUT_DIR/daily-rollup.
  *
  * Registered in playwright.config.ts as ['./scripts/daily-reporter.cjs']
  * Runs automatically after every test execution.
@@ -11,27 +11,63 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { getTestEnv, resolveReportOutputDir } = require('./report-output-dir.cjs');
 
-const LOCAL_DESKTOP_OUTPUT_DIR = 'C:\\Users\\kmohamed\\Desktop\\Daily Test Execution Summary';
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 function sanitizeTag(value, fallback) {
-  const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
   return normalized || fallback;
 }
 
 function resolveOutputDir(rootDir) {
-  const configured = process.env.DAILY_REPORT_DIR?.trim();
-  if (configured) {
-    return path.isAbsolute(configured) ? configured : path.resolve(rootDir, configured);
-  }
-
-  return LOCAL_DESKTOP_OUTPUT_DIR;
+  return resolveReportOutputDir(rootDir || ROOT_DIR);
 }
 
-// ── helpers ────────────────────────────────────────────────────────────────
+function readInfraStatus() {
+  const infraPath = path.join(ROOT_DIR, 'test-results', 'infra-status.json');
+  if (!fs.existsSync(infraPath)) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(fs.readFileSync(infraPath, 'utf-8'));
+  } catch (err) {
+    console.warn('[daily-report] Failed to read infra-status.json:', err.message);
+    return {};
+  }
+}
+
+function buildInfraBanner(infraStatus) {
+  const authStatus = infraStatus?.auth?.status || 'unknown';
+  const dbStatus = infraStatus?.db?.status || 'unknown';
+  const warnings = Array.isArray(infraStatus?.warnings) ? infraStatus.warnings : [];
+  const authColor = authStatus === 'ok' ? '#22c55e' : authStatus === 'degraded' ? '#f59e0b' : '#ef4444';
+  const dbColor = dbStatus === 'ok' ? '#22c55e' : dbStatus === 'warning' ? '#f59e0b' : '#6b7280';
+  const authMessage = (infraStatus?.auth?.message || 'No auth status was captured.').replace(/</g, '&lt;');
+
+  const warningsHtml = warnings.length > 0
+    ? `<div style="margin-top:8px;color:#991b1b;font-size:12px">Infra warnings: ${warnings.map(w => String(w).replace(/</g, '&lt;')).join(' | ')}</div>`
+    : '<div style="margin-top:8px;color:#166534;font-size:12px">No infrastructure warnings reported.</div>';
+
+  return `
+    <div style="padding:12px 32px;background:#f8fafc;border-bottom:1px solid #e2e8f0">
+      <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${authColor};color:#fff;font-size:12px;font-weight:700">Auth: ${String(authStatus).toUpperCase()}</span>
+      <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${dbColor};color:#fff;font-size:12px;font-weight:700;margin-left:8px">DB: ${String(dbStatus).toUpperCase()}</span>
+      <div style="margin-top:8px;color:#334155;font-size:12px">${authMessage}</div>
+      ${warningsHtml}
+    </div>`;
+}
+
+// ?? helpers ????????????????????????????????????????????????????????????????
 
 function msToHuman(ms) {
-  if (!ms || ms < 0) return '–';
+  if (!ms || ms < 0) return '?';
   if (ms < 1000)  return ms + 'ms';
   if (ms < 60000) return (ms / 1000).toFixed(1) + 's';
   const m = Math.floor(ms / 60000);
@@ -50,8 +86,9 @@ function statusBadge(status) {
   return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${bg};color:#fff;font-size:11px;font-weight:700">${label}</span>`;
 }
 
-function buildHtml(moduleMap, overallStatus) {
+function buildHtml(moduleMap, overallStatus, infraStatus) {
   const now     = new Date();
+  const envLabel = getTestEnv() === 'staging' ? 'Staging' : 'QA';
   const runDate = now.toLocaleString('en-US', {
     weekday:'long', year:'numeric', month:'long', day:'numeric',
     hour:'2-digit', minute:'2-digit', timeZoneName:'short',
@@ -79,7 +116,7 @@ function buildHtml(moduleMap, overallStatus) {
 
     tableRows += `<tr style="background:#f1f5f9">
       <td colspan="2" style="padding:10px 12px;font-weight:700;color:#1e293b;border-bottom:1px solid #e2e8f0;font-size:13px">
-        📁 ${modName.replace(/</g,'&lt;')}
+        ?? ${modName.replace(/</g,'&lt;')}
       </td>
       <td style="padding:10px 12px;text-align:center;border-bottom:1px solid #e2e8f0">
         <span style="color:#22c55e;font-weight:600;font-size:12px">${mp} passed</span>
@@ -115,14 +152,15 @@ function buildHtml(moduleMap, overallStatus) {
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>AutoTest Daily Report – ${now.toISOString().slice(0,10)}</title>
+  <title>AutoTest ${envLabel} Daily Report - ${now.toISOString().slice(0,10)}</title>
 </head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
   <div style="max-width:900px;margin:32px auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden">
     <div style="background:#1e293b;padding:24px 32px">
-      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest Daily Execution Summary</h1>
+      <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">AutoTest ${envLabel} Daily Rollup Summary</h1>
       <p style="margin:4px 0 0;color:#94a3b8;font-size:14px">${runDate}</p>
     </div>
+    ${buildInfraBanner(infraStatus)}
     <div style="background:${overallColor};padding:14px 32px">
       <span style="color:#fff;font-size:16px;font-weight:700">Overall Result: ${overallLabel}</span>
     </div>
@@ -139,14 +177,14 @@ function buildHtml(moduleMap, overallStatus) {
       <tbody>${tableRows}</tbody>
     </table>
     <div style="padding:14px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center">
-      <p style="margin:0;font-size:11px;color:#94a3b8">AutoTest · ${now.toUTCString()}</p>
+      <p style="margin:0;font-size:11px;color:#94a3b8">AutoTest ? ${now.toUTCString()}</p>
     </div>
   </div>
 </body>
 </html>`;
 }
 
-// ── Playwright Reporter class ───────────────────────────────────────────────
+// ?? Playwright Reporter class ???????????????????????????????????????????????
 
 class DailyReporter {
   constructor() {
@@ -172,7 +210,7 @@ class DailyReporter {
       if (!this._modules.has(mod)) this._modules.set(mod, []);
 
       const titlePath = test.titlePath();
-      const title     = titlePath.slice(1).join(' › ') || test.title;
+      const title     = titlePath.slice(1).join(' ? ') || test.title;
 
       let error = '';
       if (result.status === 'failed' || result.status === 'timedOut') {
@@ -198,9 +236,10 @@ class DailyReporter {
       fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
       const scopeTag = sanitizeTag(process.env.AUTOTEST_SCOPE, 'adhoc');
-      const dateStr  = new Date().toISOString().slice(0, 10);
-      const timeStr  = new Date().toTimeString().slice(0, 8).replace(/:/g, '-');
-      const html     = buildHtml(this._modules, result.status);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const timeStr = new Date().toTimeString().slice(0, 8).replace(/:/g, '-');
+      const infraStatus = readInfraStatus();
+      const html = buildHtml(this._modules, result.status, infraStatus);
 
       // Always preserve an immutable per-run report.
       const scopedPath = path.join(OUTPUT_DIR, `test-summary-${dateStr}_${timeStr}-${scopeTag}.html`);
@@ -213,26 +252,25 @@ class DailyReporter {
         fs.writeFileSync(dailyRollupPath, html, 'utf-8');
       }
 
-      // Count totals for console log
       let passed = 0, failed = 0, skipped = 0, total = 0;
       for (const [, tests] of this._modules) {
         for (const t of tests) {
           total++;
-          if      (t.status === 'passed')                             passed++;
+          if (t.status === 'passed') passed++;
           else if (t.status === 'failed' || t.status === 'timedOut') failed++;
-          else if (t.status === 'skipped')                           skipped++;
+          else if (t.status === 'skipped') skipped++;
         }
       }
 
-      console.log(`[daily-report] ✓ Scoped report saved: ${scopedPath}`);
+      console.log(`[daily-report] Scoped report saved: ${scopedPath}`);
       if (shouldWriteDailyRollup) {
-        console.log(`[daily-report] ✓ Daily rollup saved: ${dailyRollupPath}`);
+        console.log(`[daily-report] Daily rollup saved: ${dailyRollupPath}`);
       } else {
-        console.log('[daily-report] ℹ Daily rollup not written (AUTOTEST_DAILY_ROLLUP != 1).');
+        console.log('[daily-report] Daily rollup not written (AUTOTEST_DAILY_ROLLUP != 1).');
       }
-      console.log(`[daily-report]   ${total} tests — ${passed} passed | ${failed} failed | ${skipped} skipped`);
+      console.log(`[daily-report]   ${total} tests - ${passed} passed | ${failed} failed | ${skipped} skipped`);
     } catch (err) {
-      console.warn('[daily-report] Failed to write Desktop report:', err.message);
+      console.warn('[daily-report] Failed to write daily rollup report:', err.message);
     }
   }
 }

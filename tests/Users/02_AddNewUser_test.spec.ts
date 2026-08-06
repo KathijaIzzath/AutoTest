@@ -285,6 +285,36 @@ test.describe('Users - Create New User suite', () => {
     await expect(saveButton).toBeDisabled();
   });
 
+  test.describe('Create New User – mandatory field validation', () => {
+    test('Negative: Save & Close is disabled on a fresh empty form', async ({ page }) => {
+      await expect(
+        page.getByRole('button', { name: d.labels.saveAndClose }),
+        'Save & Close must be disabled when required fields are empty',
+      ).toBeDisabled();
+    });
+
+    test('Negative: Save stays disabled when Login is the only required field filled', async ({ page }) => {
+      await page.getByRole('textbox', { name: d.placeholders.login }).fill('only.login@example.com');
+      await expect(
+        page.getByRole('button', { name: d.labels.saveAndClose }),
+        'Save must stay disabled when First Name / Last Name / Pin / Phone are missing',
+      ).toBeDisabled();
+    });
+
+    test('Negative: Clearing First Name after partial fill keeps Save disabled', async ({ page }) => {
+      await page.getByRole('textbox', { name: d.placeholders.login }).fill('partial.user@example.com');
+      await page.getByRole('textbox', { name: d.placeholders.firstName }).fill('Temp');
+      await page.getByRole('textbox', { name: d.placeholders.lastName }).fill('User');
+      await page.getByRole('textbox', { name: d.placeholders.pin }).fill('1234');
+      await page.getByRole('textbox', { name: d.placeholders.phone }).fill('(555) 555-1212');
+      await page.getByRole('textbox', { name: d.placeholders.firstName }).fill('');
+      await expect(
+        page.getByRole('button', { name: d.labels.saveAndClose }),
+        'Clearing First Name must keep Save disabled',
+      ).toBeDisabled();
+    });
+  });
+
   test('Create vendor user with copied permissions, vendor/account/group mapping, and verify in UI and DB', async ({ page }) => {
     const user = generateUserIdentity();
 

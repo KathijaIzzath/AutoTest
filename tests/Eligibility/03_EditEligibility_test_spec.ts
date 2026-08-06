@@ -244,4 +244,70 @@ test.describe('Eligibility Routing Edit - generated and refactored suite', () =>
 			await expect(firstRow.getByRole('cell', { name: initialEdiValue })).toBeVisible();
 		}
 	});
+
+	test.describe('Edit Eligibility – mandatory field validation', () => {
+		test('Negative: Save must not succeed when Group ID is cleared', async ({ page }) => {
+			await searchByScId(page, d.values.scId);
+			await openRowActionAndEdit(page);
+
+			const groupInput = page.getByRole('textbox', { name: d.placeholders.groupId });
+			const editable = await groupInput.isEditable().catch(() => false);
+			test.skip(!editable, 'Group ID is not editable – skipping.');
+			if (!editable) return;
+
+			await groupInput.fill(d.edgeCases.empty);
+			const saveBtn = page.getByRole('button', { name: d.labels.save });
+			const disabled = await saveBtn.isDisabled().catch(() => false);
+			if (disabled) {
+				await expect(saveBtn).toBeDisabled();
+			} else {
+				await saveBtn.click();
+				await expect(
+					page.getByLabel(d.labels.updatedSuccessToast).first(),
+					'Success toast must not appear when Group ID is empty',
+				).not.toBeVisible({ timeout: 2500 });
+			}
+		});
+
+		test('Negative: Save must not succeed when Processor ID is cleared', async ({ page }) => {
+			await searchByScId(page, d.values.scId);
+			await openRowActionAndEdit(page);
+
+			const processorInput = page.getByRole('textbox', { name: d.placeholders.processorId });
+			const editable = await processorInput.isEditable().catch(() => false);
+			test.skip(!editable, 'Processor ID is not editable – skipping.');
+			if (!editable) return;
+
+			await processorInput.fill(d.edgeCases.empty);
+			const saveBtn = page.getByRole('button', { name: d.labels.save });
+			const disabled = await saveBtn.isDisabled().catch(() => false);
+			if (disabled) {
+				await expect(saveBtn).toBeDisabled();
+			} else {
+				await saveBtn.click();
+				await expect(
+					page.getByLabel(d.labels.updatedSuccessToast).first(),
+					'Success toast must not appear when Processor ID is empty',
+				).not.toBeVisible({ timeout: 2500 });
+			}
+		});
+
+		test('Negative: Save must not succeed when EDI ID is cleared', async ({ page }) => {
+			await searchByScId(page, d.values.scId);
+			await openRowActionAndEdit(page);
+
+			await page.getByRole('textbox', { name: d.placeholders.ediId }).fill(d.edgeCases.empty);
+			const saveBtn = page.getByRole('button', { name: d.labels.save });
+			const disabled = await saveBtn.isDisabled().catch(() => false);
+			if (disabled) {
+				await expect(saveBtn).toBeDisabled();
+			} else {
+				await saveBtn.click();
+				await expect(
+					page.getByLabel(d.labels.updatedSuccessToast).first(),
+					'Success toast must not appear when EDI ID is empty',
+				).not.toBeVisible({ timeout: 2500 });
+			}
+		});
+	});
 });

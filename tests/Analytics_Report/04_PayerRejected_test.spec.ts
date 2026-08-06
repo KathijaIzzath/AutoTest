@@ -61,7 +61,10 @@ async function setDateRange(page: Page, start: string, end: string): Promise<voi
 
 async function generateReport(page: Page): Promise<void> {
   await page.getByRole('button', { name: d.labels.generateReport }).click();
-  await page.waitForTimeout(d.timeouts.reportGenerateMs);
+  // Wait for report table instead of fixed sleep to avoid cascading 60s timeouts.
+  await expect(page.getByRole('table').first()).toBeVisible({
+    timeout: Math.max(d.timeouts.reportGenerateMs ?? 0, 90000),
+  });
 }
 
 function todayMMDDYYYY(): string {
@@ -87,6 +90,7 @@ async function getTotalsClaimsCount(page: Page): Promise<number> {
 // ---------------------------------------------------------------------------
 
 test.describe('Payer Rejection Report', () => {
+  test.describe.configure({ timeout: 180000 });
 
   // ── 0. DB prerequisite setup ─────────────────────────────────────────────
 
@@ -240,8 +244,13 @@ test.describe('Payer Rejection Report', () => {
         const input = page.getByRole('textbox', { name: d.placeholders.groupSearch });
         await input.click();
         await input.fill(d.edgeCases.nonExistentGroupId);
-        await page.waitForTimeout(d.timeouts.filterMs);
-        await expect(page.getByText(d.edgeCases.nonExistentGroupId).first()).not.toBeVisible();
+        // Typed value remains in the input; assert no selectable suggestion/option appears.
+        await page.waitForTimeout(Math.min(d.timeouts.filterMs ?? 2000, 3000));
+        const suggestionCount = await page
+          .locator('[role="option"], .ng-option, .suggestion, .dropdown-item')
+          .filter({ hasText: d.edgeCases.nonExistentGroupId })
+          .count();
+        expect(suggestionCount, 'Non-existent group must not appear as a selectable suggestion').toBe(0);
       });
 
     test('TC13 - Random invalid text shows no suggestion',

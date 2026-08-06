@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import * as userData from './UserInfo.json';
+import { getLoginUrl, getTestEnv } from './env-config';
 
 class LoginPage {
   readonly page: Page;
@@ -9,8 +9,9 @@ class LoginPage {
   }
 
   async navigate() {
-    console.log('Navigating to admin login page');
-    await this.page.goto(userData.admin.url);
+    const loginUrl = getLoginUrl();
+    console.log(`Navigating to admin login page [${getTestEnv()}]: ${loginUrl}`);
+    await this.page.goto(loginUrl);
   }
 
   async login(username: string, password: string) {

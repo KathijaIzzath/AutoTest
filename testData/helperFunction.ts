@@ -1,5 +1,5 @@
 import { test ,expect,Page} from '@playwright/test';
-import * as  userData  from '../testData/UserInfo.json';
+import userData from './user-info';
 //import * as dbQuery  from '../testData/database.utils';
 import { executeQuery } from '../testData/database.utils';
 

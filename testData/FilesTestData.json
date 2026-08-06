@@ -1,0 +1,36 @@
+{
+  "labels": {
+    "filesHeader": "Files",
+    "download": "Download",
+    "applyFilter": "Apply Filter"
+  },
+  "placeholders": {
+    "fileName": "Enter File Name",
+    "fileType": "Enter File Type"
+  },
+  "headers": {
+    "fileName": "FILE NAME",
+    "fileType": "FILE TYPE",
+    "recId": "REC ID",
+    "dateAdded": "DATE ADDED"
+  },
+  "api": {
+    "filesEndpoint": "/api/files",
+    "downloadEndpoint": "/api/files/download",
+    "successStatuses": [200, 206]
+  },
+  "selectors": {
+    "appFiles": "app-files",
+    "tableRows": "tbody tr",
+    "downloadLink": "[data-action='download'], button:has-text('Download'), a:has-text('Download')"
+  },
+  "edgeCases": {
+    "empty": "",
+    "invalidRecId": "INVALID_REC_ID_00000"
+  },
+  "timeouts": {
+    "navigationMs": 20000,
+    "downloadMs": 30000,
+    "filterMs": 5000
+  }
+}

@@ -126,6 +126,15 @@ async function prepareDeterministicRecord(): Promise<void> {
 	);
 }
 
+async function prepareDeterministicBatchRecord(): Promise<void> {
+	await deleteClaimStatusRoutingByComposite(
+		d.batchValues.scId,
+		d.batchValues.processorId,
+		d.batchValues.ediId,
+		d.batchValues.groupId
+	);
+}
+
 function getAddLinks(page: Page): Locator {
 	return page.getByRole('link', { name: /Add Claim Status Routing/i });
 }
@@ -194,14 +203,35 @@ async function choosePayerInAddModal(page: Page): Promise<void> {
 	}
 }
 
-async function fillAddForm(page: Page): Promise<void> {
+async function fillAddForm(page: Page, onlineBatch: string = d.values.onlineBatchOnline): Promise<void> {
 	const modal = await getAddModal(page);
 	await choosePayerInAddModal(page);
 	await modal.getByRole('textbox', { name: d.placeholders.scId }).fill(d.values.scId);
 	await modal.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.values.groupId);
 	await modal.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.values.processorId);
 	await modal.getByRole('textbox', { name: d.placeholders.ediId }).fill(d.values.ediId);
-	await selectOnlineBatchOption(page, d.values.onlineBatchOnline);
+	if (onlineBatch) {
+		await selectOnlineBatchOption(page, onlineBatch);
+	}
+}
+
+async function fillBatchAddForm(page: Page): Promise<void> {
+	const modal = await getAddModal(page);
+	await choosePayerInAddModal(page);
+	await modal.getByRole('textbox', { name: d.placeholders.scId }).fill(d.batchValues.scId);
+	await modal.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.batchValues.groupId);
+	await modal.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.batchValues.processorId);
+	await modal.getByRole('textbox', { name: d.placeholders.ediId }).fill(d.batchValues.ediId);
+	await selectOnlineBatchOption(page, d.batchValues.onlineBatchBatch);
+}
+
+async function fillAddFormWithoutOnlineBatch(page: Page): Promise<void> {
+	const modal = await getAddModal(page);
+	await choosePayerInAddModal(page);
+	await modal.getByRole('textbox', { name: d.placeholders.scId }).fill(d.values.scId);
+	await modal.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.values.groupId);
+	await modal.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.values.processorId);
+	await modal.getByRole('textbox', { name: d.placeholders.ediId }).fill(d.values.ediId);
 }
 
 async function clickAddInModal(page: Page): Promise<void> {
@@ -281,6 +311,8 @@ async function assertSkNc0GridMatchesDb(page: Page): Promise<void> {
 }
 
 test.describe('Add Claim Status Routing - generated and refactored suite', () => {
+	test.describe.configure({ mode: 'serial' });
+
 	test.beforeEach(async ({ page, loginAsAdmin }) => {
 		pageErrors = [];
 		page.on('pageerror', (err) => pageErrors.push(err.message));
@@ -375,7 +407,7 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 	test('Add Claim Status with ONLINE value is searchable and matches DB', async ({ page }) => {
 		await prepareDeterministicRecord();
 		await openAddModalFromDashboard(page);
-		await fillAddForm(page);
+		await fillAddForm(page, d.values.onlineBatchOnline);
 		await clickAddInModal(page);
 
 		const successToast = page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first();
@@ -406,6 +438,70 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 		await expect(row).toContainText(dbRow.online_batch);
 		await expect(row).toContainText(dbRow.recordstatus);
 		expect(normalize(dbRow.online_batch)).toContain(normalize(d.values.onlineBatchOnline));
+	});
+
+	test('SC-721: Add Claim Status with BATCH value is searchable and matches DB', async ({ page }) => {
+		await prepareDeterministicBatchRecord();
+		await openAddModalFromDashboard(page);
+		await fillBatchAddForm(page);
+		await clickAddInModal(page);
+
+		const successToast = page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first();
+		await expect(successToast).toBeVisible({ timeout: d.timeouts.saveMs });
+
+		await closeAddModalIfOpen(page);
+		await dismissAnyVisibleModal(page);
+		await searchByCompositeValues(
+			page,
+			d.batchValues.scId,
+			d.batchValues.groupId,
+			d.batchValues.processorId,
+			d.batchValues.ediId
+		);
+
+		const dbRow = await fetchClaimStatusRoutingByComposite(
+			d.batchValues.scId,
+			d.batchValues.processorId,
+			d.batchValues.ediId,
+			d.batchValues.groupId
+		);
+		expect(dbRow).not.toBeNull();
+		if (!dbRow) return;
+
+		const row = page
+			.locator(d.selectors.tableRows)
+			.filter({ has: page.getByRole('cell', { name: dbRow.scid, exact: true }) })
+			.filter({ hasText: dbRow.groupid })
+			.filter({ hasText: dbRow.processorid })
+			.filter({ hasText: dbRow.ediid })
+			.first();
+
+		await expect(row).toBeVisible({ timeout: d.timeouts.searchMs });
+		await expect(row).toContainText(dbRow.online_batch);
+		expect(normalize(dbRow.online_batch)).toContain(normalize(d.batchValues.onlineBatchBatch));
+	});
+
+	test('SC-721: Add without Online/Batch selection does not produce successful save', async ({ page }) => {
+		await prepareDeterministicRecord();
+		await openAddModalFromDashboard(page);
+		await fillAddFormWithoutOnlineBatch(page);
+		await clickAddInModal(page);
+
+		const successToastVisible = await page
+			.getByLabel(new RegExp(d.labels.successToastPrefix, 'i'))
+			.first()
+			.isVisible({ timeout: d.timeouts.filterMs })
+			.catch(() => false);
+		expect(successToastVisible).toBeFalsy();
+
+		const modal = await getAddModal(page);
+		const hasValidationOrError = await modal
+			.locator('text=/required|online\\s*\\/\\s*batch|select online/i')
+			.first()
+			.isVisible()
+			.catch(() => false);
+		expect(hasValidationOrError || (await modal.isVisible().catch(() => false))).toBeTruthy();
+		await expect(modal.getByRole('button', { name: d.labels.add })).toBeVisible();
 	});
 
 	test('Add Claim Status from search result header attempts save and keeps app stable', async ({ page }) => {
@@ -444,6 +540,50 @@ test.describe('Add Claim Status Routing - generated and refactored suite', () =>
 
 		const modal = await getAddModal(page);
 		await expect(modal.getByRole('button', { name: d.labels.add })).toBeVisible();
+	});
+
+	test.describe('Add Claim Status – mandatory field validation', () => {
+		test('Negative: Add must not succeed when SC ID is empty', async ({ page }) => {
+			await openAddModalFromDashboard(page);
+			await fillAddFormWithoutOnlineBatch(page);
+			const modal = await getAddModal(page);
+			await modal.getByRole('textbox', { name: d.placeholders.scId }).fill(d.edgeCases.empty);
+			await selectOnlineBatchOption(page, d.values.onlineBatchOnline);
+			await clickAddInModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when SC ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect((await getAddModal(page)).getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
+
+		test('Negative: Add must not succeed when Group ID is empty', async ({ page }) => {
+			await openAddModalFromDashboard(page);
+			await fillAddFormWithoutOnlineBatch(page);
+			const modal = await getAddModal(page);
+			await modal.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.edgeCases.empty);
+			await selectOnlineBatchOption(page, d.values.onlineBatchOnline);
+			await clickAddInModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when Group ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect((await getAddModal(page)).getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
+
+		test('Negative: Add must not succeed when Processor ID is empty', async ({ page }) => {
+			await openAddModalFromDashboard(page);
+			await fillAddFormWithoutOnlineBatch(page);
+			const modal = await getAddModal(page);
+			await modal.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.edgeCases.empty);
+			await selectOnlineBatchOption(page, d.values.onlineBatchOnline);
+			await clickAddInModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when Processor ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect((await getAddModal(page)).getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
 	});
 
 	test('Invalid SC ID filter returns no rows or stable empty state', async ({ page }) => {

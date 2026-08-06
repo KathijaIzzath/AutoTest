@@ -8,7 +8,8 @@ import { defineConfig, devices } from '@playwright/test';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 export const testConfig = {
-  globalTimeoutMs: 60000,
+  // QA under parallel workers regularly exceeds 60s for login + filter + assert flows.
+  globalTimeoutMs: 120000,
   };
 
 const isoNow = new Date().toISOString();
@@ -23,6 +24,8 @@ const includeSummaryEmailReporter = process.env.AUTOTEST_ENABLE_SUMMARY_EMAIL ==
  */
 export default defineConfig({
   timeout: testConfig.globalTimeoutMs,
+  // Local full-suite runs must finish every module; CI stays within the 60-min job limit.
+  globalTimeout: process.env.CI && process.env.AUTOTEST_DETACHED !== '1' ? 55 * 60 * 1000 : 0,
   expect: { timeout: 15000 },
   testDir: './tests',
   testMatch: ['**/*.spec.ts', '**/*_spec.ts'],
@@ -32,10 +35,15 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Never abort early — finish every module even when tests fail/time out */
+  maxFailures: 0,
+  /**
+   * Retry once on failure/timeout. After a second consecutive timeout the result
+   * stays failed (Playwright has no "convert to skipped"), but the suite continues.
+   */
+  retries: process.env.CI ? 2 : 1,
+  /* Run up to 4 workers in parallel to keep full-suite runtime practical */
+  workers: process.env.CI ? 4 : 4,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
@@ -57,43 +65,31 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  /* Configure projects for major browsers */
-  projects: [
-    {
+  /* Configure projects for major browsers.
+   * Staging always runs Chromium only — never Firefox/WebKit. */
+  projects: (() => {
+    const testEnv = String(process.env.TEST_ENV || 'qa').trim().toLowerCase();
+    const stagingOnly =
+      testEnv === 'staging' || testEnv === 'stage' || testEnv === 'stg' || testEnv === 'scdemo';
+    const chromium = {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+    };
+    if (stagingOnly) {
+      return [chromium];
     }
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
-  ]
+    return [
+      chromium,
+      {
+        name: 'firefox',
+        use: { ...devices['Desktop Firefox'] },
+      },
+      {
+        name: 'webkit',
+        use: { ...devices['Desktop Safari'] },
+      },
+    ];
+  })(),
 
   /* Run your local dev server before starting the tests */
   // webServer: {

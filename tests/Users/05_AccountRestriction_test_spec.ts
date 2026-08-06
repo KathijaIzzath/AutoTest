@@ -9,6 +9,12 @@ import {
 } from '../framework/navigation.helper';
 import { fetchUserClientByUsername } from '../../testData/database.utils';
 import * as d from '../../testData/AccountRestrictionUserTestData.json';
+import {
+	acceptNonElevatedPersona,
+	elevatedAclSkipReason,
+	loginWithPersonaFallback,
+	type PersonaLoginResult,
+} from '../framework/persona-credentials.helper';
 
 let pageErrors: string[] = [];
 
@@ -233,6 +239,25 @@ async function loginWithCredentials(page: Page, username: string, password: stri
 	await page.getByRole('textbox', { name: d.inputs.loginPassword }).first().fill(password);
 	await page.getByRole('button', { name: d.labels.login }).first().click();
 	await page.waitForTimeout(d.timeouts.saveMs);
+}
+
+/** configured → scadmin → qasecureconnect → secureconnect50; rejects elevated for ACL suites. */
+async function loginAsAccountRestricted(page: Page): Promise<PersonaLoginResult | null> {
+	const persona = await loginWithPersonaFallback(page, {
+		configured: d.users.accountLevelRestricted,
+		logout: logoutCurrentUser,
+		acceptPersona: acceptNonElevatedPersona,
+	});
+	test.skip(
+		!persona,
+		'Could not login with configured account-restricted user, scadmin, qasecureconnect, or secureconnect50.',
+	);
+	if (!persona) return null;
+	if (persona.isElevatedFallback) {
+		test.skip(true, elevatedAclSkipReason('Account-restricted', persona.source));
+		return null;
+	}
+	return persona;
 }
 
 async function countRows(page: Page): Promise<number> {
@@ -471,10 +496,8 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-008/009/010/011: Accounts module blank and filtered searches stay within assigned account scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 		await navigateToAccounts(page);
 
 		await applyFilterAndWait(page);
@@ -497,10 +520,8 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-012/013/014/015: Provider Groups and Add Provider entry points remain restricted by account scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 		await navigateToProviderGroups(page);
 
 		const applyBtn = page.getByRole('button', { name: d.labels.applyFilter }).first();
@@ -513,10 +534,8 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-016/017/018/019/020/021: Claims enforcement blocks disallowed account/group leakage in base and targeted searches', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 		await navigateToClaimsDashboard(page);
 
 		const applyBtn = page.getByRole('button', { name: d.labels.applyFilter }).first();
@@ -548,10 +567,8 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-022/023/024: Claims Archive honors account restriction and does not expose unauthorized action context', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 		await navigateToClaimsArchiveDashboard(page);
 
 		const applyBtn = page.getByRole('button', { name: d.labels.applyFilter }).first();
@@ -565,10 +582,8 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-025/026/027: Group Enrollments and lookup paths stay within allowed account scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 
 		const opened = await openGroupEnrollmentsModule(page);
 		test.skip(!opened, 'Group Enrollments module is unavailable for restricted user in current environment.');
@@ -613,28 +628,24 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-029: Restricted user can view own profile without privilege escalation', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 		await ensureUsersPageReady(page);
-		await filterByLogin(page, d.users.accountLevelRestricted.username);
+		await filterByLogin(page, persona.username);
 
-		const ownCell = page.getByRole('cell', { name: d.users.accountLevelRestricted.username }).first();
+		const ownCell = page.getByRole('cell', { name: persona.username }).first();
 		const visible = await ownCell.isVisible().catch(() => false);
 		test.skip(!visible, 'Restricted user own profile not visible in Users search in this environment.');
 		if (!visible) return;
 
 		await expect(ownCell).toBeVisible();
-		await openActionMenuForUser(page, d.users.accountLevelRestricted.username);
+		await openActionMenuForUser(page, persona.username);
 		await expect(page.getByRole('button', { name: /deactivate|disable/i })).toHaveCount(0);
 	});
 
 	test('TC-AR-030/031/032: View Payments and Payment Analytics stay within allowed scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 
 		const viewPaymentsOpened = await openViewPaymentsModule(page);
 		test.skip(!viewPaymentsOpened, 'View Payments module unavailable for restricted user in current environment.');
@@ -649,10 +660,8 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-033/034/035: Dashboard vendor/group selectors show authorized options and do not expand scope across modules', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 
 		const options = await collectSelectorOptions(page);
 		test.skip(options.length === 0, 'No dashboard selector options visible in this environment state.');
@@ -669,10 +678,8 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-036/037: Analytics/report-linked views enforce allowed scope where available', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 
 		const analyticsOpened = await openPaymentAnalyticsModule(page);
 		test.skip(!analyticsOpened, 'Analytics module is unavailable for restricted user in current environment state.');
@@ -682,16 +689,14 @@ test.describe('Users - Account Restriction suite', () => {
 	});
 
 	test('TC-AR-038/039/040: Blank searches, relogin session persistence, and UI consistency remain restricted', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password), 'Restricted account-level credentials are not configured.');
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		const persona = await loginAsAccountRestricted(page);
+		if (!persona) return;
 		await navigateToAccounts(page);
 		await applyFilterAndWait(page);
 		await assertNoTokenInVisibleRows(page, d.accounts.disallowedAccountC);
 
 		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.accountLevelRestricted.username, d.users.accountLevelRestricted.password);
+		await loginWithCredentials(page, persona.username, persona.password);
 		await navigateToClaimsDashboard(page);
 		const applyBtn = page.getByRole('button', { name: d.labels.applyFilter }).first();
 		if (await applyBtn.isVisible().catch(() => false)) {

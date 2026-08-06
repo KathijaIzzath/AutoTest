@@ -238,6 +238,44 @@ test.describe('Eligibility Routing Add - generated and refactored suite', () => 
 		await expect(page.getByRole('button', { name: d.labels.add })).toBeVisible();
 	});
 
+	test.describe('Add Eligibility – mandatory field validation', () => {
+		test('Negative: Add must not succeed when Group ID is left empty', async ({ page }) => {
+			await openAddEligibilityModal(page);
+			await fillRequiredAddEligibilityFields(page);
+			await page.getByRole('textbox', { name: d.placeholders.groupId }).fill(d.edgeCases.empty);
+			await clickAddEligibility(page);
+			await expect(
+				page.getByLabel(d.labels.successToastPrefix).first(),
+				'Success toast must not appear when Group ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect(page.getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
+
+		test('Negative: Add must not succeed when Processor ID is left empty', async ({ page }) => {
+			await openAddEligibilityModal(page);
+			await fillRequiredAddEligibilityFields(page);
+			await page.getByRole('textbox', { name: d.placeholders.processorId }).fill(d.edgeCases.empty);
+			await clickAddEligibility(page);
+			await expect(
+				page.getByLabel(d.labels.successToastPrefix).first(),
+				'Success toast must not appear when Processor ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect(page.getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
+
+		test('Negative: Add must not succeed when EDI ID is left empty', async ({ page }) => {
+			await openAddEligibilityModal(page);
+			await fillRequiredAddEligibilityFields(page);
+			await page.getByRole('textbox', { name: d.placeholders.ediId }).fill(d.edgeCases.empty);
+			await clickAddEligibility(page);
+			await expect(
+				page.getByLabel(d.labels.successToastPrefix).first(),
+				'Success toast must not appear when EDI ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+			await expect(page.getByRole('button', { name: d.labels.add })).toBeVisible();
+		});
+	});
+
 	test('Duplicate add attempt keeps application stable and record remains searchable', async ({ page }) => {
 		await openAddEligibilityModal(page);
 		await fillRequiredAddEligibilityFields(page);

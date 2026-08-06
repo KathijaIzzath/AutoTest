@@ -57,6 +57,7 @@
     "modalHiddenMs": 5000
   },
   "edgeCases": {
-    "invalidAccountNumber": "NO_MATCH_EDIT_ACCOUNT_999999"
+    "invalidAccountNumber": "NO_MATCH_EDIT_ACCOUNT_999999",
+    "empty": ""
   }
 }

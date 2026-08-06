@@ -101,6 +101,7 @@ async function closeDialogByHeadingIfOpen(page: Page, headingName: string): Prom
 }
 
 test.describe('Add Insurance from Edit Payer flow', () => {
+  test.describe.configure({ timeout: 180000 });
     test('Add new insurance inside Edit Payer and verify on Insurance dashboard with DB validations', async ({ page, loginAsAdmin }) => {
         test.setTimeout(120000);
         await loginAsAdmin();

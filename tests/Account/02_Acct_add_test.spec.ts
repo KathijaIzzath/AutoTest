@@ -1,5 +1,5 @@
 
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/AcctAddTestData.json';
 import { executeQuery } from '../../testData/database.utils';
 import * as fs from 'fs';

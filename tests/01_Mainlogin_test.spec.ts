@@ -1,5 +1,5 @@
 import { test, expect } from './myTestData';
-import * as userData from '../testData/UserInfo.json';
+import userData from '../testData/user-info';
 import LoginPage from '../testData/LoginPage';
 import * as td from '../testData/LoginTestData.json';
 

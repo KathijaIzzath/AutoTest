@@ -1,6 +1,6 @@
 import { test, expect } from '../myTestData';
 import { Page } from '@playwright/test';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/AddProviderTestData.json';
 import { deleteProviderAndBillingIdsByGroupId, fetchProviderIdByGroupId } from '../../testData/database.utils';
 import { navigateToAccounts } from '../framework/navigation.helper';
@@ -207,6 +207,51 @@ test('Add Provider with required fields empty keeps dialog in stable validation 
   await expect(page.getByText('This field is required').first()).toBeVisible();
   await expect(page.getByRole('textbox', { name: d.placeholders.firstName })).toHaveValue('');
   await expect(page.getByRole('textbox', { name: d.placeholders.lastName })).toHaveValue('');
+});
+
+test.describe('Add Provider – mandatory field validation', () => {
+  test('Negative: Next with empty First/Last Name shows required validation', async ({ page, loginAsAdmin }) => {
+    await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
+    await loginAsAdmin();
+    await openAccountAndGroup(page, userData.addProvider.accountNum, userData.addProvider.groupeditInAcct);
+    await openAddProviderModal(page);
+
+    await page.getByRole('button', { name: d.labels.next }).click();
+    await expect(
+      page.getByText('This field is required').first(),
+      'Required validation must appear when First/Last Name are empty',
+    ).toBeVisible({ timeout: 3000 });
+    await expect(page.getByRole('textbox', { name: d.placeholders.firstName })).toHaveValue('');
+    await expect(page.getByRole('textbox', { name: d.placeholders.lastName })).toHaveValue('');
+  });
+
+  test('Negative: Next with only First Name filled still shows required validation', async ({ page, loginAsAdmin }) => {
+    await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
+    await loginAsAdmin();
+    await openAccountAndGroup(page, userData.addProvider.accountNum, userData.addProvider.groupeditInAcct);
+    await openAddProviderModal(page);
+
+    await page.getByRole('textbox', { name: d.placeholders.firstName }).fill(d.values.firstName);
+    await page.getByRole('button', { name: d.labels.next }).click();
+    await expect(
+      page.getByText('This field is required').first(),
+      'Required validation must appear when Last Name is empty',
+    ).toBeVisible({ timeout: 3000 });
+  });
+
+  test('Negative: Next with only Last Name filled still shows required validation', async ({ page, loginAsAdmin }) => {
+    await deleteProviderAndBillingIdsByGroupId(userData.addProvider.groupeditInAcct);
+    await loginAsAdmin();
+    await openAccountAndGroup(page, userData.addProvider.accountNum, userData.addProvider.groupeditInAcct);
+    await openAddProviderModal(page);
+
+    await page.getByRole('textbox', { name: d.placeholders.lastName }).fill(d.values.lastName);
+    await page.getByRole('button', { name: d.labels.next }).click();
+    await expect(
+      page.getByText('This field is required').first(),
+      'Required validation must appear when First Name is empty',
+    ).toBeVisible({ timeout: 3000 });
+  });
 });
 
 test('Duplicate Provider Add Details attempt keeps app stable and does not close setup unexpectedly', async ({ page, loginAsAdmin }) => {

@@ -1,5 +1,5 @@
 import { test, expect } from '../myTestData';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/SinglePayEnrollTestData.json';
 
 import { existsSingleGroupEnrollment, fetchNPIAndTaxIDForGroupId, getTodaysDateWithFullYear } from '../../testData/database.utils';

@@ -10,6 +10,12 @@ import {
 } from '../framework/navigation.helper';
 import { fetchUserClientByUsername } from '../../testData/database.utils';
 import * as d from '../../testData/VendorRestrictionUserTestData.json';
+import {
+	acceptNonElevatedPersona,
+	elevatedAclSkipReason,
+	loginWithPersonaFallback,
+	type PersonaLoginResult,
+} from '../framework/persona-credentials.helper';
 
 let pageErrors: string[] = [];
 
@@ -248,6 +254,33 @@ async function loginWithCredentials(page: Page, username: string, password: stri
 	await page.waitForTimeout(d.timeouts.saveMs);
 }
 
+/** configured → scadmin → qasecureconnect → secureconnect50; rejects elevated for ACL suites. */
+async function loginAsRestrictedPersona(
+	page: Page,
+	configured: { username: string; password: string },
+	label: string,
+): Promise<PersonaLoginResult | null> {
+	const persona = await loginWithPersonaFallback(page, {
+		configured,
+		logout: logoutCurrentUser,
+		acceptPersona: acceptNonElevatedPersona,
+	});
+	test.skip(
+		!persona,
+		`Could not login with configured ${label}, scadmin, qasecureconnect, or secureconnect50.`,
+	);
+	if (!persona) return null;
+	if (persona.isElevatedFallback) {
+		test.skip(true, elevatedAclSkipReason(label, persona.source));
+		return null;
+	}
+	return persona;
+}
+
+async function loginAsVendorRestricted(page: Page): Promise<PersonaLoginResult | null> {
+	return loginAsRestrictedPersona(page, d.users.vendorRestricted, 'Vendor-restricted');
+}
+
 async function countRows(page: Page): Promise<number> {
 	return page.locator(d.selectors.tableRows).count();
 }
@@ -449,11 +482,8 @@ test.describe('Users - Vendor Restriction suite', () => {
 
 		await saveEditDialogIfVisible(page);
 
-		await logoutCurrentUser(page);
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 		await navigateToAccounts(page);
 		await applyFilterAndWait(page);
 		await assertNoTokenInVisibleRows(page, d.vendors.disallowedVendor);
@@ -485,20 +515,17 @@ test.describe('Users - Vendor Restriction suite', () => {
 	});
 
 	test('TC-VR-007/008/009/010/011: Vendor and group selectors stay populated and within authorized scope', async ({ page }) => {
-		const scopedUsers = [
-			d.users.vendorRestricted,
-			d.users.accountRestricted,
-			d.users.billingGroupRestricted,
+		const scopedUsers: Array<{ configured: { username: string; password: string }; label: string }> = [
+			{ configured: d.users.vendorRestricted, label: 'Vendor-restricted' },
+			{ configured: d.users.accountRestricted, label: 'Account-restricted' },
+			{ configured: d.users.billingGroupRestricted, label: 'Billing-group restricted' },
 		];
 
 		let executed = 0;
-		for (const user of scopedUsers) {
-			if (!hasCredentialPair(user.username, user.password)) {
-				continue;
-			}
+		for (const { configured, label } of scopedUsers) {
+			const persona = await loginAsRestrictedPersona(page, configured, label);
+			if (!persona) return;
 			executed += 1;
-			await logoutCurrentUser(page);
-			await loginWithCredentials(page, user.username, user.password);
 
 			const options = await collectSelectorOptions(page);
 			test.skip(options.length === 0, 'No shared selector options visible in this environment state.');
@@ -513,11 +540,8 @@ test.describe('Users - Vendor Restriction suite', () => {
 	});
 
 	test('TC-VR-012/013/014/015: Accounts searches and inactive filters do not leak disallowed vendor data', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 		await navigateToAccounts(page);
 
 		await applyFilterAndWait(page);
@@ -540,11 +564,8 @@ test.describe('Users - Vendor Restriction suite', () => {
 	});
 
 	test('TC-VR-016/017/018/019: Provider Groups and dependent lookups honor vendor scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 		await navigateToProviderGroups(page);
 
 		const applyBtn = page.getByRole('button', { name: d.labels.applyFilter }).first();
@@ -558,11 +579,8 @@ test.describe('Users - Vendor Restriction suite', () => {
 	});
 
 	test('TC-VR-020/021/022/023/024/025: Claims searches, pagination path, and first-session restrictions remain scoped', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 		await navigateToClaimsDashboard(page);
 
 		await applyFilterAndWait(page);
@@ -588,22 +606,16 @@ test.describe('Users - Vendor Restriction suite', () => {
 	});
 
 	test('TC-VR-026/027/028: Claims Archive and action-linked context honor vendor restrictions', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 		await navigateToClaimsArchiveDashboard(page);
 		await applyFilterAndWait(page);
 		await assertNoTokenInVisibleRows(page, d.vendors.disallowedVendor);
 	});
 
 	test('TC-VR-029/030/031: Group Enrollments and lookups remain limited to assigned vendors', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 
 		const opened = await openGroupEnrollmentsModule(page);
 		test.skip(!opened, 'Group Enrollments module unavailable in this environment.');
@@ -624,10 +636,6 @@ test.describe('Users - Vendor Restriction suite', () => {
 	});
 
 	test('TC-VR-032/033: Users vendor filter and restricted self-profile visibility remain bounded', async ({ page }) => {
-		const restricted = d.users.vendorRestricted;
-		test.skip(!hasCredentialPair(restricted.username, restricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(restricted.username, restricted.password)) return;
-
 		try {
 			await ensureUsersPageReady(page);
 			await clearUserFilters(page);
@@ -647,27 +655,24 @@ test.describe('Users - Vendor Restriction suite', () => {
 			return;
 		}
 
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, restricted.username, restricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 		await ensureUsersPageReady(page);
-		await filterByLogin(page, restricted.username);
+		await filterByLogin(page, persona.username);
 
-		const ownCell = page.getByRole('cell', { name: restricted.username }).first();
+		const ownCell = page.getByRole('cell', { name: persona.username }).first();
 		const visible = await ownCell.isVisible().catch(() => false);
 		test.skip(!visible, 'Restricted user self-profile is not visible in this environment state.');
 		if (!visible) return;
 
 		await expect(ownCell).toBeVisible();
-		await openActionMenuForUser(page, restricted.username);
+		await openActionMenuForUser(page, persona.username);
 		await expect(page.getByRole('button', { name: /deactivate|disable/i })).toHaveCount(0);
 	});
 
 	test('TC-VR-034/035/036/037: Payments and payment analytics remain within vendor scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 
 		const viewPaymentsOpened = await openViewPaymentsModule(page);
 		test.skip(!viewPaymentsOpened, 'View Payments module unavailable in current environment.');
@@ -682,11 +687,8 @@ test.describe('Users - Vendor Restriction suite', () => {
 	});
 
 	test('TC-VR-038/039: Analytics reports and parameterized flows do not expose disallowed vendor scope', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 
 		const responses = await gatherApiPayloadSnippets(page, async () => {
 			await navigateToAnalytics(page).catch(async () => {
@@ -703,11 +705,8 @@ test.describe('Users - Vendor Restriction suite', () => {
 	});
 
 	test('TC-VR-040/041/042: Blank searches, relogin persistence, and API/UI consistency remain restricted', async ({ page }) => {
-		test.skip(!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password), 'Vendor-restricted user credentials are not configured.');
-		if (!hasCredentialPair(d.users.vendorRestricted.username, d.users.vendorRestricted.password)) return;
-
-		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		const persona = await loginAsVendorRestricted(page);
+		if (!persona) return;
 		await navigateToAccounts(page);
 
 		const apiPayloads = await gatherApiPayloadSnippets(page, async () => {
@@ -721,7 +720,7 @@ test.describe('Users - Vendor Restriction suite', () => {
 		}
 
 		await logoutCurrentUser(page);
-		await loginWithCredentials(page, d.users.vendorRestricted.username, d.users.vendorRestricted.password);
+		await loginWithCredentials(page, persona.username, persona.password);
 		await navigateToClaimsDashboard(page);
 		await applyFilterAndWait(page);
 		await assertNoTokenInVisibleRows(page, d.vendors.disallowedVendor);

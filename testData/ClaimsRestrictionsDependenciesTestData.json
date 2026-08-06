@@ -1,0 +1,89 @@
+{
+  "labels": {
+    "title": "Claims",
+    "applyFilter": "Apply Filter",
+    "claimsArchive": "Claims Archive",
+    "showWorkedOnly": "Show Worked Only",
+    "login": "Log In",
+    "logout": "Logout"
+  },
+  "inputs": {
+    "loginUsername": "Enter Username",
+    "loginPassword": "Enter Password"
+  },
+  "placeholders": {
+    "claimId": "Enter Claim ID",
+    "groupId": "Enter Group Id",
+    "billingNpi": "Enter Billing NPI",
+    "taxId": "Enter Tax ID",
+    "payerId": "Enter payer id",
+    "renderNpi": "Enter render npi",
+    "receiver": "Enter Receiver",
+    "patientAccountNumber": "Enter Patient Account Number",
+    "patientName": "Enter Patient Name"
+  },
+  "selectors": {
+    "tableRows": "tbody tr",
+    "noResults": "text=/no results|no records|no data/i",
+    "profileMenuIcon": "i",
+    "profileMenuIndex": 1,
+    "dashboardGroupCombobox": "select, [role='combobox']"
+  },
+  "personas": {
+    "accountUser": {
+      "username": "",
+      "password": "",
+      "allowedToken": "ACPM-4414",
+      "disallowedToken": "G23734",
+      "claimsCorrectAllowed": false
+    },
+    "vendorUser": {
+      "username": "",
+      "password": "",
+      "allowedToken": "G23734",
+      "disallowedToken": "G00014",
+      "claimsCorrectAllowed": false
+    },
+    "billingGroupUser": {
+      "username": "",
+      "password": "",
+      "allowedToken": "G29837",
+      "disallowedToken": "G23734",
+      "claimsCorrectAllowed": false
+    },
+    "secureConnectUser": {
+      "username": "qasecureconnect@gmail.com",
+      "password": "$@H0use@$",
+      "allowedToken": "G29837",
+      "disallowedToken": "G29515",
+      "claimsCorrectAllowed": true
+    },
+    "inactiveUser": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "claims": {
+    "adminBaselineClaimId": "G248212605010354254A",
+    "allowedClaimId": "G248212605010354254A",
+    "disallowedClaimId": "G2895522060314110500",
+    "claimsCorrectEligibleClaimId": "G2349622082513321601",
+    "archiveClaimId": "G2895522060314110500"
+  },
+  "scope": {
+    "allowedGroup": "G29837",
+    "disallowedGroup": "G23734",
+    "allowedPatientAccount": "X99451",
+    "disallowedPatientAccount": "UNAUTH-PATIENT"
+  },
+  "limits": {
+    "maxRowsToInspect": 30,
+    "softTimeoutMs": 30000
+  },
+  "timeouts": {
+    "filterMs": 1200,
+    "retryMs": 600,
+    "saveMs": 1500,
+    "searchMs": 20000
+  }
+}

@@ -519,17 +519,14 @@ export async function fetchEraSummaryTotals(
 import { Client, QueryResult, Pool } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
-import userData from '../testData/UserInfo.json';
+import userData from './user-info';
+import { getDbConfig, getTestEnv } from './env-config';
 import { AccountRecord } from './AccountIntf';
 import { BillingIdsRecord } from './BillingIdsIntf';
 
-const dbConfig = {
-  user: 'sc_app',
-  host: 'Qnk1scltdb02.ict.pulseinc.com',
-  database: 'scltdb2',
-  password: 'xyP,xii78',
-  port: 5432,
-};
+function activeDbConfig() {
+  return getDbConfig();
+}
 
 /**
  * Execute a database query with optional parameters
@@ -538,15 +535,22 @@ const dbConfig = {
  * @returns Array of query results
  */
 export async function executeQuery(querys: string, params?: any[]) {
-  const client = new Client(dbConfig);
+  const client = new Client(activeDbConfig());
+  // Prevent unbounded hangs on large staging tables (e.g. full-table UPDATEs).
+  const statementTimeoutMs = Number(process.env.DB_STATEMENT_TIMEOUT_MS || 90000);
   try {
     await client.connect();
+    await client.query(`SET statement_timeout TO ${Math.max(1000, statementTimeoutMs)}`);
     const result = await client.query(querys, params);
     await client.end();
     return result.rows;
   } catch (error) {
-    console.error('Database query error:', error);
-    await client.end();
+    console.error(`[database] Query failed (TEST_ENV=${getTestEnv()}):`, error);
+    try {
+      await client.end();
+    } catch {
+      // ignore close errors after failure
+    }
     throw error;
   }
 }
@@ -555,10 +559,10 @@ export async function executeQuery(querys: string, params?: any[]) {
  * Query and store account information from database
  */
 async function queryAndStoreAccount() {
-  const client = new Client(dbConfig);
+  const client = new Client(activeDbConfig());
   try {
     await client.connect();
-    console.log('Connected to the database.');
+    console.log(`Connected to the database (TEST_ENV=${getTestEnv()}).`);
 
     const userDataMap = new Map<number, AccountRecord>();
 
@@ -1994,4 +1998,86 @@ export async function fetchAnyInactiveUserClient(): Promise<UsersClientRow | nul
     console.warn('[fetchAnyInactiveUserClient] Query failed:', err);
     return null;
   }
+}
+
+/**
+ * Set usersclients.active for mid-session deactivation / restoration (SC-856-03).
+ * Returns true when at least one row was updated.
+ */
+export async function setUsersClientActive(username: string, isActive: boolean): Promise<boolean> {
+  const trimmedUsername = (username ?? '').trim();
+  if (!trimmedUsername) {
+    console.warn('[setUsersClientActive] Empty username provided.');
+    return false;
+  }
+
+  const query = `
+    update usersclients
+    set active = $2
+    where lower(btrim(username)) = lower($1)
+    returning username
+  `;
+
+  try {
+    const rows = await executeQuery(query, [trimmedUsername, isActive]);
+    return Array.isArray(rows) && rows.length > 0;
+  } catch (err) {
+    console.warn('[setUsersClientActive] Update failed:', err);
+    return false;
+  }
+}
+
+/**
+ * Check whether an account is active by account number (SC-465).
+ */
+export async function isAccountActiveByNumber(accountNumber: string): Promise<boolean | null> {
+  const trimmed = (accountNumber ?? '').trim();
+  if (!trimmed) return null;
+
+  const query = 'SELECT isactive FROM account WHERE accountnumber = $1 LIMIT 1';
+  try {
+    const rows = await executeQuery(query, [trimmed]);
+    if (!rows || rows.length === 0) return null;
+    const raw = rows[0].isactive;
+    if (typeof raw === 'boolean') return raw;
+    const normalized = String(raw ?? '').trim().toLowerCase();
+    return normalized === 'true' || normalized === '1' || normalized === 't' || normalized === 'active';
+  } catch (err) {
+    console.warn('[isAccountActiveByNumber] Query failed:', err);
+    return null;
+  }
+}
+
+/**
+ * Check whether a provider group is active (SC-465). Tries common column names.
+ */
+export async function isProviderGroupActive(groupId: string): Promise<boolean | null> {
+  const trimmed = (groupId ?? '').trim();
+  if (!trimmed) return null;
+
+  const queries = [
+    'SELECT isactive AS active_flag FROM providergroup WHERE id = $1 LIMIT 1',
+    'SELECT active AS active_flag FROM providergroup WHERE id = $1 LIMIT 1',
+    'SELECT status AS active_flag FROM providergroup WHERE id = $1 LIMIT 1',
+  ];
+
+  for (const query of queries) {
+    try {
+      const rows = await executeQuery(query, [trimmed]);
+      if (!rows || rows.length === 0) continue;
+      const raw = rows[0].active_flag;
+      if (typeof raw === 'boolean') return raw;
+      const normalized = String(raw ?? '').trim().toLowerCase();
+      if (normalized === 'true' || normalized === '1' || normalized === 't' || normalized === 'a' || normalized === 'active') {
+        return true;
+      }
+      if (normalized === 'false' || normalized === '0' || normalized === 'f' || normalized === 'i' || normalized === 'inactive' || normalized === 'deactivated') {
+        return false;
+      }
+    } catch {
+      // try next column shape
+    }
+  }
+
+  return null;
 }

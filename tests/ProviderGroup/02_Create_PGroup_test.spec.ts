@@ -1,6 +1,6 @@
 import { test, expect } from '../myTestData';
 import { Page } from '@playwright/test';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/CreatePGroupTestData.json';
 import { navigateToAccounts } from '../framework/navigation.helper';
 
@@ -34,6 +34,7 @@ async function openCreateProviderGroup(page: Page, accountNumber: string) {
 
 
 test('Create Provider Group Screen verification and functionality test', async ({ page, loginAsAdmin }) => {
+  test.setTimeout(180000);
   await loginAsAdmin();
   
   
@@ -359,10 +360,10 @@ test.describe('Create Provider Group – mandatory field validation', () => {
     await loginAsAdmin();
     await openCreateProviderGroup(page, userData.providerGroup.accountNum);
 
-    // Leave Group Name empty; button must remain disabled
-    await expect(
-      page.getByRole('textbox', { name: d.roles.groupNameTextbox }),
-    ).toHaveValue('');
+    // Ensure Group Name is empty (form may pre-fill from account context in some runs)
+    const nameField = page.getByRole('textbox', { name: d.roles.groupNameTextbox });
+    await nameField.fill('');
+    await expect(nameField).toHaveValue('');
     await expect(
       page.getByRole('button', { name: d.labels.addAndClose }),
       'Add & Close must be disabled while Group Name is empty',

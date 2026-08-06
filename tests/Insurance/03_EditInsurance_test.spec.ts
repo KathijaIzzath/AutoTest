@@ -237,6 +237,72 @@ test.describe('Edit Insurance - Extended Coverage', () => {
     await expect(modal.getByRole('button', { name: d.labels.save })).toBeVisible();
   });
 
+  test.describe('Edit Insurance – mandatory field validation', () => {
+    test('Negative: Save must not succeed when Name is cleared', async ({ page, loginAsAdmin }) => {
+      await loginAsAdmin();
+      await navigateAndFilter(page);
+      const modal = await openInsuranceEditModal(page);
+      await fillTextboxIn(modal, d.placeholders.name, d.edgeCases.empty);
+      const saveBtn = modal.getByRole('button', { name: d.labels.save });
+      const disabled = await saveBtn.isDisabled().catch(() => false);
+      if (disabled) {
+        await expect(saveBtn, 'Save must stay disabled when Name is empty').toBeDisabled();
+      } else {
+        await saveBtn.click();
+        await expect(
+          page.getByLabel(d.labels.savedToast).first(),
+          'Success toast must not appear when Name is empty',
+        ).not.toBeVisible({ timeout: 2500 });
+      }
+    });
+
+    test('Negative: Save must not succeed when Claim Status ID is cleared', async ({ page, loginAsAdmin }) => {
+      await loginAsAdmin();
+      await navigateAndFilter(page);
+      const modal = await openInsuranceEditModal(page);
+      const claimStatusInput = modal.getByRole('textbox', { name: d.placeholders.claimStatusId });
+      const editable = await claimStatusInput.isEditable().catch(() => false);
+      test.skip(!editable, 'Claim Status ID is not editable – skipping.');
+      if (!editable) return;
+
+      await fillTextboxIn(modal, d.placeholders.claimStatusId, d.edgeCases.empty);
+      const saveBtn = modal.getByRole('button', { name: d.labels.save });
+      const disabled = await saveBtn.isDisabled().catch(() => false);
+      if (disabled) {
+        await expect(saveBtn).toBeDisabled();
+      } else {
+        await saveBtn.click();
+        await expect(
+          page.getByLabel(d.labels.savedToast).first(),
+          'Success toast must not appear when Claim Status ID is empty',
+        ).not.toBeVisible({ timeout: 2500 });
+      }
+    });
+
+    test('Negative: Save must not succeed when Eligibility ID is cleared', async ({ page, loginAsAdmin }) => {
+      await loginAsAdmin();
+      await navigateAndFilter(page);
+      const modal = await openInsuranceEditModal(page);
+      const eligibilityInput = modal.getByRole('textbox', { name: d.placeholders.eligibilityId });
+      const editable = await eligibilityInput.isEditable().catch(() => false);
+      test.skip(!editable, 'Eligibility ID is not editable – skipping.');
+      if (!editable) return;
+
+      await fillTextboxIn(modal, d.placeholders.eligibilityId, d.edgeCases.empty);
+      const saveBtn = modal.getByRole('button', { name: d.labels.save });
+      const disabled = await saveBtn.isDisabled().catch(() => false);
+      if (disabled) {
+        await expect(saveBtn).toBeDisabled();
+      } else {
+        await saveBtn.click();
+        await expect(
+          page.getByLabel(d.labels.savedToast).first(),
+          'Success toast must not appear when Eligibility ID is empty',
+        ).not.toBeVisible({ timeout: 2500 });
+      }
+    });
+  });
+
   test('Edit Insurance save without changes keeps persisted values stable', async ({ page, loginAsAdmin }) => {
     await loginAsAdmin();
     await navigateAndFilter(page);

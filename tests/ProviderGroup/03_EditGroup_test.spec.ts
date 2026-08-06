@@ -1,6 +1,6 @@
 import { test, expect } from '../myTestData';
 import { Page } from '@playwright/test';
-import * as userData from '../../testData/UserInfo.json';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/EditGroupTestData.json';
 import { saveCheckboxState, loadCheckboxState } from '../../testData/checkboxState.utils';
 import { navigateToAccounts } from '../framework/navigation.helper';

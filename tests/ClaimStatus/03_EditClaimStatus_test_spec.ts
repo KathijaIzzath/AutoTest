@@ -517,6 +517,58 @@ test.describe('Edit Claim Status Routing - generated and refactored suite', () =
 		await expect(page.getByRole('cell', { name: new RegExp(d.values.payerNameDashboardExpected, 'i') }).first()).toBeVisible();
 	});
 
+	test('SC-721: Edit SKMO0 Online/Batch to BATCH when row exists (skip-safe)', async ({ page }) => {
+		const skmo0Rows = await fetchClaimStatusRoutingRowsByScId(d.skmo0.scId);
+		test.skip(!skmo0Rows.length, `No Claim Status Routing rows found for ${d.skmo0.scId} – skipping SKMO0 edit.`);
+		if (!skmo0Rows.length) return;
+
+		const target = skmo0Rows[0];
+		await searchByScId(page, d.skmo0.scId);
+		await clickEditActionForScId(page, d.skmo0.scId);
+		await ensureEditFormEnabled(page);
+
+		const modal = await getEditModal(page);
+		await expect(modal.getByRole('textbox', { name: d.placeholders.scId })).toHaveValue(
+			new RegExp(d.skmo0.scId, 'i'),
+		);
+		await selectOnlineBatchInEditModal(page, d.skmo0.onlineBatchBatch);
+		await saveEditModal(page);
+
+		const saveSuccess = await page
+			.getByLabel(new RegExp(d.labels.successToastPrefix, 'i'))
+			.first()
+			.isVisible({ timeout: d.timeouts.filterMs })
+			.catch(() => false);
+
+		if (saveSuccess) {
+			await searchByScId(page, d.skmo0.scId);
+			const row = page
+				.locator(d.selectors.tableRows)
+				.filter({ has: page.getByRole('cell', { name: d.skmo0.scId, exact: true }) })
+				.first();
+			await expect(row).toBeVisible({ timeout: d.timeouts.searchMs });
+			await expect(row).toContainText(new RegExp(d.skmo0.onlineBatchBatch, 'i'));
+
+			const dbRows = await fetchClaimStatusRoutingRowsByScId(d.skmo0.scId);
+			const matching = dbRows.find(
+				(r) =>
+					normalize(r.processorid) === normalize(target.processorid) &&
+					normalize(r.ediid) === normalize(target.ediid),
+			);
+			if (matching) {
+				expect(normalize(matching.online_batch)).toContain(normalize(d.skmo0.onlineBatchBatch));
+			}
+		} else {
+			const editModalVisible = await page
+				.getByRole('dialog')
+				.filter({ hasText: d.labels.editClaimStatusRouting })
+				.first()
+				.isVisible()
+				.catch(() => false);
+			expect(editModalVisible).toBeTruthy();
+		}
+	});
+
 	test('Save with empty required Group ID does not produce successful save', async ({ page }) => {
 		await searchByScId(page, d.values.scId);
 		await clickEditActionForScId(page, d.values.scId);
@@ -534,6 +586,46 @@ test.describe('Edit Claim Status Routing - generated and refactored suite', () =
 		expect(hasSuccessToast).toBeFalsy();
 
 		await expect(modal.getByRole('button', { name: d.labels.save })).toBeVisible();
+	});
+
+	test.describe('Edit Claim Status – mandatory field validation', () => {
+		test('Negative: Save must not succeed when Processor ID is cleared', async ({ page }) => {
+			await searchByScId(page, d.values.scId);
+			await clickEditActionForScId(page, d.values.scId);
+			await ensureEditFormEnabled(page);
+
+			const modal = await getEditModal(page);
+			const processorInput = modal.getByRole('textbox', { name: d.placeholders.processorId }).first();
+			const editable = await processorInput.isEditable().catch(() => false);
+			test.skip(!editable, 'Processor ID is not editable in this environment – skipping.');
+			if (!editable) return;
+
+			await processorInput.fill(d.edgeCases.empty);
+			await saveEditModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when Processor ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+		});
+
+		test('Negative: Save must not succeed when EDI ID is cleared', async ({ page }) => {
+			await searchByScId(page, d.values.scId);
+			await clickEditActionForScId(page, d.values.scId);
+			await ensureEditFormEnabled(page);
+
+			const modal = await getEditModal(page);
+			const ediInput = modal.getByRole('textbox', { name: d.placeholders.ediId }).first();
+			const editable = await ediInput.isEditable().catch(() => false);
+			test.skip(!editable, 'EDI ID is not editable in this environment – skipping.');
+			if (!editable) return;
+
+			await ediInput.fill(d.edgeCases.empty);
+			await saveEditModal(page);
+			await expect(
+				page.getByLabel(new RegExp(d.labels.successToastPrefix, 'i')).first(),
+				'Success toast must not appear when EDI ID is empty',
+			).not.toBeVisible({ timeout: 2500 });
+		});
 	});
 
 	test('Invalid SC ID filter returns no rows or stable empty state', async ({ page }) => {

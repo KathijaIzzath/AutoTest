@@ -1,0 +1,33 @@
+{
+  "labels": {
+    "applyFilter": "Apply Filter",
+    "showInactiveOnly": "Show Inactive Only",
+    "addProviderGroup": "Add Provider Group",
+    "addProvider": "Add Provider",
+    "deactivateAccount": "Deactivate Account",
+    "activateAccount": "Activate Account",
+    "deactivateGroup": "Deactivate Group",
+    "activateGroup": "Activate Group",
+    "confirmAction": "Confirm action",
+    "cancel": "Cancel",
+    "ok": "Ok",
+    "confirmDeactivateAccount": "Are you sure you want to deactivate this account?",
+    "confirmActivateAccount": "Are you sure you want to activate this account?",
+    "confirmDeactivateGroup": "deactivate"
+  },
+  "roles": {
+    "accountNumberFilterTextbox": "Enter Account Number"
+  },
+  "selectors": {
+    "modalRoot": "app-modal",
+    "rowActionLinkIndex": 2,
+    "providerGroupGrid": "app-provider-group-grid, table",
+    "providerDetailsActionText": "Edit Provider GroupDeactivate GroupAdd Provider",
+    "providerGroupActionLinkIndex": 0
+  },
+  "timeouts": {
+    "filterMs": 3000,
+    "actionMs": 8000,
+    "generalMs": 15000
+  }
+}

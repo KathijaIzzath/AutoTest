@@ -36,6 +36,15 @@
     "onlineBatchOnline": "ONLINE",
     "onlineBatchBatch": "BATCH"
   },
+  "batchValues": {
+    "scId": "SKBAT0",
+    "groupId": "ROUTE",
+    "processorId": "MCAID-NC",
+    "ediId": "NCTRACKS",
+    "payerOption": "Y00296 - FLORIDA HOSPITAL",
+    "payerSearchText": "FLORIDA HOSPITAL",
+    "onlineBatchBatch": "BATCH"
+  },
   "expectedDb": {
     "scId": "SKNC0",
     "groupId": "ROUTE",

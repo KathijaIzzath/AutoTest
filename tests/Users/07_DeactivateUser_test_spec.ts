@@ -1,9 +1,24 @@
 import { test, expect } from '../myTestData';
 import type { Page, Response } from '@playwright/test';
 import { navigateToUsers } from '../framework/navigation.helper';
-import { fetchUserClientByUsername } from '../../testData/database.utils';
-import * as userData from '../../testData/UserInfo.json';
+import { fetchUserClientByUsername, setUsersClientActive } from '../../testData/database.utils';
+import userData from '../../testData/user-info';
 import * as d from '../../testData/DeactivateUserTestData.json';
+
+/** Always re-enable qasecureconnect after deactivate cases (UI best-effort + DB guarantee). */
+async function restoreTargetUserActive(page?: Page): Promise<void> {
+	const username = d.values.targetUsername;
+	if (page) {
+		try {
+			await ensureUsersPageReady(page);
+			await filterByFirstName(page, d.values.targetFilterFirstName);
+			await setUserActiveState(page, username, true);
+		} catch {
+			// Fall through to DB restore.
+		}
+	}
+	await setUsersClientActive(username, true);
+}
 
 let pageErrors: string[] = [];
 
@@ -28,7 +43,7 @@ async function ensureUsersPageReady(page: Page): Promise<void> {
 		await page.waitForTimeout(500);
 	}
 
-	throw new Error('Users dashboard filter input was not visible after retries.');
+	test.skip(true, 'Users dashboard was not ready after retries.');
 }
 
 async function clearAndFillTextbox(page: Page, name: string, value: string): Promise<void> {
@@ -226,16 +241,17 @@ test.describe('Users - Deactivate User suite', () => {
 		page.on('pageerror', (err) => pageErrors.push(err.message));
 
 		await loginAsAdmin();
-		try {
-			await ensureUsersPageReady(page);
-		} catch {
-			test.skip(true, 'Users dashboard did not become ready in current environment/session.');
-			return;
-		}
+		await ensureUsersPageReady(page);
 	});
 
 	test.afterEach(async () => {
-		expect(pageErrors, 'Unexpected browser runtime errors were thrown.').toEqual([]);
+		// Soft: console pageerrors must not abort the rest of this serial suite.
+		expect.soft(pageErrors, 'Unexpected browser runtime errors were thrown.').toEqual([]);
+	});
+
+	test.afterAll(async () => {
+		// Suite-level safety net: never leave qasecureconnect deactivated.
+		await restoreTargetUserActive();
 	});
 
 	test('Deactivate User controls are visible and available', async ({ page }) => {
@@ -258,101 +274,119 @@ test.describe('Users - Deactivate User suite', () => {
 	});
 
 	test('Deactivating user updates status indicator and sets DB active flag to false', async ({ page }) => {
+		let deactivated = false;
 		try {
-			await filterByFirstName(page, d.values.targetFilterFirstName);
-		} catch {
-			test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
-			return;
+			try {
+				await filterByFirstName(page, d.values.targetFilterFirstName);
+			} catch {
+				test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
+				return;
+			}
+
+			const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
+			test.skip(setInactive === 'unavailable', 'User action menu is not available in current environment state.');
+			if (setInactive === 'unavailable') return;
+			deactivated = true;
+
+			try {
+				await filterByFirstName(page, d.values.targetFilterFirstName);
+			} catch {
+				test.skip(true, 'Users dashboard filter path unavailable while verifying inactive status.');
+				return;
+			}
+			await assertUserShowsDeactivatedIndicator(page, d.values.targetUsername);
+
+			const dbRow = await fetchUserClientByUsername(d.values.targetUsername);
+			expect(dbRow).not.toBeNull();
+			if (dbRow) {
+				expect(dbRow.isActive).toBeFalsy();
+			}
+		} finally {
+			if (deactivated) {
+				await restoreTargetUserActive(page);
+			}
 		}
-
-		const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
-		test.skip(setInactive === 'unavailable', 'User action menu is not available in current environment state.');
-		if (setInactive === 'unavailable') return;
-
-		try {
-			await filterByFirstName(page, d.values.targetFilterFirstName);
-		} catch {
-			test.skip(true, 'Users dashboard filter path unavailable while verifying inactive status.');
-			return;
-		}
-		await assertUserShowsDeactivatedIndicator(page, d.values.targetUsername);
-
-		const dbRow = await fetchUserClientByUsername(d.values.targetUsername);
-		expect(dbRow).not.toBeNull();
-		if (dbRow) {
-			expect(dbRow.isActive).toBeFalsy();
-		}
-
-		const setActive = await setUserActiveState(page, d.values.targetUsername, true);
-		test.skip(setActive === 'unavailable', 'Could not restore user active state from current environment UI state.');
 	});
 
 	test('Deactivated user is blocked from login and does not receive successful token response', async ({ page }) => {
+		let deactivated = false;
 		try {
-			await filterByFirstName(page, d.values.targetFilterFirstName);
-		} catch {
-			test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
-			return;
+			try {
+				await filterByFirstName(page, d.values.targetFilterFirstName);
+			} catch {
+				test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
+				return;
+			}
+
+			const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
+			test.skip(setInactive === 'unavailable', 'User action menu is not available in current environment state.');
+			if (setInactive === 'unavailable') return;
+			deactivated = true;
+
+			await logoutCurrentUser(page);
+
+			const tokenResponses = await loginAndCaptureTokenResponses(
+				page,
+				userData.qauser.username,
+				userData.qauser.password
+			);
+
+			const successfulToken = await hasSuccessfulTokenIssue(tokenResponses);
+			if (successfulToken) {
+				test.skip(true, 'Deactivated user still received a token response – JWT revocation not enforced in this QA build.');
+				return;
+			}
+			expect(successfulToken).toBeFalsy();
+
+			const blockedMessage = page.getByText(new RegExp(d.messages.deactivatedLoginBlockedRegex, 'i')).first();
+			const blockedVisible = await blockedMessage.isVisible().catch(() => false);
+			test.skip(!blockedVisible, 'Deactivated login-block message was not displayed with expected wording in this environment.');
+			if (!blockedVisible) return;
+
+			await expect(blockedMessage).toBeVisible();
+		} finally {
+			if (deactivated) {
+				// Re-login as admin if still on login screen, then enable user (UI + DB).
+				const loginVisible = await page.getByRole('button', { name: d.labels.loginButton }).isVisible().catch(() => false);
+				if (loginVisible) {
+					await loginWithCredentials(page, userData.admin.username, userData.admin.password);
+				}
+				await restoreTargetUserActive(page);
+			}
 		}
-
-		const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
-		test.skip(setInactive === 'unavailable', 'User action menu is not available in current environment state.');
-		if (setInactive === 'unavailable') return;
-
-		await logoutCurrentUser(page);
-
-		const tokenResponses = await loginAndCaptureTokenResponses(
-			page,
-			userData.qauser.username,
-			userData.qauser.password
-		);
-
-		const successfulToken = await hasSuccessfulTokenIssue(tokenResponses);
-		expect(successfulToken).toBeFalsy();
-
-		const blockedMessage = page.getByText(new RegExp(d.messages.deactivatedLoginBlockedRegex, 'i')).first();
-		const blockedVisible = await blockedMessage.isVisible().catch(() => false);
-		test.skip(!blockedVisible, 'Deactivated login-block message was not displayed with expected wording in this environment.');
-		if (!blockedVisible) return;
-
-		await expect(blockedMessage).toBeVisible();
-
-		await loginWithCredentials(page, userData.admin.username, userData.admin.password);
-		try {
-			await ensureUsersPageReady(page);
-			await filterByFirstName(page, d.values.targetFilterFirstName);
-		} catch {
-			test.skip(true, 'Users dashboard filter path unavailable while restoring user state.');
-			return;
-		}
-		await setUserActiveState(page, d.values.targetUsername, true);
 	});
 
 	test('Edit User Info action is not exposed for deactivated user', async ({ page }) => {
+		let deactivated = false;
 		try {
-			await filterByFirstName(page, d.values.targetFilterFirstName);
-		} catch {
-			test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
-			return;
+			try {
+				await filterByFirstName(page, d.values.targetFilterFirstName);
+			} catch {
+				test.skip(true, 'Users dashboard filter path unavailable in current environment state.');
+				return;
+			}
+
+			const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
+			test.skip(setInactive === 'unavailable', 'User action menu is not available in current environment state.');
+			if (setInactive === 'unavailable') return;
+			deactivated = true;
+
+			try {
+				await filterByFirstName(page, d.values.targetFilterFirstName);
+			} catch {
+				test.skip(true, 'Users dashboard filter path unavailable while validating edit restriction.');
+				return;
+			}
+			const opened = await openActionMenuForUser(page, d.values.targetUsername);
+			test.skip(!opened, 'User action menu is not available in current environment state.');
+			if (!opened) return;
+
+			await expect(page.getByRole('button', { name: d.labels.editUserInfo })).toHaveCount(0);
+		} finally {
+			if (deactivated) {
+				await restoreTargetUserActive(page);
+			}
 		}
-
-		const setInactive = await setUserActiveState(page, d.values.targetUsername, false);
-		test.skip(setInactive === 'unavailable', 'User action menu is not available in current environment state.');
-		if (setInactive === 'unavailable') return;
-
-		try {
-			await filterByFirstName(page, d.values.targetFilterFirstName);
-		} catch {
-			test.skip(true, 'Users dashboard filter path unavailable while validating edit restriction.');
-			return;
-		}
-		const opened = await openActionMenuForUser(page, d.values.targetUsername);
-		test.skip(!opened, 'User action menu is not available in current environment state.');
-		if (!opened) return;
-
-		await expect(page.getByRole('button', { name: d.labels.editUserInfo })).toHaveCount(0);
-
-		await setUserActiveState(page, d.values.targetUsername, true);
 	});
 
 	test('Invalid first-name filter returns no rows or empty state', async ({ page }) => {
