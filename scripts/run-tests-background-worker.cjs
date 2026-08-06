@@ -72,6 +72,8 @@ function main() {
   process.env.TEST_ENV = envFlag;
   process.env.AUTOTEST_DETACHED = '1';
   // Keep CI unset so Playwright does not apply the short CI globalTimeout.
+  process.env.AUTOTEST_DAILY_ROLLUP = process.env.AUTOTEST_DAILY_ROLLUP || '1';
+  process.env.AUTOTEST_SCOPE = process.env.AUTOTEST_SCOPE || 'full';
 
   console.log(`[detached-worker] Starting suite TEST_ENV=${envFlag} pid=${process.pid}`);
   console.log(`[detached-worker] cwd=${ROOT}`);
@@ -82,8 +84,14 @@ function main() {
   acquireSleepLock();
 
   const args = [path.join(__dirname, 'run-tests.cjs'), `--env=${envFlag}`];
-  if (forwarded.length) {
-    args.push('--', ...forwarded);
+  // Staging is always Chromium-only.
+  const hasProject = forwarded.some(
+    (a, i) => a === '--project' || a.startsWith('--project=') || forwarded[i - 1] === '--project',
+  );
+  const effectiveForwarded =
+    envFlag === 'staging' && !hasProject ? ['--project=chromium', ...forwarded] : forwarded;
+  if (effectiveForwarded.length) {
+    args.push('--', ...effectiveForwarded);
   }
 
   const child = spawn(process.execPath, args, {

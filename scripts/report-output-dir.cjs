@@ -22,15 +22,22 @@ function getTestEnv() {
 }
 
 function readConfiguredOutputDir(rootDir) {
-  try {
-    const configPath = path.join(rootDir, 'scripts', 'email-config.json');
-    if (!fs.existsSync(configPath)) return '';
-    const parsed = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    return String(parsed.reportOutputDir || '').trim();
-  } catch (err) {
-    console.warn('[report-output] Failed to read email-config.json reportOutputDir:', err.message);
-    return '';
+  // email-config always lives next to this script's repo root, not Playwright testDir.
+  const repoRoot = path.resolve(__dirname, '..');
+  const candidates = [
+    path.join(repoRoot, 'scripts', 'email-config.json'),
+    path.join(rootDir || repoRoot, 'scripts', 'email-config.json'),
+  ];
+  for (const configPath of candidates) {
+    try {
+      if (!fs.existsSync(configPath)) continue;
+      const parsed = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      return String(parsed.reportOutputDir || '').trim();
+    } catch (err) {
+      console.warn('[report-output] Failed to read email-config.json reportOutputDir:', err.message);
+    }
   }
+  return '';
 }
 
 function endsWithEnvFolder(dirPath, folderName) {
@@ -46,6 +53,7 @@ function endsWithEnvFolder(dirPath, folderName) {
  * When TEST_ENV=staging, appends a Staging subfolder under DailyExecution (or configured base).
  */
 function resolveReportOutputDir(rootDir, options = {}) {
+  const repoRoot = path.resolve(__dirname, '..');
   const fromEnv = (
     options.envOverride ||
     process.env.REPORT_OUTPUT_DIR ||
@@ -57,8 +65,8 @@ function resolveReportOutputDir(rootDir, options = {}) {
   const base = chosen
     ? path.isAbsolute(chosen)
       ? chosen
-      : path.resolve(rootDir, chosen)
-    : path.join(rootDir, 'playwright-report', 'daily-summary');
+      : path.resolve(repoRoot, chosen)
+    : path.join(repoRoot, 'playwright-report', 'daily-summary');
 
   const testEnv = getTestEnv();
   if (testEnv === 'staging' && !endsWithEnvFolder(base, 'Staging')) {

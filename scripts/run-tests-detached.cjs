@@ -163,6 +163,9 @@ function startDetachedProcess(envFlag, forwarded) {
       AUTOTEST_DETACHED: '1',
       AUTOTEST_DETACHED_LOG: logFile,
       AUTOTEST_DETACHED_ID: id,
+      // Always write the date rollup into DailyExecution[/Staging].
+      AUTOTEST_DAILY_ROLLUP: '1',
+      AUTOTEST_SCOPE: 'full',
       // Reduce stdout buffering so progress appears in the log promptly.
       NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --trace-uncaught`.trim(),
     },
@@ -223,7 +226,7 @@ function startViaWindowsTask(envFlag, forwarded) {
   }`;
 
   // cmd wrapper: cd to repo, append stdout/stderr to log
-  const tr = `cmd /c "cd /d "${ROOT}" && set TEST_ENV=${envFlag}&& set AUTOTEST_DETACHED=1&& set AUTOTEST_DETACHED_LOG=${logFile}&& set AUTOTEST_DETACHED_ID=${id}&& ${nodeCmd} >> "${logFile}" 2>&1"`;
+  const tr = `cmd /c "cd /d "${ROOT}" && set TEST_ENV=${envFlag}&& set AUTOTEST_DETACHED=1&& set AUTOTEST_DETACHED_LOG=${logFile}&& set AUTOTEST_DETACHED_ID=${id}&& set AUTOTEST_DAILY_ROLLUP=1&& set AUTOTEST_SCOPE=full&& ${nodeCmd} >> "${logFile}" 2>&1"`;
 
   // Schedule one minute ahead, then run immediately — task remains independent of this shell.
   const when = new Date(Date.now() + 60 * 1000);

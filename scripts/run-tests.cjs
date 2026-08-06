@@ -108,12 +108,22 @@ async function main() {
   if (testEnv === 'staging') {
     console.log('[run-tests] Target: https://scdemo.pulseinc.com/SecureConnectWeb/login');
     console.log('[run-tests] DB host: pnk1scstgaio.ict.pulseinc.com:5432');
+    console.log('[run-tests] Browser: chromium only (firefox/webkit disabled for staging)');
   } else {
     console.log('[run-tests] Target: https://qnk1scltweb02.pulseinc.com/SecureConnectWeb/login');
     console.log('[run-tests] DB host: Qnk1scltdb02.ict.pulseinc.com:5432');
   }
 
-  const playwrightArgs = ['playwright', 'test', ...forwarded];
+  // Staging always runs Chromium only unless caller already selected a project.
+  const hasProjectFlag = forwarded.some(
+    (a, i) => a === '--project' || a.startsWith('--project=') || (forwarded[i - 1] === '--project'),
+  );
+  const effectiveForwarded =
+    testEnv === 'staging' && !hasProjectFlag
+      ? ['--project=chromium', ...forwarded]
+      : forwarded;
+
+  const playwrightArgs = ['playwright', 'test', ...effectiveForwarded];
   const child = spawn('npx', playwrightArgs, {
     stdio: 'inherit',
     env: process.env,
